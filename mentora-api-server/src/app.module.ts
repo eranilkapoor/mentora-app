@@ -48,7 +48,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { ScholarshipsModule } from './modules/scholarships/scholarships.module';
 import { SecurityPoliciesModule } from './modules/security-policies/security-policies.module';
 import { TasksModule } from './modules/tasks/tasks.module';
-import { TenantsModule } from './modules/tenants/tenants.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 
@@ -104,7 +104,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     FinanceLedgersModule,
     LearningModule,
     ContextsModule,
-    TenantsModule,
+    OrganizationsModule,
     LeadsModule,
     ApplicationsModule,
     TasksModule,

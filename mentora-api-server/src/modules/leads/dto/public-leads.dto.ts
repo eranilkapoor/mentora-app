@@ -2,7 +2,7 @@ import { IsEmail, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class PublicLeadCaptureDto {
   @IsString()
-  tenantCode!: string;
+  organizationCode!: string;
 
   @IsString()
   firstName!: string;

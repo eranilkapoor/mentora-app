@@ -4,8 +4,8 @@ import { Model, Types } from 'mongoose';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   BulkUpdateModuleRecordStatusDto,
@@ -27,7 +27,7 @@ type ListModuleRecordOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -48,7 +48,7 @@ export class ModuleRecordsService {
         : undefined;
     const record = await this.moduleRecords.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       ownerId: toOptionalObjectId(dto.ownerId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       createdBy,
@@ -56,7 +56,7 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.created',
-      dto.tenantId,
+      dto.organizationId,
       record._id,
       {
         after: this.toAuditRecord(record.toObject()),
@@ -72,7 +72,7 @@ export class ModuleRecordsService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
       ...(options.status ? { status: options.status } : {}),
       ...(options.priority ? { priority: options.priority } : {}),
@@ -116,12 +116,15 @@ export class ModuleRecordsService {
   ) {
     const update = {
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       ownerId: toOptionalObjectId(dto.ownerId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
     };
     const record = await this.moduleRecords.findOneAndUpdate(
-      { _id: toRequiredObjectId(recordId), tenantId: update.tenantId },
+      {
+        _id: toRequiredObjectId(recordId),
+        organizationId: update.organizationId,
+      },
       update,
       { new: true },
     );
@@ -131,7 +134,7 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.updated',
-      dto.tenantId,
+      dto.organizationId,
       record._id,
       {
         after: this.toAuditRecord(record.toObject()),
@@ -141,10 +144,10 @@ export class ModuleRecordsService {
     return record;
   }
 
-  async getModuleRecord(recordId: string, tenantId: string) {
+  async getModuleRecord(recordId: string, organizationId: string) {
     const record = await this.moduleRecords.findOne({
       _id: toRequiredObjectId(recordId),
-      tenantId: toTenantObjectId(tenantId),
+      organizationId: toOrganizationObjectId(organizationId),
     });
     if (!record) {
       throw new NotFoundException('Education CRM module record not found');
@@ -157,9 +160,9 @@ export class ModuleRecordsService {
     recordId: string,
     dto: ExecuteModuleRecordDto,
   ) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const record = await this.moduleRecords.findOneAndUpdate(
-      { _id: toRequiredObjectId(recordId), tenantId },
+      { _id: toRequiredObjectId(recordId), organizationId },
       {
         $set: {
           status: dto.outcome === 'failed' ? 'blocked' : 'completed',
@@ -181,7 +184,7 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.executed',
-      dto.tenantId,
+      dto.organizationId,
       record._id,
       {
         after: this.toAuditRecord(record.toObject()),
@@ -202,14 +205,14 @@ export class ModuleRecordsService {
     const result = await this.moduleRecords.updateMany(
       {
         _id: { $in: recordIds },
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: { status: dto.status, updatedAt: new Date() } },
     );
     await this.writeAudit(
       userId,
       'crm_module_record.bulk_status_updated',
-      dto.tenantId,
+      dto.organizationId,
       toRequiredObjectId(dto.recordIds[0]),
       {
         after: {
@@ -227,11 +230,11 @@ export class ModuleRecordsService {
     };
   }
 
-  async exportModuleRecords(tenantId: string, moduleKey?: string) {
+  async exportModuleRecords(organizationId: string, moduleKey?: string) {
     const result = await this.listModuleRecords({
       limit: '1000',
       moduleKey,
-      tenantId,
+      organizationId,
     });
     const records = result.items;
     const headers = ['id', 'moduleKey', 'title', 'status', 'priority', 'dueAt'];
@@ -264,12 +267,12 @@ export class ModuleRecordsService {
   async deleteModuleRecord(
     userId: string | undefined,
     recordId: string,
-    tenantId: string,
+    organizationId: string,
   ) {
     const record = await this.moduleRecords.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -280,7 +283,7 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.archived',
-      tenantId,
+      organizationId,
       record._id,
       {
         after: this.toAuditRecord(record.toObject()),
@@ -293,12 +296,12 @@ export class ModuleRecordsService {
   async restoreModuleRecord(
     userId: string | undefined,
     recordId: string,
-    tenantId: string,
+    organizationId: string,
   ) {
     const record = await this.moduleRecords.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'open' } },
       { new: true },
@@ -309,7 +312,7 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.restored',
-      tenantId,
+      organizationId,
       record._id,
       {
         after: this.toAuditRecord(record.toObject()),
@@ -339,7 +342,7 @@ export class ModuleRecordsService {
   private async writeAudit(
     userId: string | undefined,
     action: string,
-    tenantId: string,
+    organizationId: string,
     targetId: Types.ObjectId,
     details: {
       after?: Record<string, unknown> | null;
@@ -353,7 +356,7 @@ export class ModuleRecordsService {
       resource: 'crm_module_record',
       targetId: String(targetId),
       after: details.after,
-      metadata: { tenantId, ...(details.metadata ?? {}) },
+      metadata: { organizationId, ...(details.metadata ?? {}) },
     });
   }
 

@@ -13,7 +13,17 @@ export class UpsertUserMembershipDto {
   userId!: string;
 
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  businessUnitIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  campusIds?: string[];
 
   @IsOptional()
   @IsArray()
@@ -22,8 +32,13 @@ export class UpsertUserMembershipDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @IsMongoId({ each: true })
   departmentIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  teamIds?: string[];
 
   @IsIn(EDUCATION_PLATFORM_USER_ROLES)
   role!: string;
@@ -44,12 +59,28 @@ export class UpsertUserMembershipDto {
 
 export class SelectContextDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(EDUCATION_PLATFORM_USER_ROLES)
   role!: string;
 
   @IsOptional()
   @IsMongoId()
+  businessUnitId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  campusId?: string;
+
+  @IsOptional()
+  @IsMongoId()
   branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
 }

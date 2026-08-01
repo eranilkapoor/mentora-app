@@ -17,7 +17,7 @@ import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   BulkUpdateModuleRecordStatusDto,
   CreateModuleRecordDto,
@@ -27,7 +27,7 @@ import {
 import { ModuleCoverageService } from '../services/module-coverage.service';
 import { ModuleRecordsService } from '../services/module-records.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('module-records')
 export class ModuleRecordsController {
   constructor(
@@ -62,7 +62,7 @@ export class ModuleRecordsController {
   @Get()
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async listModuleRecords(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
     @Query('status') status?: string,
     @Query('priority') priority?: string,
@@ -82,7 +82,7 @@ export class ModuleRecordsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_MODULE_RECORDS_FETCHED',
       'CRM module records fetched',
@@ -92,11 +92,11 @@ export class ModuleRecordsController {
   @Get('operations/export')
   @Permissions(Permission.CRM_REPORT_EXPORT)
   async exportModuleRecords(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
   ) {
     return successResponse(
-      await this.service.exportModuleRecords(tenantId, moduleKey),
+      await this.service.exportModuleRecords(organizationId, moduleKey),
       'EDUCATION_PLATFORM_MODULE_RECORDS_EXPORTED',
       'CRM module records exported',
     );
@@ -119,10 +119,10 @@ export class ModuleRecordsController {
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async getModuleRecord(
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.getModuleRecord(recordId, tenantId),
+      await this.service.getModuleRecord(recordId, organizationId),
       'EDUCATION_PLATFORM_MODULE_RECORD_FETCHED',
       'CRM module record fetched',
     );
@@ -133,10 +133,14 @@ export class ModuleRecordsController {
   async deleteModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.deleteModuleRecord(req.user.sub, recordId, tenantId),
+      await this.service.deleteModuleRecord(
+        req.user.sub,
+        recordId,
+        organizationId,
+      ),
       'EDUCATION_PLATFORM_MODULE_RECORD_ARCHIVED',
       'CRM module record archived',
     );
@@ -147,10 +151,14 @@ export class ModuleRecordsController {
   async restoreModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.restoreModuleRecord(req.user.sub, recordId, tenantId),
+      await this.service.restoreModuleRecord(
+        req.user.sub,
+        recordId,
+        organizationId,
+      ),
       'EDUCATION_PLATFORM_MODULE_RECORD_RESTORED',
       'CRM module record restored',
     );

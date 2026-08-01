@@ -12,7 +12,7 @@ import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-pla
 
 export class CreateWorkflowRuleDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   name!: string;
@@ -55,7 +55,7 @@ export class CreateWorkflowRuleDto {
 
 export class UpdateWorkflowRuleDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -101,7 +101,7 @@ export class UpdateWorkflowRuleDto {
 
 export class ExecuteWorkflowDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   trigger!: string;
@@ -120,7 +120,7 @@ export class ExecuteWorkflowDto {
 
 export class RetryWorkflowExecutionDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()

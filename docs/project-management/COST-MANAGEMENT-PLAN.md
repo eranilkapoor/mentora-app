@@ -28,9 +28,9 @@ Estimate each module by:
 
 - Do not enable paid providers without launch-scope approval.
 - Track AI usage, SMS, WhatsApp, email, storage, and payment gateway costs separately.
-- Use tenant-level cost attribution where possible.
+- Use organization-level cost attribution where possible.
 - Require approval for new recurring SaaS subscriptions.
-- Monitor cost per lead, cost per enrolled student, AI cost per learning session, and support cost per active tenant.
+- Monitor cost per lead, cost per enrolled student, AI cost per learning session, and support cost per active organization.
 
 ## Budget Risks
 
@@ -47,7 +47,7 @@ Monthly cost report should include:
 
 - Infrastructure spend.
 - Provider spend by category.
-- Cost per tenant.
+- Cost per organization.
 - Cost per lead/admission.
 - Cost per active learner.
 - Budget variance and corrective actions.

@@ -5,15 +5,44 @@ const moduleTitles: Record<
   (typeof EDUCATION_PLATFORM_MODULE_KEYS)[number],
   string
 > = {
+  'platform-foundation': 'Platform Foundation',
   authentication: 'Authentication',
   users: 'Users',
   organizations: 'Organizations',
+  'feature-flags': 'Feature Flags',
+  'usage-limits': 'Usage Limits',
+  billing: 'Billing',
+  branding: 'Branding',
+  'global-settings': 'Global Settings',
+  'audit-logs': 'Audit Logs',
   leads: 'Leads',
+  contacts: 'Contacts',
+  'lead-sources': 'Lead Sources',
+  'lead-stages': 'Lead Stages',
+  activities: 'Activities',
+  notes: 'Notes',
+  'follow-ups': 'Follow-ups',
+  meetings: 'Meetings',
+  assignments: 'Assignments',
+  tags: 'Tags',
+  'custom-fields': 'Custom Fields',
+  'imports-exports': 'Imports And Exports',
   students: 'Students',
+  'academic-sessions': 'Academic Sessions',
+  programs: 'Programs',
+  courses: 'Courses',
+  specializations: 'Specializations',
   applications: 'Applications',
   admissions: 'Admissions',
+  enrollment: 'Enrollment',
+  fees: 'Fees',
   campaigns: 'Campaigns',
   'marketing-automation': 'Marketing Automation',
+  'landing-pages': 'Landing Pages',
+  'lead-scoring': 'Lead Scoring',
+  'marketing-attribution': 'Marketing Attribution',
+  telephony: 'Telephony',
+  chatbots: 'Chatbots',
   communications: 'Communications',
   'call-center': 'Call Center',
   whatsapp: 'WhatsApp',
@@ -36,13 +65,18 @@ const moduleTitles: Record<
   'ai-features': 'AI Features',
   integrations: 'Integrations',
   security: 'Security',
-  tenants: 'Tenants',
   settings: 'Settings',
   learning: 'Learning Operations',
   automation: 'Automation',
 };
 
 type ModuleReadiness = {
+  layer?:
+    | 'platform_foundation'
+    | 'identity_organization'
+    | 'generic_crm'
+    | 'education_specific'
+    | 'growth_automation';
   backendStatus:
     | 'product_ready'
     | 'workflow_ready'
@@ -59,6 +93,7 @@ type ModuleReadiness = {
 };
 
 const defaultReadiness: ModuleReadiness = {
+  layer: 'generic_crm',
   backendStatus: 'mvp_foundation',
   frontendStatus: 'mvp_foundation',
   storage: 'module_records',
@@ -69,11 +104,29 @@ const defaultReadiness: ModuleReadiness = {
 const readinessByModule: Partial<
   Record<(typeof EDUCATION_PLATFORM_MODULE_KEYS)[number], ModuleReadiness>
 > = {
-  authentication: {
+  'platform-foundation': {
+    layer: 'platform_foundation',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
-      'users,user_sessions,user_memberships,tenant_security_policies,integration_provider_configs',
+      'organizations,plans,subscriptions,payments,features,organization_branding,settings,admin_audit_logs',
+    apiSurface: [
+      'organizations',
+      'subscriptions',
+      'payments',
+      'feature-flags',
+      'organization-branding',
+      'settings',
+      'admin/audit-logs',
+    ],
+    productionBlockers: ['live_payment_provider', 'live_domain_dns_validation'],
+  },
+  authentication: {
+    layer: 'identity_organization',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage:
+      'users,user_sessions,user_memberships,organization_security_policies,integration_provider_configs',
     apiSurface: [
       'auth',
       'contexts',
@@ -85,38 +138,94 @@ const readinessByModule: Partial<
     productionBlockers: ['live_mfa_provider', 'live_sso_provider'],
   },
   users: {
+    layer: 'identity_organization',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'users,roles,permissions,user_memberships,teams,departments',
+    storage:
+      'users,roles,permissions,user_memberships,business_units,campuses,branches,teams,departments',
     apiSurface: [
       'admin/rbac',
       'contexts',
-      'tenant-users',
-      'tenant-users/create',
+      'organization-users',
+      'organization-users/create',
+      'identity/hierarchy',
+      'business-units',
+      'campuses',
       'teams',
       'module-records/export',
     ],
     productionBlockers: ['email_invite_provider'],
   },
   organizations: {
+    layer: 'identity_organization',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
-      'tenants,branches,departments,teams,campuses,tenant_branding,channel_settings,lead_sources,lead_stages',
+      'organizations,branches,departments,teams,campuses,organization_branding,channel_settings,lead_sources,lead_stages',
     apiSurface: [
-      'tenants',
+      'organizations',
+      'business-units',
       'branches',
       'departments',
       'teams',
       'campuses',
-      'tenant-branding',
+      'organization-branding',
       'channel-settings',
       'lead-sources',
       'lead-stages',
     ],
     productionBlockers: ['domain_dns_verification', 'payment_gateway_secrets'],
   },
+  'feature-flags': {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'features,plan_features,feature_flag_config',
+    apiSurface: ['feature-flags', 'subscriptions/features', 'admin/plans'],
+    productionBlockers: ['organization_level_flag_console_depth'],
+  },
+  'usage-limits': {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'plans,features,subscriptions,learning_entitlements',
+    apiSurface: ['subscriptions', 'subscriptions/features', 'learning/access'],
+    productionBlockers: ['real_time_usage_meter_dashboard'],
+  },
+  billing: {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'payments,subscriptions,payment_invoices,plans',
+    apiSurface: ['payments', 'admin/payments', 'subscriptions'],
+    productionBlockers: ['live_payment_gateway_settlement_callbacks'],
+  },
+  branding: {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'organization_branding,organizations',
+    apiSurface: ['organization-branding'],
+    productionBlockers: ['cdn_asset_validation'],
+  },
+  'global-settings': {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'settings,security_settings,localization_settings',
+    apiSurface: ['settings', 'security-policies'],
+    productionBlockers: [],
+  },
+  'audit-logs': {
+    layer: 'platform_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'admin_audit_logs,activity_logs',
+    apiSurface: ['admin/audit-logs', 'module-records/export'],
+    productionBlockers: ['external_backup_evidence_provider'],
+  },
   leads: {
+    layer: 'generic_crm',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'leads,lead_activities,lead_assignments,lead_imports',
@@ -134,7 +243,101 @@ const readinessByModule: Partial<
       'voice_note_storage_provider',
     ],
   },
+  contacts: {
+    layer: 'generic_crm',
+    backendStatus: 'mvp_foundation',
+    frontendStatus: 'mvp_foundation',
+    storage: 'leads,students,parent_profiles,module_records',
+    apiSurface: ['leads', 'students', 'module-records'],
+    productionBlockers: ['dedicated_contact_schema_service'],
+  },
+  'lead-sources': {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'lead_sources',
+    apiSurface: ['lead-sources'],
+    productionBlockers: [],
+  },
+  'lead-stages': {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'lead_stages',
+    apiSurface: ['lead-stages'],
+    productionBlockers: [],
+  },
+  activities: {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'lead_activities,communications,tasks,module_records',
+    apiSurface: ['leads/:id/activities', 'communications', 'tasks'],
+    productionBlockers: ['unified_activity_timeline_screen'],
+  },
+  notes: {
+    layer: 'generic_crm',
+    backendStatus: 'workflow_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'lead_activities,applications,module_records',
+    apiSurface: ['leads/:id/activities', 'applications', 'module-records'],
+    productionBlockers: ['dedicated_notes_api'],
+  },
+  'follow-ups': {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'tasks,leads,communications',
+    apiSurface: ['tasks', 'leads', 'communications'],
+    productionBlockers: ['calendar_reminder_provider'],
+  },
+  meetings: {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'crm_events,interviews,learning_schedules',
+    apiSurface: ['events', 'interviews', 'learning/schedules'],
+    productionBlockers: ['live_calendar_provider_sync'],
+  },
+  assignments: {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'lead_assignments,tasks,user_memberships,teams',
+    apiSurface: ['leads/:id/assign', 'tasks', 'identity/hierarchy'],
+    productionBlockers: [],
+  },
+  tags: {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'leads.tags,module_records',
+    apiSurface: ['leads/:id/tags'],
+    productionBlockers: [],
+  },
+  'custom-fields': {
+    layer: 'generic_crm',
+    backendStatus: 'workflow_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'module_records.payload,leads.customFields',
+    apiSurface: ['module-records', 'leads'],
+    productionBlockers: ['custom_field_definition_schema'],
+  },
+  'imports-exports': {
+    layer: 'generic_crm',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'lead_imports,report_export_jobs,module_records',
+    apiSurface: [
+      'leads/operations/import',
+      'leads/operations/export',
+      'module-records/export',
+      'reports/export-jobs',
+    ],
+    productionBlockers: ['large_file_worker_scaling'],
+  },
   students: {
+    layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
@@ -142,7 +345,40 @@ const readinessByModule: Partial<
     apiSurface: ['students', 'learning'],
     productionBlockers: ['crm_admission_conversion_timeline'],
   },
+  'academic-sessions': {
+    layer: 'education_specific',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'learning_schedules,classrooms,tutor_availability',
+    apiSurface: ['learning/schedules', 'classrooms'],
+    productionBlockers: ['live_video_classroom_provider'],
+  },
+  programs: {
+    layer: 'education_specific',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'courses,study_plans,curriculums,module_records',
+    apiSurface: ['learning/catalog', 'module-records'],
+    productionBlockers: ['dedicated_program_admin_console'],
+  },
+  courses: {
+    layer: 'education_specific',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'courses,subjects,topics,curriculums',
+    apiSurface: ['learning/catalog'],
+    productionBlockers: ['dedicated_course_admin_console'],
+  },
+  specializations: {
+    layer: 'education_specific',
+    backendStatus: 'workflow_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'streams,courses,study_plans,module_records',
+    apiSurface: ['learning/catalog', 'module-records'],
+    productionBlockers: ['dedicated_specialization_schema'],
+  },
   applications: {
+    layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'applications,crm_documents,interviews,admin_audit_logs',
@@ -154,6 +390,7 @@ const readinessByModule: Partial<
     productionBlockers: ['external_form_embed_provider'],
   },
   admissions: {
+    layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'admissions',
@@ -164,7 +401,24 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['live_erp_lms_adapter'],
   },
+  enrollment: {
+    layer: 'education_specific',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'admissions,student_subject_enrollments,learning_entitlements',
+    apiSurface: ['admissions', 'learning/enrollments', 'learning/entitlements'],
+    productionBlockers: ['erp_lms_handoff_adapter'],
+  },
+  fees: {
+    layer: 'education_specific',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'payments,finance_ledger_entries,payment_invoices',
+    apiSurface: ['payments', 'finance-ledgers'],
+    productionBlockers: ['live_tax_engine'],
+  },
   campaigns: {
+    layer: 'growth_automation',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'campaigns,workflow_rules,lead_sources,lead_stages',
@@ -180,6 +434,7 @@ const readinessByModule: Partial<
     ],
   },
   'marketing-automation': {
+    layer: 'growth_automation',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'campaigns,workflow_rules,workflow_executions',
@@ -193,6 +448,46 @@ const readinessByModule: Partial<
       'live_ad_provider_callbacks',
       'external_landing_page_hosting',
     ],
+  },
+  'landing-pages': {
+    layer: 'growth_automation',
+    backendStatus: 'workflow_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'campaigns,lead_sources,module_records',
+    apiSurface: ['campaigns', 'public/leads', 'module-records'],
+    productionBlockers: ['external_landing_page_hosting'],
+  },
+  'lead-scoring': {
+    layer: 'growth_automation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'leads,lead_activities',
+    apiSurface: ['leads/:id/score'],
+    productionBlockers: ['predictive_scoring_model_provider'],
+  },
+  'marketing-attribution': {
+    layer: 'growth_automation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'campaigns,lead_sources,analytics_events',
+    apiSurface: ['campaigns/:id/metrics', 'analytics'],
+    productionBlockers: ['ad_provider_callback_ingestion'],
+  },
+  telephony: {
+    layer: 'growth_automation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'call-center_calls,communications,integration_provider_configs',
+    apiSurface: ['call-center', 'integrations/providers'],
+    productionBlockers: ['live_dialer_provider'],
+  },
+  chatbots: {
+    layer: 'growth_automation',
+    backendStatus: 'workflow_ready',
+    frontendStatus: 'workflow_ready',
+    storage: 'workflow_rules,whatsapp_conversations,ai_tutor_sessions',
+    apiSurface: ['workflows', 'whatsapp', 'learning/ai-tutor'],
+    productionBlockers: ['external_bot_model_provider'],
   },
   'call-center': {
     backendStatus: 'product_ready',
@@ -233,7 +528,7 @@ const readinessByModule: Partial<
       'communications',
       'notifications',
       'admin/notifications',
-      'tenant channel-settings',
+      'organization channel-settings',
       'integrations/providers',
     ],
     productionBlockers: ['live_delivery_provider_callbacks'],
@@ -428,7 +723,7 @@ const readinessByModule: Partial<
   security: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'audit_logs,user_sessions,tenant_security_policies,settings',
+    storage: 'audit_logs,user_sessions,organization_security_policies,settings',
     apiSurface: [
       'admin/rbac',
       'admin/audit-logs',
@@ -467,6 +762,7 @@ export class ModuleCoverageService {
         readiness.frontendStatus === 'product_ready' &&
         readiness.productionBlockers.length === 0;
       return {
+        layer: readiness.layer ?? this.getFallbackLayer(moduleKey),
         moduleKey,
         title: moduleTitles[moduleKey],
         status: productionReady ? 'product_ready' : 'workflow_ready',
@@ -474,5 +770,38 @@ export class ModuleCoverageService {
         productionReady,
       };
     });
+  }
+
+  private getFallbackLayer(
+    moduleKey: (typeof EDUCATION_PLATFORM_MODULE_KEYS)[number],
+  ) {
+    if (
+      ['payments', 'settings', 'security', 'integrations'].includes(moduleKey)
+    ) {
+      return 'platform_foundation';
+    }
+    if (['authentication', 'users', 'organizations'].includes(moduleKey)) {
+      return 'identity_organization';
+    }
+    if (
+      ['leads', 'communications', 'calendar', 'tasks', 'documents'].includes(
+        moduleKey,
+      )
+    ) {
+      return 'generic_crm';
+    }
+    if (
+      [
+        'students',
+        'applications',
+        'admissions',
+        'scholarship',
+        'interview',
+        'learning',
+      ].includes(moduleKey)
+    ) {
+      return 'education_specific';
+    }
+    return 'growth_automation';
   }
 }

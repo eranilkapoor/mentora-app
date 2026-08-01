@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
 export type IntegrationProviderConfigDocument =
   HydratedDocument<IntegrationProviderConfig>;
@@ -11,8 +11,13 @@ export type IntegrationProviderConfigDocument =
   timestamps: true,
 })
 export class IntegrationProviderConfig {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true, index: true })
   providerKey!: string;
@@ -47,6 +52,6 @@ export const IntegrationProviderConfigSchema = SchemaFactory.createForClass(
   IntegrationProviderConfig,
 );
 IntegrationProviderConfigSchema.index(
-  { tenantId: 1, providerKey: 1 },
+  { organizationId: 1, providerKey: 1 },
   { unique: true },
 );

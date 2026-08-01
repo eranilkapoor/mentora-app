@@ -18,7 +18,7 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateWorkflowRuleDto,
   ExecuteWorkflowDto,
@@ -27,7 +27,7 @@ import {
 } from '../dto/workflows.dto';
 import { WorkflowsService } from '../services/workflows.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('workflows')
 export class WorkflowsController {
   constructor(private readonly service: WorkflowsService) {}
@@ -49,7 +49,7 @@ export class WorkflowsController {
   @Get('rules')
   @Permissions(Permission.CRM_WORKFLOW_MANAGE)
   async listRules(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -68,7 +68,7 @@ export class WorkflowsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
         trigger,
       }),
       'EDUCATION_PLATFORM_WORKFLOW_RULES_FETCHED',
@@ -95,10 +95,10 @@ export class WorkflowsController {
   async archiveRule(
     @Req() req: AuthenticatedRequest,
     @Param('ruleId') ruleId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveRule(req.user.sub, ruleId, tenantId),
+      await this.service.archiveRule(req.user.sub, ruleId, organizationId),
       'EDUCATION_PLATFORM_WORKFLOW_RULE_ARCHIVED',
       'CRM workflow rule archived',
     );
@@ -120,7 +120,7 @@ export class WorkflowsController {
   @Get('executions')
   @Permissions(Permission.CRM_WORKFLOW_MANAGE)
   async listExecutions(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -139,7 +139,7 @@ export class WorkflowsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
         trigger,
       }),
       'EDUCATION_PLATFORM_WORKFLOW_EXECUTIONS_FETCHED',

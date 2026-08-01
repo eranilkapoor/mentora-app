@@ -15,7 +15,7 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
@@ -28,7 +28,7 @@ import {
 } from '../dto/admissions.dto';
 import { AdmissionsService } from '../services/admissions.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('admissions')
 export class AdmissionsController {
   constructor(private readonly service: AdmissionsService) {}
@@ -47,7 +47,7 @@ export class AdmissionsController {
   @Get()
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async list(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -65,7 +65,7 @@ export class AdmissionsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'CRM_ADMISSIONS_FETCHED',
       'CRM admissions fetched',
@@ -75,10 +75,10 @@ export class AdmissionsController {
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.getById(recordId, tenantId),
+      await this.service.getById(recordId, organizationId),
       'CRM_ADMISSION_FETCHED',
       'CRM admission fetched',
     );
@@ -113,10 +113,10 @@ export class AdmissionsController {
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archive(req.user.sub, recordId, tenantId),
+      await this.service.archive(req.user.sub, recordId, organizationId),
       'CRM_ADMISSION_ARCHIVED',
       'CRM admission archived',
     );
@@ -126,10 +126,10 @@ export class AdmissionsController {
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.restore(req.user.sub, recordId, tenantId),
+      await this.service.restore(req.user.sub, recordId, organizationId),
       'CRM_ADMISSION_RESTORED',
       'CRM admission restored',
     );

@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import {
   CreateCommunicationDto,
   UpdateCommunicationDto,
@@ -25,7 +25,7 @@ type CommunicationListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -38,7 +38,7 @@ export class CommunicationsService {
   async createCommunication(dto: CreateCommunicationDto) {
     return this.communications.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       entityId: toRequiredObjectId(dto.entityId),
     });
   }
@@ -49,7 +49,7 @@ export class CommunicationsService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.channel ? { channel: options.channel } : {}),
       ...(options.direction ? { direction: options.direction } : {}),
       ...(options.entityType ? { entityType: options.entityType } : {}),
@@ -89,22 +89,22 @@ export class CommunicationsService {
 
   updateCommunication(communicationId: string, dto: UpdateCommunicationDto) {
     const update: Record<string, unknown> = { ...dto };
-    delete update.tenantId;
+    delete update.organizationId;
     return this.communications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(communicationId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
     );
   }
 
-  archiveCommunication(communicationId: string, tenantId: string) {
+  archiveCommunication(communicationId: string, organizationId: string) {
     return this.communications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(communicationId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },

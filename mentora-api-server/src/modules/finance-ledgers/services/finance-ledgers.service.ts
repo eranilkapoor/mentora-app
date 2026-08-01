@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import { CrmDomainRecordService } from '@/common/crm/services/crm-domain-record.service';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   ExportLedgerDto,
@@ -30,7 +30,7 @@ export class FinanceLedgersService extends CrmDomainRecordService<FinanceLedgerE
     const record = await this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         status: 'completed',
@@ -49,7 +49,10 @@ export class FinanceLedgersService extends CrmDomainRecordService<FinanceLedgerE
   }
 
   async exportLedger(dto: ExportLedgerDto) {
-    const result = await this.list({ tenantId: dto.tenantId, limit: '1000' });
+    const result = await this.list({
+      organizationId: dto.organizationId,
+      limit: '1000',
+    });
     const rows = result.items;
     return {
       format: dto.format ?? 'csv',

@@ -14,7 +14,7 @@ import {
 
 export class CreateLeadDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   firstName!: string;
@@ -94,7 +94,7 @@ export class CreateLeadDto {
 
 export class ListLeadsDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -147,7 +147,7 @@ export class ListLeadsDto {
 
 export class UpdateLeadDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -228,7 +228,7 @@ export class UpdateLeadDto {
 
 export class UpdateLeadTagsDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -237,7 +237,7 @@ export class UpdateLeadTagsDto {
 
 export class AddLeadAttachmentDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   url!: string;
@@ -261,7 +261,7 @@ export class AddLeadAttachmentDto {
 
 export class ScoreLeadDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsObject()
@@ -270,7 +270,7 @@ export class ScoreLeadDto {
 
 export class TransferLeadDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsMongoId()
   assignedTo!: string;
@@ -286,7 +286,7 @@ export class TransferLeadDto {
 
 export class AssignLeadDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsMongoId()
   assignedTo!: string;
@@ -305,7 +305,7 @@ export class AssignLeadDto {
 
 export class ChangeLeadStageDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsMongoId()
   stageId!: string;
@@ -317,7 +317,7 @@ export class ChangeLeadStageDto {
 
 export class AddLeadActivityDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn([
     'lead_created',
@@ -353,7 +353,7 @@ export class AddLeadActivityDto {
 
 export class FindLeadDuplicatesDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsEmail()
@@ -366,7 +366,7 @@ export class FindLeadDuplicatesDto {
 
 export class MergeLeadsDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsMongoId()
   sourceLeadId!: string;
@@ -382,7 +382,7 @@ export class MergeLeadsDto {
 
 export class ImportLeadsDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsArray()
   rows!: CreateLeadDto[];

@@ -12,7 +12,7 @@ import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-pla
 
 export class CreateModuleRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(EDUCATION_PLATFORM_MODULE_KEYS)
   moduleKey!: string;
@@ -52,7 +52,7 @@ export class CreateModuleRecordDto {
 
 export class UpdateModuleRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -90,7 +90,7 @@ export class UpdateModuleRecordDto {
 
 export class ExecuteModuleRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -103,7 +103,7 @@ export class ExecuteModuleRecordDto {
 
 export class BulkUpdateModuleRecordStatusDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsArray()
   @ArrayMinSize(1)

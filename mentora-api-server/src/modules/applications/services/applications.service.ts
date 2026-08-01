@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import {
   ApproveApplicationDto,
   CreateApplicationDto,
@@ -26,7 +26,7 @@ type ApplicationListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -37,10 +37,10 @@ export class ApplicationsService {
   ) {}
 
   async createApplication(dto: CreateApplicationDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.applications.create({
       ...dto,
-      tenantId,
+      organizationId,
       leadId: toOptionalObjectId(dto.leadId),
       applicationNumber: `APP-${Date.now().toString(36).toUpperCase()}`,
     });
@@ -52,7 +52,7 @@ export class ApplicationsService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.courseOffering
         ? { courseOffering: { $regex: options.courseOffering, $options: 'i' } }
         : {}),
@@ -89,11 +89,11 @@ export class ApplicationsService {
 
   async updateApplication(applicationId: string, dto: UpdateApplicationDto) {
     const update: Record<string, unknown> = { ...dto };
-    delete update.tenantId;
+    delete update.organizationId;
     const application = await this.applications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(applicationId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
@@ -102,11 +102,11 @@ export class ApplicationsService {
     return application;
   }
 
-  async archiveApplication(applicationId: string, tenantId: string) {
+  async archiveApplication(applicationId: string, organizationId: string) {
     const application = await this.applications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(applicationId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'withdrawn', isLocked: true } },
       { new: true },
@@ -119,7 +119,7 @@ export class ApplicationsService {
     const application = await this.applications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(applicationId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         ...(dto.status ? { status: dto.status } : {}),
@@ -152,7 +152,7 @@ export class ApplicationsService {
     const application = await this.applications.findOneAndUpdate(
       {
         _id: toRequiredObjectId(applicationId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         approval: {

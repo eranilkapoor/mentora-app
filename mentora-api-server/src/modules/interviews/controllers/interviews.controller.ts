@@ -21,10 +21,10 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import { InterviewsService } from '../services/interviews.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('interviews')
 export class InterviewsController {
   constructor(private readonly service: InterviewsService) {}
@@ -39,7 +39,7 @@ export class InterviewsController {
     );
   }
   @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -57,7 +57,7 @@ export class InterviewsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'CRM_INTERVIEWS_FETCHED',
       'CRM interviews fetched',
@@ -67,10 +67,10 @@ export class InterviewsController {
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.getById(recordId, tenantId),
+      await this.service.getById(recordId, organizationId),
       'CRM_INTERVIEW_FETCHED',
       'CRM interview fetched',
     );
@@ -105,10 +105,10 @@ export class InterviewsController {
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archive(req.user.sub, recordId, tenantId),
+      await this.service.archive(req.user.sub, recordId, organizationId),
       'CRM_INTERVIEW_ARCHIVED',
       'CRM interview archived',
     );
@@ -118,10 +118,10 @@ export class InterviewsController {
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.restore(req.user.sub, recordId, tenantId),
+      await this.service.restore(req.user.sub, recordId, organizationId),
       'CRM_INTERVIEW_RESTORED',
       'CRM interview restored',
     );

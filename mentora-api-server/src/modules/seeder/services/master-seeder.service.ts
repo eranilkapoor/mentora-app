@@ -127,9 +127,9 @@ import {
   LeadStageDocument,
   Team,
   TeamDocument,
-  Tenant,
-  TenantDocument,
-} from '@/modules/tenants/schemas/tenants.schema';
+  Organization,
+  OrganizationDocument,
+} from '@/modules/organizations/schemas/organizations.schema';
 import {
   UserMembership,
   UserMembershipDocument,
@@ -245,8 +245,8 @@ export class MasterSeederService {
     @InjectModel(StudyPlan.name)
     private readonly studyPlanModel: Model<StudyPlanDocument>,
 
-    @InjectModel(Tenant.name)
-    private readonly tenantModel: Model<TenantDocument>,
+    @InjectModel(Organization.name)
+    private readonly organizationModel: Model<OrganizationDocument>,
 
     @InjectModel(Branch.name)
     private readonly branchModel: Model<BranchDocument>,
@@ -621,7 +621,7 @@ export class MasterSeederService {
   private async seedEducationCrmDemoData() {
     const now = new Date();
     const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
-    const tenants = [
+    const organizations = [
       {
         name: 'Mentora Academy',
         code: 'MENTORA-ACADEMY',
@@ -661,14 +661,14 @@ export class MasterSeederService {
     let membershipCount = 0;
     let moduleRecordCount = 0;
 
-    for (const seedTenant of tenants) {
-      const tenant = await this.tenantModel.findOneAndUpdate(
-        { code: seedTenant.code },
+    for (const seedOrganization of organizations) {
+      const organization = await this.organizationModel.findOneAndUpdate(
+        { code: seedOrganization.code },
         {
           $set: {
-            name: seedTenant.name,
-            code: seedTenant.code,
-            type: seedTenant.type,
+            name: seedOrganization.name,
+            code: seedOrganization.code,
+            type: seedOrganization.type,
             status: 'active',
             primaryDomain: 'mentora.test',
             timezone: 'Asia/Kolkata',
@@ -676,7 +676,7 @@ export class MasterSeederService {
             settings: {
               seeded: true,
               source: 'master-seeder',
-              supportEmail: `support.${seedTenant.slug}@mentora.test`,
+              supportEmail: `support.${seedOrganization.slug}@mentora.test`,
             },
             updatedAt: now,
           },
@@ -686,12 +686,12 @@ export class MasterSeederService {
       );
 
       const branchDocs: BranchDocument[] = [];
-      for (const [name, code, city, state] of seedTenant.branches) {
+      for (const [name, code, city, state] of seedOrganization.branches) {
         const branch = await this.branchModel.findOneAndUpdate(
-          { tenantId: tenant._id, code },
+          { organizationId: organization._id, code },
           {
             $set: {
-              tenantId: tenant._id,
+              organizationId: organization._id,
               name,
               code,
               city,
@@ -707,18 +707,18 @@ export class MasterSeederService {
       }
       branchCount += branchDocs.length;
 
-      await this.seedCrmDepartmentsAndTeams(tenant._id, branchDocs, now);
-      await this.seedCrmSourcesAndStages(tenant._id, now);
+      await this.seedCrmDepartmentsAndTeams(organization._id, branchDocs, now);
+      await this.seedCrmSourcesAndStages(organization._id, now);
       moduleRecordCount += await this.seedCrmModuleRecords(
-        tenant._id,
+        organization._id,
         now,
-        branchDocs[0]?.name ?? seedTenant.name,
+        branchDocs[0]?.name ?? seedOrganization.name,
       );
 
-      const result = await this.seedCrmTenantUsers(
-        tenant._id,
+      const result = await this.seedCrmOrganizationUsers(
+        organization._id,
         branchDocs,
-        seedTenant.slug,
+        seedOrganization.slug,
         passwordHash,
         now,
       );
@@ -726,8 +726,8 @@ export class MasterSeederService {
       membershipCount += result.memberships;
     }
 
-    this.logger.log('Mentora education CRM tenants seeded successfully', {
-      tenants: tenants.length,
+    this.logger.log('Mentora education CRM organizations seeded successfully', {
+      organizations: organizations.length,
       branches: branchCount,
       users: userCount,
       memberships: membershipCount,
@@ -738,7 +738,7 @@ export class MasterSeederService {
   }
 
   private async seedCrmDepartmentsAndTeams(
-    tenantId: Types.ObjectId,
+    organizationId: Types.ObjectId,
     branches: BranchDocument[],
     now: Date,
   ) {
@@ -754,10 +754,10 @@ export class MasterSeederService {
     const departments: DepartmentDocument[] = [];
     for (const [name, code, departmentFunction] of departmentSeeds) {
       const department = await this.departmentModel.findOneAndUpdate(
-        { tenantId, code },
+        { organizationId, code },
         {
           $set: {
-            tenantId,
+            organizationId,
             name,
             code,
             branchId: branches[0]?._id,
@@ -775,10 +775,10 @@ export class MasterSeederService {
     await this.teamModel.bulkWrite(
       departments.map((department) => ({
         updateOne: {
-          filter: { tenantId, code: `${department.code}_TEAM` },
+          filter: { organizationId, code: `${department.code}_TEAM` },
           update: {
             $set: {
-              tenantId,
+              organizationId,
               departmentId: department._id,
               name: `${department.name} Team`,
               code: `${department.code}_TEAM`,
@@ -798,10 +798,10 @@ export class MasterSeederService {
     );
   }
 
-  private async seedCrmTenantUsers(
-    tenantId: Types.ObjectId,
+  private async seedCrmOrganizationUsers(
+    organizationId: Types.ObjectId,
     branches: BranchDocument[],
-    tenantSlug: string,
+    organizationSlug: string,
     passwordHash: string,
     now: Date,
   ) {
@@ -810,7 +810,7 @@ export class MasterSeederService {
     const allBranchIds = branches.map((branch) => branch._id);
 
     for (const [index, role] of EDUCATION_PLATFORM_USER_ROLES.entries()) {
-      const email = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
+      const email = `${organizationSlug}.${role.replace(/_/g, '.')}@mentora.test`;
       const branchIds = this.resolveSeededRoleBranchIds(
         role,
         allBranchIds,
@@ -848,18 +848,18 @@ export class MasterSeederService {
       );
 
       await this.userMembershipModel.updateOne(
-        { userId: user._id, tenantId, role },
+        { userId: user._id, organizationId, role },
         {
           $set: {
             userId: user._id,
-            tenantId,
+            organizationId,
             role,
             branchIds,
             permissions: [],
             status: 'active',
             settings: {
               seeded: true,
-              defaultTenantContext: true,
+              defaultOrganizationContext: true,
               loginEmail: email,
             },
             updatedAt: now,
@@ -916,7 +916,10 @@ export class MasterSeederService {
     return AppRole.ADMIN;
   }
 
-  private async seedCrmSourcesAndStages(tenantId: Types.ObjectId, now: Date) {
+  private async seedCrmSourcesAndStages(
+    organizationId: Types.ObjectId,
+    now: Date,
+  ) {
     const sources: Array<[string, string, string]> = [
       ['Website', 'WEBSITE', 'website'],
       ['WhatsApp', 'WHATSAPP', 'whatsapp'],
@@ -927,10 +930,10 @@ export class MasterSeederService {
     await this.leadSourceModel.bulkWrite(
       sources.map(([name, code, category]) => ({
         updateOne: {
-          filter: { tenantId, code },
+          filter: { organizationId, code },
           update: {
             $set: {
-              tenantId,
+              organizationId,
               name,
               code,
               category,
@@ -956,10 +959,10 @@ export class MasterSeederService {
     await this.leadStageModel.bulkWrite(
       stages.map(([name, code, order, isInitial, isConverted, isLost]) => ({
         updateOne: {
-          filter: { tenantId, code },
+          filter: { organizationId, code },
           update: {
             $set: {
-              tenantId,
+              organizationId,
               name,
               code,
               order,
@@ -979,7 +982,7 @@ export class MasterSeederService {
   }
 
   private async seedCrmModuleRecords(
-    tenantId: Types.ObjectId,
+    organizationId: Types.ObjectId,
     now: Date,
     branchName: string,
   ) {
@@ -990,10 +993,14 @@ export class MasterSeederService {
         const title = this.humanizeModuleKey(moduleKey);
         return {
           updateOne: {
-            filter: { tenantId, moduleKey, title: `${title} Demo Record` },
+            filter: {
+              organizationId,
+              moduleKey,
+              title: `${title} Demo Record`,
+            },
             update: {
               $set: {
-                tenantId,
+                organizationId,
                 moduleKey,
                 title: `${title} Demo Record`,
                 description: `Seeded Mentora CRM demo record for ${title}.`,

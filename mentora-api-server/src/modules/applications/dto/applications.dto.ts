@@ -10,7 +10,7 @@ import {
 
 export class CreateApplicationDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsMongoId()
@@ -30,7 +30,7 @@ export class CreateApplicationDto {
 
 export class UpdateApplicationReviewDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn([
@@ -65,7 +65,7 @@ export class UpdateApplicationReviewDto {
 
 export class UpdateApplicationDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -100,7 +100,7 @@ export class UpdateApplicationDto {
 
 export class ApproveApplicationDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['approved', 'rejected', 'offer_issued'])
   decision!: string;

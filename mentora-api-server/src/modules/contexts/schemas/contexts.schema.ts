@@ -2,7 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { EDUCATION_PLATFORM_USER_ROLES } from '@/common/constants/education-platform.constants';
-import { Branch, Tenant } from '../../tenants/schemas/tenants.schema';
+import {
+  Branch,
+  BusinessUnit,
+  Campus,
+  Department,
+  Team,
+  Organization,
+} from '../../organizations/schemas/organizations.schema';
 
 export type UserMembershipDocument = HydratedDocument<UserMembership>;
 
@@ -14,14 +21,28 @@ export class UserMembership {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
+
+  @Prop({ type: [Types.ObjectId], ref: BusinessUnit.name, default: [] })
+  businessUnitIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: Campus.name, default: [] })
+  campusIds!: Types.ObjectId[];
 
   @Prop({ type: [Types.ObjectId], ref: Branch.name, default: [] })
   branchIds!: Types.ObjectId[];
 
-  @Prop({ type: [String], default: [] })
-  departmentIds!: string[];
+  @Prop({ type: [Types.ObjectId], ref: Department.name, default: [] })
+  departmentIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: Team.name, default: [] })
+  teamIds!: Types.ObjectId[];
 
   @Prop({ enum: EDUCATION_PLATFORM_USER_ROLES, required: true, index: true })
   role!: string;
@@ -39,9 +60,17 @@ export class UserMembership {
 export const UserMembershipSchema =
   SchemaFactory.createForClass(UserMembership);
 UserMembershipSchema.index(
-  { userId: 1, tenantId: 1, role: 1 },
+  { userId: 1, organizationId: 1, role: 1 },
   { unique: true },
 );
-UserMembershipSchema.index({ tenantId: 1, role: 1, status: 1 });
-UserMembershipSchema.index({ tenantId: 1, role: 1, createdAt: -1 });
-UserMembershipSchema.index({ tenantId: 1, status: 1, role: 1, createdAt: -1 });
+UserMembershipSchema.index({ organizationId: 1, role: 1, status: 1 });
+UserMembershipSchema.index({ organizationId: 1, role: 1, createdAt: -1 });
+UserMembershipSchema.index({
+  organizationId: 1,
+  status: 1,
+  role: 1,
+  createdAt: -1,
+});
+UserMembershipSchema.index({ organizationId: 1, branchIds: 1, status: 1 });
+UserMembershipSchema.index({ organizationId: 1, departmentIds: 1, status: 1 });
+UserMembershipSchema.index({ organizationId: 1, teamIds: 1, status: 1 });

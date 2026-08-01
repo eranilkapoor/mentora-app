@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   CreateWorkflowRuleDto,
@@ -27,7 +27,7 @@ type WorkflowListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
   trigger?: string;
 };
 
@@ -44,7 +44,7 @@ export class WorkflowsService {
   async createRule(userId: string, dto: CreateWorkflowRuleDto) {
     const rule = await this.workflowRules.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       createdBy: toRequiredObjectId(userId),
     });
     await this.auditService.write({
@@ -53,7 +53,10 @@ export class WorkflowsService {
       resource: 'crm_workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
-      metadata: { tenantId: dto.tenantId, moduleKey: dto.moduleKey },
+      metadata: {
+        organizationId: dto.organizationId,
+        moduleKey: dto.moduleKey,
+      },
     });
     return rule;
   }
@@ -87,11 +90,11 @@ export class WorkflowsService {
 
   async updateRule(userId: string, ruleId: string, dto: UpdateWorkflowRuleDto) {
     const update: Record<string, unknown> = { ...dto };
-    delete update.tenantId;
+    delete update.organizationId;
     const rule = await this.workflowRules.findOneAndUpdate(
       {
         _id: toRequiredObjectId(ruleId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
@@ -103,16 +106,19 @@ export class WorkflowsService {
       resource: 'crm_workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
-      metadata: { tenantId: dto.tenantId, moduleKey: rule.moduleKey },
+      metadata: {
+        organizationId: dto.organizationId,
+        moduleKey: rule.moduleKey,
+      },
     });
     return rule;
   }
 
-  async archiveRule(userId: string, ruleId: string, tenantId: string) {
+  async archiveRule(userId: string, ruleId: string, organizationId: string) {
     const rule = await this.workflowRules.findOneAndUpdate(
       {
         _id: toRequiredObjectId(ruleId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -124,16 +130,16 @@ export class WorkflowsService {
       resource: 'crm_workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
-      metadata: { tenantId, moduleKey: rule.moduleKey },
+      metadata: { organizationId, moduleKey: rule.moduleKey },
     });
     return rule;
   }
 
   async execute(userId: string, dto: ExecuteWorkflowDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const rules = await this.workflowRules
       .find({
-        tenantId,
+        organizationId,
         moduleKey: dto.moduleKey,
         trigger: dto.trigger,
         status: 'active',
@@ -147,7 +153,7 @@ export class WorkflowsService {
     const executions = await Promise.all(
       rules.map((rule) =>
         this.workflowExecutions.create({
-          tenantId,
+          organizationId,
           workflowRuleId: rule._id,
           moduleKey: dto.moduleKey,
           trigger: dto.trigger,
@@ -171,7 +177,7 @@ export class WorkflowsService {
       targetId: dto.targetId,
       after: { executions: executions.map((item) => String(item._id)) },
       metadata: {
-        tenantId: dto.tenantId,
+        organizationId: dto.organizationId,
         moduleKey: dto.moduleKey,
         trigger: dto.trigger,
       },
@@ -214,7 +220,7 @@ export class WorkflowsService {
   ) {
     const execution = await this.workflowExecutions.findOne({
       _id: toRequiredObjectId(executionId),
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
     });
     if (!execution) throw new NotFoundException('Workflow execution not found');
 
@@ -235,7 +241,7 @@ export class WorkflowsService {
       resource: 'crm_workflow_execution',
       targetId: String(execution._id),
       after: this.toAuditRecord(execution.toObject()),
-      metadata: { tenantId: dto.tenantId },
+      metadata: { organizationId: dto.organizationId },
     });
     return execution;
   }
@@ -247,7 +253,7 @@ export class WorkflowsService {
 
   private buildWorkflowFilter(options: WorkflowListOptions) {
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
       ...(options.status ? { status: options.status } : {}),
       ...(options.trigger ? { trigger: options.trigger } : {}),

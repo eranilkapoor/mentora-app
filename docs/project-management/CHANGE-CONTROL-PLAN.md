@@ -12,7 +12,7 @@ Change control protects Mentora from uncontrolled scope growth, data model churn
 | --- | --- | --- |
 | Scope | Add/remove module, change MVP launch scope, add tutor marketplace. | Sponsor/Product Owner |
 | Architecture | Change database, split microservice, replace auth model. | Technical Lead and Sponsor |
-| Security/compliance | Change consent, retention, RBAC, tenant isolation, AI safety policy. | Security/Compliance and Sponsor |
+| Security/compliance | Change consent, retention, RBAC, organization isolation, AI safety policy. | Security/Compliance and Sponsor |
 | Provider | Add or replace AI, payment, SMS, WhatsApp, storage, monitoring provider. | Product, DevOps, Security where needed |
 | Schedule | Change milestone/release date. | PM and Sponsor |
 | Cost | Add recurring SaaS/vendor cost. | Sponsor/Finance |

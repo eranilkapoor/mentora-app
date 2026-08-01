@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { SelectContextDto, UpsertUserMembershipDto } from '../dto/contexts.dto';
 import {
   UserMembership,
@@ -20,14 +20,20 @@ export class ContextsService {
 
   async upsertMembership(dto: UpsertUserMembershipDto) {
     const userId = toRequiredObjectId(dto.userId);
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.memberships.findOneAndUpdate(
-      { userId, tenantId, role: dto.role },
+      { userId, organizationId, role: dto.role },
       {
         ...dto,
         userId,
-        tenantId,
+        organizationId,
+        businessUnitIds:
+          dto.businessUnitIds?.map((id) => toRequiredObjectId(id)) ?? [],
+        campusIds: dto.campusIds?.map((id) => toRequiredObjectId(id)) ?? [],
         branchIds: dto.branchIds?.map((id) => toRequiredObjectId(id)) ?? [],
+        departmentIds:
+          dto.departmentIds?.map((id) => toRequiredObjectId(id)) ?? [],
+        teamIds: dto.teamIds?.map((id) => toRequiredObjectId(id)) ?? [],
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
@@ -36,17 +42,21 @@ export class ContextsService {
   async listUserContexts(userId: string) {
     return this.memberships
       .find({ userId: toRequiredObjectId(userId), status: 'active' })
-      .populate('tenantId', 'name code type status')
+      .populate('organizationId', 'name code type status')
+      .populate('businessUnitIds', 'name code category status')
+      .populate('campusIds', 'name code branchId address status')
       .populate('branchIds', 'name code city state status')
+      .populate('departmentIds', 'name code branchId function status')
+      .populate('teamIds', 'name code departmentId managerId status')
       .sort({ role: 1, createdAt: 1 })
       .lean();
   }
 
-  async assertUserTenantAccess(userId: string, tenantId: string) {
+  async assertUserOrganizationAccess(userId: string, organizationId: string) {
     const membership = await this.memberships
       .findOne({
         userId: toRequiredObjectId(userId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
         status: 'active',
       })
       .select('_id role permissions branchIds')
@@ -54,7 +64,7 @@ export class ContextsService {
 
     if (!membership) {
       throw new ForbiddenException(
-        'Education CRM tenant context is not available for this user',
+        'Education CRM organization context is not available for this user',
       );
     }
 
@@ -62,16 +72,20 @@ export class ContextsService {
   }
 
   async selectContext(userId: string, dto: SelectContextDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const membership = await this.memberships
       .findOne({
         userId: toRequiredObjectId(userId),
-        tenantId,
+        organizationId,
         role: dto.role,
         status: 'active',
       })
-      .populate('tenantId', 'name code type status')
+      .populate('organizationId', 'name code type status')
+      .populate('businessUnitIds', 'name code category status')
+      .populate('campusIds', 'name code branchId address status')
       .populate('branchIds', 'name code city state status')
+      .populate('departmentIds', 'name code branchId function status')
+      .populate('teamIds', 'name code departmentId managerId status')
       .lean();
 
     if (!membership) {
@@ -80,25 +94,61 @@ export class ContextsService {
       );
     }
 
-    if (
-      dto.branchId &&
-      membership.branchIds.length > 0 &&
-      !membership.branchIds.some(
-        (branch) => String(branch._id) === dto.branchId,
-      )
-    ) {
-      throw new ForbiddenException(
-        'Education CRM branch is not available for this user',
-      );
-    }
+    this.assertScopedId(
+      membership.businessUnitIds,
+      dto.businessUnitId,
+      'Education CRM business unit is not available for this user',
+    );
+    this.assertScopedId(
+      membership.campusIds,
+      dto.campusId,
+      'Education CRM campus is not available for this user',
+    );
+    this.assertScopedId(
+      membership.branchIds,
+      dto.branchId,
+      'Education CRM branch is not available for this user',
+    );
+    this.assertScopedId(
+      membership.departmentIds,
+      dto.departmentId,
+      'Education CRM department is not available for this user',
+    );
+    this.assertScopedId(
+      membership.teamIds,
+      dto.teamId,
+      'Education CRM team is not available for this user',
+    );
 
     return {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
+      businessUnitId: dto.businessUnitId,
+      campusId: dto.campusId,
       branchId: dto.branchId,
+      departmentId: dto.departmentId,
+      teamId: dto.teamId,
       role: membership.role,
       permissions: membership.permissions,
-      tenant: membership.tenantId,
+      organization: membership.organizationId,
+      businessUnits: membership.businessUnitIds,
+      campuses: membership.campusIds,
       branches: membership.branchIds,
+      departments: membership.departmentIds,
+      teams: membership.teamIds,
     };
+  }
+
+  private assertScopedId(
+    records: Array<{ _id?: unknown }> | undefined,
+    requestedId: string | undefined,
+    message: string,
+  ) {
+    if (
+      requestedId &&
+      records?.length &&
+      !records.some((record) => String(record._id) === requestedId)
+    ) {
+      throw new ForbiddenException(message);
+    }
   }
 }

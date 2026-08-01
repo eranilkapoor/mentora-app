@@ -19,10 +19,10 @@ Mentora should use milestone-based planning with short execution cycles. The pro
 | --- | --- | --- |
 | M1 Foundation | Mentora branding, repo structure, environment, core docs. | Complete |
 | M2 Learning MVP | Parent/student profiles, schedules, entitlements, AI tutor guard, assessments, progress. | Code-side complete for MVP foundations |
-| M3 CRM MVP | Multi-tenant CRM shell and 30-module code-side coverage. | Code-side complete |
+| M3 CRM MVP | Multi-organization CRM shell and 30-module code-side coverage. | Code-side complete |
 | M4 Build-clean baseline | API, CRM, website, mobile checks pass. | Complete as of 2026-07-29 |
 | M5 Staging readiness | Production-like deployment, seed policy, provider config placeholders, smoke checks. | Pending |
-| M6 UAT | Tenant/user/CRM/mobile/website/provider UAT. | Pending |
+| M6 UAT | Organization/user/CRM/mobile/website/provider UAT. | Pending |
 | M7 Production launch | Production credentials, monitoring, legal, security, rollback, support. | Pending |
 
 ## Release Cadence
@@ -41,7 +41,7 @@ Schedule changes require review when:
 - Production date changes.
 - Provider dependency slips.
 - Legal/security approval blocks launch.
-- A critical defect affects tenant isolation, payments, student safety, or data loss.
+- A critical defect affects organization isolation, payments, student safety, or data loss.
 
 ## Reporting
 

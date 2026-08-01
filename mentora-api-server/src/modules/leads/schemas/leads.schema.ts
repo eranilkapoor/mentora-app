@@ -5,8 +5,8 @@ import {
   Branch,
   LeadSource,
   LeadStage,
-  Tenant,
-} from '../../tenants/schemas/tenants.schema';
+  Organization,
+} from '../../organizations/schemas/organizations.schema';
 
 export type LeadDocument = HydratedDocument<Lead>;
 export type LeadActivityDocument = HydratedDocument<LeadActivity>;
@@ -38,8 +38,13 @@ export class LeadAttachment {
   timestamps: true,
 })
 export class Lead {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   firstName!: string;
@@ -122,22 +127,32 @@ export class Lead {
 }
 
 export const LeadSchema = SchemaFactory.createForClass(Lead);
-LeadSchema.index({ tenantId: 1, phone: 1 });
-LeadSchema.index({ tenantId: 1, email: 1 });
-LeadSchema.index({ tenantId: 1, createdAt: -1 });
-LeadSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
-LeadSchema.index({ tenantId: 1, assignedTo: 1, stageId: 1, createdAt: -1 });
-LeadSchema.index({ tenantId: 1, nextFollowUpAt: 1 });
-LeadSchema.index({ tenantId: 1, tags: 1 });
-LeadSchema.index({ tenantId: 1, score: -1, temperature: 1 });
+LeadSchema.index({ organizationId: 1, phone: 1 });
+LeadSchema.index({ organizationId: 1, email: 1 });
+LeadSchema.index({ organizationId: 1, createdAt: -1 });
+LeadSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
+LeadSchema.index({
+  organizationId: 1,
+  assignedTo: 1,
+  stageId: 1,
+  createdAt: -1,
+});
+LeadSchema.index({ organizationId: 1, nextFollowUpAt: 1 });
+LeadSchema.index({ organizationId: 1, tags: 1 });
+LeadSchema.index({ organizationId: 1, score: -1, temperature: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.LEAD_ACTIVITY,
   timestamps: true,
 })
 export class LeadActivity {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: Lead.name, required: true, index: true })
   leadId!: Types.ObjectId;
@@ -180,15 +195,20 @@ export class LeadActivity {
 }
 
 export const LeadActivitySchema = SchemaFactory.createForClass(LeadActivity);
-LeadActivitySchema.index({ tenantId: 1, leadId: 1, occurredAt: -1 });
+LeadActivitySchema.index({ organizationId: 1, leadId: 1, occurredAt: -1 });
 
 @Schema({
   collection: COLLECTION_NAMES.LEAD_ASSIGNMENT,
   timestamps: true,
 })
 export class LeadAssignment {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: Lead.name, required: true, index: true })
   leadId!: Types.ObjectId;
@@ -218,5 +238,9 @@ export class LeadAssignment {
 
 export const LeadAssignmentSchema =
   SchemaFactory.createForClass(LeadAssignment);
-LeadAssignmentSchema.index({ tenantId: 1, leadId: 1, assignedAt: -1 });
-LeadAssignmentSchema.index({ tenantId: 1, assignedTo: 1, assignedAt: -1 });
+LeadAssignmentSchema.index({ organizationId: 1, leadId: 1, assignedAt: -1 });
+LeadAssignmentSchema.index({
+  organizationId: 1,
+  assignedTo: 1,
+  assignedAt: -1,
+});

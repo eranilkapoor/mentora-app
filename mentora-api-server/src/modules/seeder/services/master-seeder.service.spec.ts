@@ -65,7 +65,7 @@ describe('MasterSeederService', () => {
   const topicModel = model();
   const curriculumModel = model();
   const studyPlanModel = model();
-  const tenantModel = model();
+  const organizationModel = model();
   const branchModel = model();
   const departmentModel = model();
   const teamModel = model();
@@ -106,7 +106,7 @@ describe('MasterSeederService', () => {
       topicModel,
       curriculumModel,
       studyPlanModel,
-      tenantModel,
+      organizationModel,
       branchModel,
       departmentModel,
       teamModel,
@@ -151,7 +151,7 @@ describe('MasterSeederService', () => {
       topicModel as never,
       curriculumModel as never,
       studyPlanModel as never,
-      tenantModel as never,
+      organizationModel as never,
       branchModel as never,
       departmentModel as never,
       teamModel as never,

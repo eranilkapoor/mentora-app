@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '../../tenants/schemas/tenants.schema';
+import { Organization } from '../../organizations/schemas/organizations.schema';
 
 export type CampaignDocument = HydratedDocument<Campaign>;
 
@@ -10,8 +10,13 @@ export type CampaignDocument = HydratedDocument<Campaign>;
   timestamps: true,
 })
 export class Campaign {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   name!: string;
@@ -53,7 +58,7 @@ export class Campaign {
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
-CampaignSchema.index({ tenantId: 1, createdAt: -1 });
-CampaignSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
-CampaignSchema.index({ tenantId: 1, channel: 1, status: 1 });
-CampaignSchema.index({ tenantId: 1, scheduledAt: 1, status: 1 });
+CampaignSchema.index({ organizationId: 1, createdAt: -1 });
+CampaignSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
+CampaignSchema.index({ organizationId: 1, channel: 1, status: 1 });
+CampaignSchema.index({ organizationId: 1, scheduledAt: 1, status: 1 });

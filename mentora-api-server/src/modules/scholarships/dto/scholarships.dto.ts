@@ -8,7 +8,7 @@ import {
 
 export class EvaluateScholarshipDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsObject()
@@ -17,7 +17,7 @@ export class EvaluateScholarshipDto {
 
 export class DecideScholarshipDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['approved', 'rejected'])
   decision!: string;

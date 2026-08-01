@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { Lead } from '../../leads/schemas/leads.schema';
-import { Tenant } from '../../tenants/schemas/tenants.schema';
+import { Organization } from '../../organizations/schemas/organizations.schema';
 
 export type ApplicationDocument = HydratedDocument<Application>;
 
@@ -11,8 +11,13 @@ export type ApplicationDocument = HydratedDocument<Application>;
   timestamps: true,
 })
 export class Application {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   applicationNumber!: string;
@@ -67,8 +72,8 @@ export class Application {
 
 export const ApplicationSchema = SchemaFactory.createForClass(Application);
 ApplicationSchema.index(
-  { tenantId: 1, applicationNumber: 1 },
+  { organizationId: 1, applicationNumber: 1 },
   { unique: true },
 );
-ApplicationSchema.index({ tenantId: 1, createdAt: -1 });
-ApplicationSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
+ApplicationSchema.index({ organizationId: 1, createdAt: -1 });
+ApplicationSchema.index({ organizationId: 1, status: 1, createdAt: -1 });

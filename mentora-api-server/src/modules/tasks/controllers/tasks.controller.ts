@@ -18,7 +18,7 @@ import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -26,7 +26,7 @@ import {
 } from '../dto/tasks.dto';
 import { TasksService } from '../services/tasks.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('tasks')
 export class TasksController {
   constructor(private readonly service: TasksService) {}
@@ -48,7 +48,7 @@ export class TasksController {
   @Get()
   @Permissions(Permission.CRM_TASK_VIEW)
   async listTasks(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -68,7 +68,7 @@ export class TasksController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_TASKS_FETCHED',
       'CRM tasks fetched',
@@ -92,10 +92,10 @@ export class TasksController {
   @Permissions(Permission.CRM_TASK_MANAGE)
   async archiveTask(
     @Param('taskId') taskId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveTask(taskId, tenantId),
+      await this.service.archiveTask(taskId, organizationId),
       'EDUCATION_PLATFORM_TASK_ARCHIVED',
       'CRM task archived',
     );
@@ -103,9 +103,9 @@ export class TasksController {
 
   @Get('board')
   @Permissions(Permission.CRM_TASK_VIEW)
-  async listTaskBoard(@Query('tenantId') tenantId: string) {
+  async listTaskBoard(@Query('organizationId') organizationId: string) {
     return successResponse(
-      await this.service.listTaskBoard(tenantId),
+      await this.service.listTaskBoard(organizationId),
       'EDUCATION_PLATFORM_TASK_BOARD_FETCHED',
       'CRM task board fetched',
     );

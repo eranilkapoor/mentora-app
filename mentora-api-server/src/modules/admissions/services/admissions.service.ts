@@ -4,8 +4,8 @@ import { Model } from 'mongoose';
 import { CrmDomainRecordService } from '@/common/crm/services/crm-domain-record.service';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AllocateAdmissionDto,
@@ -26,7 +26,7 @@ export class AdmissionsService extends CrmDomainRecordService<AdmissionDocument>
     return this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         $set: {
@@ -47,7 +47,7 @@ export class AdmissionsService extends CrmDomainRecordService<AdmissionDocument>
     return this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         $set: {

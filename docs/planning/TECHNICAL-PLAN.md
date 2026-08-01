@@ -21,6 +21,33 @@ roles: student, parent, mentor, teacher, content_manager, support, admin, super_
 
 Student academic data lives in `student_profiles`, not in the user document.
 
+CRM identity and access management uses this hierarchy:
+
+```text
+Platform
+└── Organization / Organization
+    ├── Business Unit
+    ├── Campus
+    ├── Branch
+    ├── Department
+    ├── Team
+    └── Users / Memberships
+```
+
+Organization-scoped CRM users are stored as `users` plus `user_memberships`. A membership can carry business-unit, campus, branch, department, and team scope IDs, plus the CRM role and explicit permission overrides. Super admins can operate across all organizations; other users are constrained by active organization membership and optional scoped IDs.
+
+IAM APIs include `business-units`, `campuses`, `branches`, `departments`, `teams`, `organization-users`, `admin/rbac`, and `identity/hierarchy`. The CRM should use `GET /api/v1/identity/hierarchy?organizationId=...` to hydrate all hierarchy dropdowns from server data.
+
+## CRM Product Layers
+
+Backend module coverage and admin CRM navigation are aligned to five layers:
+
+- Platform Foundation: organization registration, subscription plans, billing, feature flags, usage limits, super admin, activation/suspension, domains, branding, global settings, and audit logs.
+- Identity and Organization: authentication, users, roles, permissions, business units, campuses, branches, departments, teams, reporting hierarchy, data visibility, login history, and device sessions.
+- Generic CRM: leads, contacts, lead sources/stages, activities, notes, tasks, follow-ups, meetings, assignments, tags, custom fields, imports/exports, and communication timeline.
+- Education-Specific Modules: academic sessions, programs, courses, specializations, applications, document verification, admissions, interviews, offers, scholarships, enrollment, fees, and student portal.
+- Growth and Automation: campaigns, landing pages, workflow automation, lead scoring, attribution, telephony, chatbots, analytics, AI assistance, and channel modules for email, SMS, WhatsApp, push, and calls.
+
 Supported account modes:
 
 - Independent adult student: `User -> StudentProfile`.
@@ -287,9 +314,9 @@ Education CRM:
 
 ```text
 GET    /api/v1/dashboard/bootstrap
-GET    /api/v1/dashboard?tenantId=:tenantId
+GET    /api/v1/dashboard?organizationId=:organizationId
 GET    /api/v1/module-records/coverage
-GET    /api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey
+GET    /api/v1/module-records?organizationId=:organizationId&moduleKey=:moduleKey
 POST   /api/v1/module-records
 POST   /api/v1/module-records/:recordId
 GET    /api/v1/me/contexts

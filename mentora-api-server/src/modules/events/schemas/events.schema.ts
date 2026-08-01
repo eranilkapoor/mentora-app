@@ -1,14 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
 export type CrmEventDocument = HydratedDocument<CrmEvent>;
 
 @Schema({ collection: COLLECTION_NAMES.CRM_EVENT, timestamps: true })
 export class CrmEvent {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
   @Prop({ required: true, trim: true }) title!: string;
   @Prop({ trim: true }) description?: string;
   @Prop({
@@ -41,9 +46,13 @@ export class CrmEvent {
   createdBy?: Types.ObjectId;
 }
 export const CrmEventSchema = SchemaFactory.createForClass(CrmEvent);
-CrmEventSchema.index({ tenantId: 1, status: 1, dueAt: 1 });
-CrmEventSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
-CrmEventSchema.index({ tenantId: 1, status: 1, dueAt: 1, createdAt: -1 });
-CrmEventSchema.index({ tenantId: 1, ownerId: 1, status: 1, dueAt: 1 });
-CrmEventSchema.index({ tenantId: 1, relatedLeadId: 1, createdAt: -1 });
-CrmEventSchema.index({ tenantId: 1, relatedApplicationId: 1, createdAt: -1 });
+CrmEventSchema.index({ organizationId: 1, status: 1, dueAt: 1 });
+CrmEventSchema.index({ organizationId: 1, dueAt: 1, createdAt: -1 });
+CrmEventSchema.index({ organizationId: 1, status: 1, dueAt: 1, createdAt: -1 });
+CrmEventSchema.index({ organizationId: 1, ownerId: 1, status: 1, dueAt: 1 });
+CrmEventSchema.index({ organizationId: 1, relatedLeadId: 1, createdAt: -1 });
+CrmEventSchema.index({
+  organizationId: 1,
+  relatedApplicationId: 1,
+  createdAt: -1,
+});

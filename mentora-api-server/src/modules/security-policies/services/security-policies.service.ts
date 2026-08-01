@@ -3,39 +3,39 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
-import { UpdateTenantSecurityPolicyDto } from '../dto/security-policies.dto';
+import { UpdateOrganizationSecurityPolicyDto } from '../dto/security-policies.dto';
 import {
-  TenantSecurityPolicy,
-  TenantSecurityPolicyDocument,
+  OrganizationSecurityPolicy,
+  OrganizationSecurityPolicyDocument,
 } from '../schemas/security-policies.schema';
 
 @Injectable()
 export class SecurityPoliciesService {
   constructor(
-    @InjectModel(TenantSecurityPolicy.name)
-    private readonly policies: Model<TenantSecurityPolicyDocument>,
+    @InjectModel(OrganizationSecurityPolicy.name)
+    private readonly policies: Model<OrganizationSecurityPolicyDocument>,
     private readonly auditService: AdminAuditService,
   ) {}
 
-  getPolicy(tenantId: string) {
+  getPolicy(organizationId: string) {
     return this.policies
       .findOneAndUpdate(
-        { tenantId: toTenantObjectId(tenantId) },
-        { tenantId: toTenantObjectId(tenantId) },
+        { organizationId: toOrganizationObjectId(organizationId) },
+        { organizationId: toOrganizationObjectId(organizationId) },
         { upsert: true, new: true, setDefaultsOnInsert: true },
       )
       .lean();
   }
 
-  async updatePolicy(userId: string, dto: UpdateTenantSecurityPolicyDto) {
+  async updatePolicy(userId: string, dto: UpdateOrganizationSecurityPolicyDto) {
     const policy = await this.policies.findOneAndUpdate(
-      { tenantId: toTenantObjectId(dto.tenantId) },
+      { organizationId: toOrganizationObjectId(dto.organizationId) },
       {
         ...dto,
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
         updatedBy: toRequiredObjectId(userId),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
@@ -50,7 +50,7 @@ export class SecurityPoliciesService {
         string,
         unknown
       >,
-      metadata: { tenantId: dto.tenantId },
+      metadata: { organizationId: dto.organizationId },
     });
     return policy;
   }

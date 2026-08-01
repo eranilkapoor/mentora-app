@@ -16,7 +16,7 @@ import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateCampaignDto,
   UpdateCampaignDto,
@@ -24,7 +24,7 @@ import {
 } from '../dto/campaigns.dto';
 import { CampaignsService } from '../services/campaigns.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly service: CampaignsService) {}
@@ -43,7 +43,7 @@ export class CampaignsController {
   @Get()
   @Permissions(Permission.CRM_CAMPAIGN_VIEW)
   async listCampaigns(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -61,7 +61,7 @@ export class CampaignsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_CAMPAIGNS_FETCHED',
       'CRM campaigns fetched',
@@ -85,10 +85,10 @@ export class CampaignsController {
   @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
   async archiveCampaign(
     @Param('campaignId') campaignId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveCampaign(campaignId, tenantId),
+      await this.service.archiveCampaign(campaignId, organizationId),
       'EDUCATION_PLATFORM_CAMPAIGN_ARCHIVED',
       'CRM campaign archived',
     );

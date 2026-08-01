@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -21,7 +21,7 @@ type TaskListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -34,7 +34,7 @@ export class TasksService {
   async createTask(userId: string, dto: CreateTaskDto) {
     return this.tasks.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       entityId: toRequiredObjectId(dto.entityId),
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
@@ -49,7 +49,7 @@ export class TasksService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.assignedTo
         ? { assignedTo: toRequiredObjectId(options.assignedTo) }
         : {}),
@@ -85,9 +85,9 @@ export class TasksService {
     };
   }
 
-  listTaskBoard(tenantId: string) {
+  listTaskBoard(organizationId: string) {
     return this.tasks
-      .find({ tenantId: toTenantObjectId(tenantId) })
+      .find({ organizationId: toOrganizationObjectId(organizationId) })
       .sort({ boardColumn: 1, dueAt: 1, priority: -1 })
       .lean();
   }
@@ -112,7 +112,7 @@ export class TasksService {
     return this.tasks.findOneAndUpdate(
       {
         _id: toRequiredObjectId(taskId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         ...(dto.status ? { status: dto.status } : {}),
@@ -133,22 +133,22 @@ export class TasksService {
       ...(dto.dueAt ? { dueAt: new Date(dto.dueAt) } : {}),
       ...(dto.reminderAt ? { reminderAt: new Date(dto.reminderAt) } : {}),
     };
-    delete update.tenantId;
+    delete update.organizationId;
     return this.tasks.findOneAndUpdate(
       {
         _id: toRequiredObjectId(taskId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
     );
   }
 
-  archiveTask(taskId: string, tenantId: string) {
+  archiveTask(taskId: string, organizationId: string) {
     return this.tasks.findOneAndUpdate(
       {
         _id: toRequiredObjectId(taskId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'cancelled', boardColumn: 'done' } },
       { new: true },

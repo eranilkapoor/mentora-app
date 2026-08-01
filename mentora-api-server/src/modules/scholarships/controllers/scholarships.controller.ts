@@ -21,14 +21,14 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   DecideScholarshipDto,
   EvaluateScholarshipDto,
 } from '../dto/scholarships.dto';
 import { ScholarshipsService } from '../services/scholarships.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('scholarships')
 export class ScholarshipsController {
   constructor(private readonly service: ScholarshipsService) {}
@@ -43,7 +43,7 @@ export class ScholarshipsController {
     );
   }
   @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -61,7 +61,7 @@ export class ScholarshipsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'CRM_SCHOLARSHIPS_FETCHED',
       'CRM scholarships fetched',
@@ -71,10 +71,10 @@ export class ScholarshipsController {
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.getById(recordId, tenantId),
+      await this.service.getById(recordId, organizationId),
       'CRM_SCHOLARSHIP_FETCHED',
       'CRM scholarship fetched',
     );
@@ -96,10 +96,10 @@ export class ScholarshipsController {
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archive(req.user.sub, recordId, tenantId),
+      await this.service.archive(req.user.sub, recordId, organizationId),
       'CRM_SCHOLARSHIP_ARCHIVED',
       'CRM scholarship archived',
     );
@@ -109,10 +109,10 @@ export class ScholarshipsController {
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.restore(req.user.sub, recordId, tenantId),
+      await this.service.restore(req.user.sub, recordId, organizationId),
       'CRM_SCHOLARSHIP_RESTORED',
       'CRM scholarship restored',
     );

@@ -1,6 +1,6 @@
 # Mentora CRM Flow Plan
 
-This flow plan covers the multi-tenant education CRM, admin portal, and CRM API flows. Student and parent mobile app flows remain in [Mobile App Flow Plan](FLOW-PLAN.md).
+This flow plan covers the multi-organization education CRM, admin portal, and CRM API flows. Student and parent mobile app flows remain in [Mobile App Flow Plan](FLOW-PLAN.md).
 
 ## CRM Entry Flow
 
@@ -10,42 +10,42 @@ CRM user opens admin CRM
   -> backend validates user, roles, permissions, active session
   -> frontend restores/persists session until logout or expiry
   -> frontend calls GET /api/v1/dashboard/bootstrap
-  -> backend returns allowed tenant contexts, active tenant, dashboard metrics, module coverage
+  -> backend returns allowed organization contexts, active organization, dashboard metrics, module coverage
   -> user lands on dashboard
-  -> tenant/branch switcher is shown only to users with the right scope
+  -> organization/branch switcher is shown only to users with the right scope
 ```
 
 Required API behavior:
 
 - JWT auth on protected CRM APIs.
-- Tenant-context guard on tenant-scoped writes.
+- Organization-context guard on organization-scoped writes.
 - Permission guard per module/action.
 - Audit write for important create/update/complete/export/provider actions.
 - Session is cleared on explicit logout.
 
-## Tenant And Organization Flow
+## Organization And Organization Flow
 
 ```text
 Super admin or organization admin opens Organization Management
-  -> create tenant for university, college, school, coaching brand, institute, franchise
+  -> create organization for university, college, school, coaching brand, institute, franchise
   -> add branches/campuses/franchises
   -> add departments and teams
   -> configure lead sources and stages
   -> configure branding and domains
   -> configure channel settings
-  -> invite/create tenant users
+  -> invite/create organization users
 ```
 
 Primary APIs:
 
-- `POST /api/v1/tenants`
-- `GET /api/v1/tenants`
+- `POST /api/v1/organizations` (organization create API)
+- `GET /api/v1/organizations` (organization list API)
 - `POST /api/v1/branches`
 - `POST /api/v1/departments`
 - `POST /api/v1/teams`
-- `POST /api/v1/tenant-branding`
+- `POST /api/v1/organization-branding`
 - `POST /api/v1/channel-settings`
-- `POST /api/v1/tenant-users/create`
+- `POST /api/v1/organization-users/create`
 
 External-only items:
 
@@ -57,7 +57,7 @@ External-only items:
 ```text
 Lead enters from website, ads, WhatsApp, walk-in, import, or API
   -> create lead
-  -> dedupe against tenant leads
+  -> dedupe against organization leads
   -> score and tag lead
   -> assign owner/team
   -> log activity and communications
@@ -266,7 +266,7 @@ Admin opens Integrations or Security
   -> review provider catalogue
   -> configure provider in sandbox or live mode
   -> verify webhook/callback/health metadata
-  -> update tenant security policy
+  -> update organization security policy
   -> configure MFA/SSO/IP/session/masking/retention settings
   -> export audit/security records
 ```
@@ -289,8 +289,8 @@ External-only items:
 
 - Reload should restore CRM session until logout or token/session expiry.
 - Logout must clear persisted CRM session.
-- Protected action buttons must require API auth and tenant context.
-- If tenant context is missing after login, frontend should auto-run workspace bootstrap.
+- Protected action buttons must require API auth and organization context.
+- If organization context is missing after login, frontend should auto-run workspace bootstrap.
 - Topbar notification button opens the Notifications module, not a generic action.
 - Deep sidebar navigation should keep the selected module visible.
 - Desktop and tablet are supported; phone layout is not the CRM target.
@@ -300,8 +300,8 @@ External-only items:
 A CRM write can run only when:
 
 - User has a valid API token/session.
-- User has active tenant context.
+- User has active organization context.
 - User has required role/permission.
-- Supplied tenantId belongs to allowed context.
+- Supplied organizationId belongs to allowed context.
 - Module/action is permitted for the selected context.
 - Required provider integration is configured for live external delivery, when applicable.

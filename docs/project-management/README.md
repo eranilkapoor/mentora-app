@@ -30,7 +30,7 @@ These documents are delivery governance artifacts. They do not replace product, 
 
 | Area | Current baseline |
 | --- | --- |
-| Product | Multi-tenant education CRM plus B2C parent/student AI tutoring platform. |
+| Product | Multi-organization education CRM plus B2C parent/student AI tutoring platform. |
 | Applications | `mentora-api-server`, `mentora-mobile-app`, `mentora-public-website`, `mentora-admin-crm`. |
 | Technology | NestJS API, MongoDB, Redis/queues, Expo React Native, Next.js public website, Next.js admin CRM. |
 | Current readiness | Build-clean and MVP/customer-demo ready; not production-live until production gates are complete. |
@@ -42,7 +42,7 @@ A feature is considered project-complete only when it has:
 
 - Approved requirement and scope entry.
 - Backend and frontend implementation where applicable.
-- Tenant/security behavior where applicable.
+- Organization/security behavior where applicable.
 - Validation evidence.
 - Documentation update.
 - Production blocker status recorded.

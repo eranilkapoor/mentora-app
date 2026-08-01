@@ -46,11 +46,12 @@ import {
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   crmSessionActions,
+  crmWorkspaceActions,
   addLeadAttachment,
   bulkUpdateDedicatedCrmRecordStatus,
   bulkUpdateModuleRecordStatus,
-  createTenant,
-  createTenantUser,
+  createOrganization,
+  createOrganizationUser,
   deleteDedicatedCrmRecord,
   deleteModuleRecord,
   createReportDefinition,
@@ -63,10 +64,12 @@ import {
   exportModuleRecords,
   findLeadDuplicates,
   importSampleLeads,
+  loadBranches,
   loadDocuments,
+  loadIdentityHierarchy,
   loadIntegrationProviders,
   loadSecurityPolicy,
-  loadTenantUsers,
+  loadOrganizationUsers,
   loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
@@ -82,14 +85,14 @@ import {
   updateLeadTags,
   updateCampaignMetrics,
   updateSecurityPolicy,
-  updateTenant,
+  updateOrganization,
   upsertIntegrationProvider,
   testIntegrationProvider,
   type DemoContext,
   type DemoUser,
   type ModuleRecordDraft,
-  type TenantDraft,
-  type TenantUserDraft,
+  type OrganizationDraft,
+  type OrganizationUserDraft,
   useAppDispatch,
   useAppSelector,
 } from "../store";
@@ -97,7 +100,7 @@ import type { CrmModule, IconName, ModuleCoverage, ModuleStatus } from "./crmTyp
 import {
   extractFirstId,
   findModuleCoverage,
-  findTenantIdByName,
+  findOrganizationIdByName,
   formatReadiness,
   formatStatus,
   getDashboardMetric,
@@ -136,20 +139,78 @@ const dedicatedCrmModuleIds = new Set([
   "whatsapp",
 ]);
 
+const readonlyFormColumns = new Set([
+  "assigned",
+  "assigned to",
+  "branches",
+  "count",
+  "created",
+  "created at",
+  "id",
+  "last active",
+  "last active at",
+  "last login",
+  "lastlogin",
+  "members",
+  "modules",
+  "owner",
+  "permissions",
+  "records",
+  "role",
+  "roles",
+  "status",
+  "organization",
+  "organization id",
+  "updated",
+  "updated at",
+]);
+
+function getEditableModuleColumns(module: CrmModule) {
+  return module.columns.slice(1, 6).filter((column) => {
+    const normalized = column.trim().toLowerCase().replaceAll("_", " ");
+    return (
+      !readonlyFormColumns.has(normalized) &&
+      !normalized.endsWith(" id") &&
+      !normalized.includes("last login") &&
+      !normalized.includes("created") &&
+      !normalized.includes("updated")
+    );
+  });
+}
+
 const moduleIcons: Record<string, IconName> = {
   admissions: "check",
+  "academic-sessions": "calendar",
   "ai-features": "ai",
   analytics: "analytics",
   applications: "document",
+  assignments: "task",
+  "audit-logs": "shield",
   authentication: "lock",
   automation: "automation",
+  billing: "payment",
+  branding: "organization",
   calendar: "calendar",
   "call-center": "headset",
   campaigns: "campaign",
+  chatbots: "ai",
   communications: "chat",
+  contacts: "user",
+  courses: "graduation",
+  "custom-fields": "settings",
   dashboard: "dashboard",
   documents: "document",
   emails: "mail",
+  enrollment: "check",
+  fees: "finance",
+  "feature-flags": "settings",
+  "follow-ups": "calendar",
+  "global-settings": "settings",
+  "imports-exports": "report",
+  "landing-pages": "dashboard",
+  "lead-scoring": "analytics",
+  "lead-sources": "lead",
+  "lead-stages": "lead",
   notifications: "chat",
   events: "calendar",
   "field-force": "mobile",
@@ -158,18 +219,25 @@ const moduleIcons: Record<string, IconName> = {
   interview: "user",
   leads: "lead",
   learning: "graduation",
+  "marketing-attribution": "analytics",
+  meetings: "calendar",
   "mobile-app": "mobile",
+  notes: "document",
   organizations: "building",
   payments: "payment",
+  "platform-foundation": "organization",
+  programs: "graduation",
   reports: "report",
   scholarship: "graduation",
   security: "shield",
   settings: "settings",
   sms: "chat",
+  specializations: "graduation",
   support: "chat",
   students: "user",
   tasks: "task",
-  tenants: "tenant",
+  telephony: "headset",
+  "usage-limits": "analytics",
   users: "user",
   whatsapp: "chat",
 };
@@ -285,7 +353,7 @@ const moduleActions: Record<string, string[]> = {
     "Call Analytics",
   ],
   organizations: [
-    "Create Tenant",
+    "Create Organization",
     "Create Branch",
     "Create Department",
     "Create Team",
@@ -440,28 +508,12 @@ const moduleActions: Record<string, string[]> = {
   ],
 };
 
-const moduleInsights: Record<string, string[]> = {
-  applications: [
-    "41 under review",
-    "12 waiting for documents",
-    "9 offers ready",
-  ],
-  campaigns: ["3.8x blended ROI", "18 active journeys", "Meta leads synced"],
-  communications: [
-    "96% delivery",
-    "42 unresolved inbox items",
-    "Opt-ins healthy",
-  ],
-  leads: ["82 hot leads", "11 duplicates flagged", "23 SLA risks"],
-  tasks: ["28 due today", "14 escalations", "91% completion SLA"],
-};
-
 const securityControlGroups = [
   {
     icon: "user" as IconName,
     title: "RBAC & Access",
     metric: "42 roles",
-    description: "Roles, permissions, teams, departments, and tenant memberships.",
+    description: "Roles, permissions, teams, departments, and organization memberships.",
     actions: ["Manage RBAC", "Review Access", "Export Users"],
   },
   {
@@ -507,13 +559,13 @@ const defaultCrmUsers = [
     name: "Super Admin",
     contexts: [
       {
-        tenant: "All Tenants",
+        organization: "All Organizations",
         branch: "All Branches",
         role: "super_admin",
         label: "Platform Super Admin",
         modules: [
           "dashboard",
-          "tenants",
+          "organizations",
           "security",
           "analytics",
           "integrations",
@@ -526,7 +578,7 @@ const defaultCrmUsers = [
     name: "Admission Counselor",
     contexts: [
       {
-        tenant: "Webnza Coaching",
+        organization: "Webnza Coaching",
         branch: "Delhi",
         role: "admission_counselor",
         label: "Counselor Workspace",
@@ -545,7 +597,7 @@ const defaultCrmUsers = [
     name: "Finance Manager",
     contexts: [
       {
-        tenant: "Webnza Coaching",
+        organization: "Webnza Coaching",
         branch: "All Branches",
         role: "finance",
         label: "Finance Workspace",
@@ -557,32 +609,79 @@ const defaultCrmUsers = [
 
 const navGroups = [
   {
-    title: "Access",
-    items: ["dashboard", "authentication", "users", "security"],
-  },
-  {
-    title: "Enrollment",
+    title: "Platform Foundation",
     items: [
+      "dashboard",
+      "platform-foundation",
       "organizations",
-      "leads",
-      "students",
-      "applications",
-      "admissions",
-      "scholarship",
-      "interview",
+      "billing",
+      "payments",
+      "feature-flags",
+      "usage-limits",
+      "branding",
+      "global-settings",
+      "audit-logs",
     ],
   },
   {
-    title: "Growth",
+    title: "Identity & Organization",
+    items: ["authentication", "users", "organizations", "security"],
+  },
+  {
+    title: "Generic CRM",
+    items: [
+      "leads",
+      "contacts",
+      "lead-sources",
+      "lead-stages",
+      "activities",
+      "notes",
+      "tasks",
+      "follow-ups",
+      "meetings",
+      "assignments",
+      "tags",
+      "custom-fields",
+      "imports-exports",
+      "communications",
+    ],
+  },
+  {
+    title: "Education",
+    items: [
+      "students",
+      "academic-sessions",
+      "programs",
+      "courses",
+      "specializations",
+      "applications",
+      "admissions",
+      "interview",
+      "scholarship",
+      "enrollment",
+      "fees",
+      "documents",
+      "learning",
+    ],
+  },
+  {
+    title: "Growth & Automation",
     items: [
       "campaigns",
-      "communications",
-      "call-center",
-      "whatsapp",
+      "marketing-automation",
+      "landing-pages",
       "emails",
       "sms",
+      "whatsapp",
+      "telephony",
+      "call-center",
+      "chatbots",
+      "lead-scoring",
+      "marketing-attribution",
       "notifications",
       "automation",
+      "analytics",
+      "ai-features",
     ],
   },
   {
@@ -590,24 +689,12 @@ const navGroups = [
     items: [
       "mobile-app",
       "calendar",
-      "tasks",
-      "documents",
       "events",
       "field-force",
       "support",
-    ],
-  },
-  {
-    title: "Business",
-    items: [
-      "payments",
       "finance",
       "reports",
-      "analytics",
-      "ai-features",
       "integrations",
-      "learning",
-      "tenants",
       "settings",
     ],
   },
@@ -926,21 +1013,6 @@ const modules: CrmModule[] = [
     ],
   },
   {
-    id: "tenants",
-    title: "Tenants",
-    group: "Business",
-    metric: "12",
-    description:
-      "Organizations, branches, departments, teams, counselors, managers, roles, permissions, hierarchy, data masking, and access controls.",
-    filters: ["Tenant", "Type", "Plan", "Status"],
-    columns: ["Tenant", "Type", "Branches", "Users", "Plan", "Status"],
-    rows: [
-      ["Webnza Coaching", "Coaching", "4", "82", "Enterprise", "Active"],
-      ["North Campus College", "College", "2", "31", "Growth", "Active"],
-      ["Bright Future School", "School", "1", "18", "Starter", "Trial"],
-    ],
-  },
-  {
     id: "settings",
     title: "Settings",
     group: "Business",
@@ -950,11 +1022,11 @@ const modules: CrmModule[] = [
     filters: ["Category", "Owner", "Status", "Scope"],
     columns: ["Setting", "Category", "Scope", "Updated", "Owner", "Status"],
     rows: [
-      ["Lead stages", "CRM", "Tenant", "Today", "Ops", "Active"],
+      ["Lead stages", "CRM", "Organization", "Today", "Ops", "Active"],
       [
         "WhatsApp templates",
         "Communication",
-        "Tenant",
+        "Organization",
         "Yesterday",
         "Marketing",
         "Review",
@@ -971,19 +1043,86 @@ const modules: CrmModule[] = [
   },
 ];
 
+function createLayerModule(
+  id: string,
+  title: string,
+  group: string,
+  description: string,
+  columns: string[] = ["Record", "Type", "Owner", "Status", "Updated", "Scope"],
+): CrmModule {
+  return {
+    id,
+    title,
+    group,
+    metric: "Ready",
+    description,
+    filters: ["Type", "Owner", "Status", "Scope"],
+    columns,
+    rows: [],
+  };
+}
+
 const extraModules: CrmModule[] = [
+  createLayerModule(
+    "platform-foundation",
+    "Platform Foundation",
+    "Platform Foundation",
+    "Organization registration, activation, suspension, subscription plans, billing, feature flags, usage limits, branding, domain mapping, global settings, and audit logs.",
+  ),
+  createLayerModule(
+    "feature-flags",
+    "Feature Flags",
+    "Platform Foundation",
+    "Organization-aware feature flags for enabling CRM, learning, billing, automation, integrations, and experimental AI capabilities.",
+    ["Flag", "Audience", "Rollout", "Status", "Owner", "Updated"],
+  ),
+  createLayerModule(
+    "usage-limits",
+    "Usage Limits",
+    "Platform Foundation",
+    "Plan and organization limits for seats, students, AI tutor minutes, campaigns, storage, API calls, devices, and concurrent sessions.",
+    ["Limit", "Plan", "Current Usage", "Threshold", "Status", "Scope"],
+  ),
+  createLayerModule(
+    "billing",
+    "Billing",
+    "Platform Foundation",
+    "Organization subscriptions, invoices, billing cycles, plan changes, payment gateway status, tax metadata, and collection controls.",
+    ["Account", "Plan", "Cycle", "Amount", "Status", "Renewal"],
+  ),
+  createLayerModule(
+    "branding",
+    "Branding",
+    "Platform Foundation",
+    "Organization logos, colors, sender identity, domains, public website theme, and branded communication settings.",
+    ["Brand", "Domain", "Theme", "Sender", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "global-settings",
+    "Global Settings",
+    "Platform Foundation",
+    "Global security, localization, notification, data-retention, billing, and platform policy configuration.",
+    ["Setting", "Category", "Value", "Scope", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "audit-logs",
+    "Audit Logs",
+    "Platform Foundation",
+    "Immutable operational audit trail for admin actions, access changes, exports, security events, and organization configuration changes.",
+    ["Event", "Actor", "Entity", "Action", "Time", "Result"],
+  ),
   {
     id: "authentication",
     title: "Authentication",
     group: "Access",
     metric: "9 policies",
     description:
-      "CRM login, SSO readiness, MFA policy, session review, device controls, and tenant-aware access rules.",
+      "CRM login, SSO readiness, MFA policy, session review, device controls, and organization-aware access rules.",
     filters: ["Policy", "Provider", "Status", "Scope"],
     columns: ["Control", "Provider", "Scope", "Owner", "Status", "Updated"],
     rows: [
       ["MFA policy", "Password + OTP", "Admins", "Security", "Active", "Today"],
-      ["Google login", "OAuth", "Tenant", "Platform", "Draft", "Yesterday"],
+      ["Google login", "OAuth", "Organization", "Platform", "Draft", "Yesterday"],
       ["Session review", "JWT", "All users", "Security", "Active", "22 Jul"],
     ],
   },
@@ -1006,7 +1145,7 @@ const extraModules: CrmModule[] = [
     id: "organizations",
     title: "Organizations",
     group: "Enrollment",
-    metric: "12 tenants",
+    metric: "12 organizations",
     description:
       "Universities, colleges, institutes, schools, coaching brands, franchises, branches, departments, domains, branding, and channel settings.",
     filters: ["Type", "Branch", "Plan", "Status"],
@@ -1398,6 +1537,160 @@ const extraModules: CrmModule[] = [
       ["Google Meet", "Video", "Google", "Ops", "Yesterday", "Active"],
     ],
   },
+  createLayerModule(
+    "contacts",
+    "Contacts",
+    "Generic CRM",
+    "Reusable people and organization contacts for enquiries, parents, guardians, students, vendors, partners, and counselors.",
+    ["Contact", "Type", "Phone", "Email", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "lead-sources",
+    "Lead Sources",
+    "Generic CRM",
+    "Website, ads, WhatsApp, walk-ins, referrals, imports, partners, API sources, and source ownership.",
+    ["Source", "Category", "Channel", "Owner", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "lead-stages",
+    "Lead Stages",
+    "Generic CRM",
+    "Configurable enquiry stages, order, conversion flags, lost reasons, SLA policy, and pipeline movement rules.",
+    ["Stage", "Order", "Initial", "Converted", "Lost", "Status"],
+  ),
+  createLayerModule(
+    "activities",
+    "Activities",
+    "Generic CRM",
+    "Unified activity timeline for calls, messages, notes, stage movements, assignments, imports, and workflow actions.",
+    ["Activity", "Entity", "Type", "Owner", "Time", "Status"],
+  ),
+  createLayerModule(
+    "notes",
+    "Notes",
+    "Generic CRM",
+    "Counselor notes, reviewer comments, student context notes, internal-only remarks, and audit-linked note history.",
+    ["Note", "Entity", "Visibility", "Owner", "Updated", "Status"],
+  ),
+  createLayerModule(
+    "follow-ups",
+    "Follow-ups",
+    "Generic CRM",
+    "Follow-up queues, reminders, due dates, stale lead recycling, escalation, and completion tracking.",
+    ["Follow-up", "Entity", "Due", "Owner", "Priority", "Status"],
+  ),
+  createLayerModule(
+    "meetings",
+    "Meetings",
+    "Generic CRM",
+    "Counseling meetings, demo sessions, parent meetings, campus visits, interviews, and calendar sync readiness.",
+    ["Meeting", "Type", "Attendees", "Start", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "assignments",
+    "Assignments",
+    "Generic CRM",
+    "Lead, task, application, and case assignment rules using users, teams, departments, branches, and capacity.",
+    ["Assignment", "Entity", "Assignee", "Rule", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "tags",
+    "Tags",
+    "Generic CRM",
+    "Reusable tagging for leads, contacts, applications, students, documents, campaigns, and segmentation.",
+    ["Tag", "Color", "Module", "Records", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "custom-fields",
+    "Custom Fields",
+    "Generic CRM",
+    "Organization-defined fields, validation, module placement, reporting visibility, and payload mapping.",
+    ["Field", "Module", "Type", "Required", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "imports-exports",
+    "Imports And Exports",
+    "Generic CRM",
+    "CSV imports, duplicate handling, field mapping, export jobs, audit trail, and report download readiness.",
+    ["Job", "Module", "Rows", "Owner", "Status", "Updated"],
+  ),
+  createLayerModule(
+    "academic-sessions",
+    "Academic Sessions",
+    "Education",
+    "Academic terms, batches, live classes, AI tutor schedules, holidays, and operational calendars.",
+    ["Session", "Program", "Batch", "Start", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "programs",
+    "Programs",
+    "Education",
+    "Programs such as JEE, NEET, UPSC, school tutoring, study abroad, foundation batches, and long-term learning tracks.",
+    ["Program", "Category", "Duration", "Subjects", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "courses",
+    "Courses",
+    "Education",
+    "Courses, subjects, topics, curriculum mapping, learning outcomes, pricing, and enrollment readiness.",
+    ["Course", "Program", "Subjects", "Level", "Fee", "Status"],
+  ),
+  createLayerModule(
+    "specializations",
+    "Specializations",
+    "Education",
+    "Specializations, streams, exam tracks, electives, and focused learning paths inside a program.",
+    ["Specialization", "Program", "Track", "Courses", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "enrollment",
+    "Enrollment",
+    "Education",
+    "Admission-to-student conversion, batch allocation, learning entitlement provisioning, and portal activation.",
+    ["Enrollment", "Student", "Program", "Batch", "Access", "Status"],
+  ),
+  createLayerModule(
+    "fees",
+    "Fees",
+    "Education",
+    "Application fees, admission fees, installments, waivers, scholarships, receipts, refunds, dues, and ledgers.",
+    ["Fee", "Student", "Amount", "Due", "Status", "Ledger"],
+  ),
+  createLayerModule(
+    "landing-pages",
+    "Landing Pages",
+    "Growth & Automation",
+    "Campaign landing pages, forms, UTM capture, conversion tags, audience mapping, and lead capture links.",
+    ["Page", "Campaign", "Source", "Conversions", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "lead-scoring",
+    "Lead Scoring",
+    "Growth & Automation",
+    "Rule-based and AI-assisted scoring for lead temperature, intent, SLA risk, source quality, and next-best action.",
+    ["Model", "Signal", "Weight", "Accuracy", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "marketing-attribution",
+    "Marketing Attribution",
+    "Growth & Automation",
+    "Source ROI, UTM inventory, funnel contribution, ad spend, conversion tags, and campaign performance attribution.",
+    ["Attribution", "Source", "Spend", "Revenue", "ROI", "Status"],
+  ),
+  createLayerModule(
+    "telephony",
+    "Telephony",
+    "Growth & Automation",
+    "Dialer integration, inbound/outbound calls, recordings, dispositions, queue automation, and call analytics.",
+    ["Queue", "Provider", "Calls", "Recording", "Owner", "Status"],
+  ),
+  createLayerModule(
+    "chatbots",
+    "Chatbots",
+    "Growth & Automation",
+    "Website, WhatsApp, and in-app bots for enquiry capture, FAQ, qualification, scheduling, and AI handoff.",
+    ["Bot", "Channel", "Intent", "Automation", "Owner", "Status"],
+  ),
   {
     id: "security",
     title: "Security",
@@ -1417,7 +1710,7 @@ const extraModules: CrmModule[] = [
         "Review",
         "Yesterday",
       ],
-      ["Audit export", "Tenant", "Monthly", "Compliance", "Active", "22 Jul"],
+      ["Audit export", "Organization", "Monthly", "Compliance", "Active", "22 Jul"],
     ],
   },
 ];
@@ -1429,7 +1722,7 @@ const productionModuleIds = new Set([
   "campaigns",
   "communications",
   "notifications",
-  "tenants",
+  "organizations",
 ]);
 
 const workflowModuleIds = new Set([
@@ -1455,12 +1748,6 @@ function enrichModule(module: CrmModule): CrmModule {
     actions: module.actions ??
       moduleActions[module.id] ?? ["Create", "Assign", "Export", "Audit"],
     icon: module.icon ?? moduleIcons[module.id] ?? "dashboard",
-    insights: module.insights ??
-      moduleInsights[module.id] ?? [
-        "API-backed records",
-        `${module.filters.length} active filters`,
-        "Tenant scoped data",
-      ],
     status: module.status ?? getModuleStatus(module.id),
   };
 }
@@ -1478,7 +1765,10 @@ function getModuleHref(id: string) {
 function resolveRouteModuleId(pathname: string | null, fallback: string) {
   const segment = pathname?.split("/").filter(Boolean)[0] ?? "";
   if (!segment) return "dashboard";
-  return moduleMap[segment] ? segment : fallback || "dashboard";
+  if (segment === "organizations") return "organizations";
+  if (moduleMap[segment]) return segment;
+  if (fallback === "organizations") return "organizations";
+  return moduleMap[fallback] ? fallback : "dashboard";
 }
 
 function Icon({ name }: { name: IconName }) {
@@ -1506,7 +1796,7 @@ function Icon({ name }: { name: IconName }) {
     settings: faGear,
     shield: faShieldHalved,
     task: faTasks,
-    tenant: faBuilding,
+    organization: faBuilding,
     user: faUsers,
   };
 
@@ -1552,45 +1842,50 @@ export default function CrmDashboardPage() {
     mode: "create" | "edit";
     row?: string[];
   } | null>(null);
-  const [tenantFormOpen, setTenantFormOpen] = useState(false);
-  const [tenantUserFormOpen, setTenantUserFormOpen] = useState(false);
+  const [organizationFormOpen, setOrganizationFormOpen] = useState(false);
+  const [organizationUserFormOpen, setOrganizationUserFormOpen] = useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
   const mainMenuRef = useRef<HTMLElement | null>(null);
+  const workspaceSyncKeyRef = useRef("");
   const activeId = useMemo(
     () => resolveRouteModuleId(pathname, sessionActiveId),
     [pathname, sessionActiveId],
   );
 
   useEffect(() => {
-    if (!apiSyncEnabled || !loggedInUser || !activeContext) return;
-    void dispatch(loadCrmWorkspace());
-  }, [activeContext, apiSyncEnabled, dispatch, loggedInUser]);
-
-  useEffect(() => {
     if (!accessToken) {
       setApiSyncEnabled(false);
+      workspaceSyncKeyRef.current = "";
     }
   }, [accessToken]);
 
   useEffect(() => {
-    if (!accessToken || !loggedInUser || !activeContext || apiSyncEnabled) {
+    if (!accessToken || !loggedInUser || !activeContext) {
       return;
     }
+    const syncKey = accessToken;
+    if (workspaceSyncKeyRef.current === syncKey) return;
+    workspaceSyncKeyRef.current = syncKey;
     setApiSyncEnabled(true);
     void dispatch(loadCrmWorkspace());
-  }, [accessToken, activeContext, apiSyncEnabled, dispatch, loggedInUser]);
+  }, [accessToken, activeContext, dispatch, loggedInUser]);
 
-  const activeTenantId = useMemo(
-    () => workspace.activeTenantId || extractFirstId(workspace.tenants),
-    [workspace.activeTenantId, workspace.tenants],
+  const activeOrganizationId = useMemo(
+    () => workspace.activeOrganizationId || extractFirstId(workspace.organizations),
+    [workspace.activeOrganizationId, workspace.organizations],
   );
+
+  useEffect(() => {
+    if (!apiSyncEnabled || !activeOrganizationId) return;
+    void dispatch(loadIdentityHierarchy({ organizationId: activeOrganizationId }));
+  }, [activeOrganizationId, apiSyncEnabled, dispatch]);
 
   useEffect(() => {
     if (
       !loggedInUser ||
       !activeContext ||
       !apiSyncEnabled ||
-      !activeTenantId ||
+      !activeOrganizationId ||
       activeId === "dashboard"
     ) {
       return;
@@ -1622,7 +1917,7 @@ export default function CrmDashboardPage() {
             "high",
             "urgent",
           ]),
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       );
       return;
@@ -1651,13 +1946,13 @@ export default function CrmDashboardPage() {
           "high",
           "urgent",
         ]),
-        tenantId: activeTenantId,
+        organizationId: activeOrganizationId,
       }),
     );
   }, [
     activeContext,
     activeId,
-    activeTenantId,
+    activeOrganizationId,
     apiSyncEnabled,
     currentPage,
     dispatch,
@@ -1714,7 +2009,7 @@ export default function CrmDashboardPage() {
     safeCurrentPage * pageSize,
   );
   const selectedCount = selected.length;
-  const canSwitchTenant = ["super_admin", "organization_admin"].includes(
+  const canSwitchOrganization = ["super_admin", "organization_admin"].includes(
     activeContext?.role ?? "",
   );
   const canSwitchBranch = [
@@ -1774,7 +2069,6 @@ export default function CrmDashboardPage() {
       }),
     ).unwrap();
     setApiSyncEnabled(true);
-    void dispatch(loadCrmWorkspace());
   }
 
   function requestApiContext(message: string) {
@@ -1788,7 +2082,9 @@ export default function CrmDashboardPage() {
     }
 
     setApiSyncEnabled(true);
-    void dispatch(loadCrmWorkspace());
+    if (!workspace.loading && workspace.organizations.length === 0) {
+      void dispatch(loadCrmWorkspace());
+    }
     dispatch(crmSessionActions.setToast(message));
     return false;
   }
@@ -1828,7 +2124,7 @@ export default function CrmDashboardPage() {
         <section className="auth-card card shadow-lg">
           <span className="brand-mark">M</span>
           <h1>No CRM Access</h1>
-          <p>This user does not have an active tenant or branch context.</p>
+          <p>This user does not have an active organization or branch context.</p>
           <button
             className="btn btn-primary"
             onClick={() => dispatch(crmSessionActions.logout())}
@@ -1845,10 +2141,10 @@ export default function CrmDashboardPage() {
     const normalized = label.toLowerCase();
 
     if (activeId === "leads") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before running lead operations",
+            "Enable API sync and organization context before running lead operations",
           ),
         );
         return;
@@ -1857,7 +2153,7 @@ export default function CrmDashboardPage() {
       try {
         if (normalized.includes("export")) {
           const result = await dispatch(
-            exportLeads({ tenantId: activeTenantId }),
+            exportLeads({ organizationId: activeOrganizationId }),
           ).unwrap();
           const data = normalizeResponseObject(result);
           const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
@@ -1879,7 +2175,7 @@ export default function CrmDashboardPage() {
               phone: firstLeadRow?.[4]?.match(/^\d{7,}$/)
                 ? firstLeadRow[4]
                 : undefined,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Duplicate check completed"));
@@ -1893,12 +2189,12 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("import")) {
           await dispatch(
-            importSampleLeads({ tenantId: activeTenantId }),
+            importSampleLeads({ organizationId: activeOrganizationId }),
           ).unwrap();
           await dispatch(
             loadModuleRecords({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Sample lead imported to API"));
@@ -1923,7 +2219,7 @@ export default function CrmDashboardPage() {
             await dispatch(
               scoreLead({
                 leadId: firstServerRecordId,
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
               }),
             ).unwrap();
             dispatch(crmSessionActions.setToast("Lead score recalculated"));
@@ -1934,7 +2230,7 @@ export default function CrmDashboardPage() {
             await dispatch(
               updateLeadTags({
                 leadId: firstServerRecordId,
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
               }),
             ).unwrap();
             dispatch(crmSessionActions.setToast("Lead tags updated"));
@@ -1944,7 +2240,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             addLeadAttachment({
               leadId: firstServerRecordId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Lead attachment added"));
@@ -1963,10 +2259,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "integrations") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing integrations",
+            "Enable API sync and organization context before managing integrations",
           ),
         );
         return;
@@ -1977,17 +2273,17 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey: "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
-            loadIntegrationProviders({ tenantId: activeTenantId }),
+            loadIntegrationProviders({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(
             crmSessionActions.setToast(
@@ -1998,7 +2294,7 @@ export default function CrmDashboardPage() {
         }
 
         const result = await dispatch(
-          loadIntegrationProviders({ tenantId: activeTenantId }),
+          loadIntegrationProviders({ organizationId: activeOrganizationId }),
         ).unwrap();
         const providers = normalizeResponseArray(result);
         dispatch(
@@ -2020,24 +2316,24 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "organizations") {
-      if (normalized.includes("tenant")) {
+      if (normalized.includes("organization") || normalized.includes("organization")) {
         if (!accessToken) {
           dispatch(
             crmSessionActions.setToast(
-              "Sign in with valid credentials before creating a tenant",
+              "Sign in with valid credentials before creating an organization",
             ),
           );
           return;
         }
-        setTenantFormOpen(true);
-        dispatch(crmSessionActions.setToast("Create a new tenant"));
+        setOrganizationFormOpen(true);
+        dispatch(crmSessionActions.setToast("Create a new organization"));
         return;
       }
 
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing organization setup",
+            "Enable API sync and organization context before managing organization setup",
           ),
         );
         return;
@@ -2048,7 +2344,7 @@ export default function CrmDashboardPage() {
           const result = await dispatch(
             exportModuleRecords({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
@@ -2062,10 +2358,10 @@ export default function CrmDashboardPage() {
         }
 
         if (normalized.includes("branch")) {
-          setTenantFormOpen(true);
+          setOrganizationFormOpen(true);
           dispatch(
             crmSessionActions.setToast(
-              "Use tenant setup to add a campus, franchise, or branch",
+              "Use organization setup to add a campus, franchise, or branch",
             ),
           );
           return;
@@ -2073,7 +2369,7 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("department")) {
           await dispatch(
-            createSampleDepartment({ tenantId: activeTenantId }),
+            createSampleDepartment({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Admissions department saved"));
           return;
@@ -2081,7 +2377,7 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("team")) {
           await dispatch(
-            createSampleTeam({ tenantId: activeTenantId }),
+            createSampleTeam({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Counseling team saved"));
           return;
@@ -2089,11 +2385,11 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("domain")) {
           await dispatch(
-            updateSampleBranding({ tenantId: activeTenantId }),
+            updateSampleBranding({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(
             crmSessionActions.setToast(
-              "Domain and branding metadata updated for this tenant",
+              "Domain and branding metadata updated for this organization",
             ),
           );
           return;
@@ -2101,15 +2397,15 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("branding")) {
           await dispatch(
-            updateSampleBranding({ tenantId: activeTenantId }),
+            updateSampleBranding({ organizationId: activeOrganizationId }),
           ).unwrap();
-          dispatch(crmSessionActions.setToast("Tenant branding updated"));
+          dispatch(crmSessionActions.setToast("Organization branding updated"));
           return;
         }
 
         if (normalized.includes("channel")) {
           await dispatch(
-            updateSampleChannelSetting({ tenantId: activeTenantId }),
+            updateSampleChannelSetting({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(
             crmSessionActions.setToast("WhatsApp channel setting saved"),
@@ -2129,10 +2425,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "users") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing CRM users",
+            "Enable API sync and organization context before managing CRM users",
           ),
         );
         return;
@@ -2140,7 +2436,7 @@ export default function CrmDashboardPage() {
 
       try {
         if (normalized.includes("create")) {
-          setTenantUserFormOpen(true);
+          setOrganizationUserFormOpen(true);
           dispatch(crmSessionActions.setToast("Create a CRM user"));
           return;
         }
@@ -2153,7 +2449,7 @@ export default function CrmDashboardPage() {
           const result = await dispatch(
             exportModuleRecords({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
@@ -2167,11 +2463,11 @@ export default function CrmDashboardPage() {
         }
 
         const result = await dispatch(
-          loadTenantUsers({ tenantId: activeTenantId }),
+          loadOrganizationUsers({ organizationId: activeOrganizationId }),
         ).unwrap();
         const users = normalizeResponseArray(result);
         dispatch(
-          crmSessionActions.setToast(`${users.length} tenant users loaded`),
+          crmSessionActions.setToast(`${users.length} organization users loaded`),
         );
         return;
       } catch (error) {
@@ -2187,10 +2483,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "authentication") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing authentication",
+            "Enable API sync and organization context before managing authentication",
           ),
         );
         return;
@@ -2199,7 +2495,7 @@ export default function CrmDashboardPage() {
       try {
         if (normalized.includes("policy")) {
           await dispatch(
-            updateSecurityPolicy({ tenantId: activeTenantId }),
+            updateSecurityPolicy({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(
             crmSessionActions.setToast(
@@ -2216,13 +2512,13 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(
@@ -2241,7 +2537,7 @@ export default function CrmDashboardPage() {
           const result = await dispatch(
             exportModuleRecords({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
@@ -2255,7 +2551,7 @@ export default function CrmDashboardPage() {
         }
 
         await dispatch(
-          loadSecurityPolicy({ tenantId: activeTenantId }),
+          loadSecurityPolicy({ organizationId: activeOrganizationId }),
         ).unwrap();
         dispatch(crmSessionActions.setToast("Authentication policy loaded"));
         return;
@@ -2272,10 +2568,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "campaigns") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing campaigns",
+            "Enable API sync and organization context before managing campaigns",
           ),
         );
         return;
@@ -2286,7 +2582,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             updateCampaignMetrics({
               campaignId: firstServerRecordId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Campaign ROI metrics updated"));
@@ -2297,7 +2593,7 @@ export default function CrmDashboardPage() {
           runCrmRecordAction({
             path: "/campaigns",
             body: {
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
               name: `${label} campaign`,
               channel: normalized.includes("sms")
                 ? "sms"
@@ -2354,10 +2650,10 @@ export default function CrmDashboardPage() {
     }
 
     if (["communications", "emails", "sms"].includes(activeId)) {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing communications",
+            "Enable API sync and organization context before managing communications",
           ),
         );
         return;
@@ -2395,7 +2691,7 @@ export default function CrmDashboardPage() {
                   : channel === "email"
                     ? "email_delivery"
                     : "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
@@ -2406,7 +2702,7 @@ export default function CrmDashboardPage() {
                   : channel === "email"
                     ? "email_delivery"
                     : "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -2415,7 +2711,7 @@ export default function CrmDashboardPage() {
           runCrmRecordAction({
             path: "/communications",
             body: {
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
               entityType: "general",
               entityId: firstServerRecordId || "000000000000000000000000",
               channel,
@@ -2453,7 +2749,7 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "notifications") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         requestApiContext("Syncing CRM workspace before opening notifications");
         return;
       }
@@ -2466,7 +2762,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "email_delivery",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -2487,7 +2783,7 @@ export default function CrmDashboardPage() {
             },
             priority: normalized.includes("failed") ? "high" : "medium",
             status: "open",
-            tenantId: activeTenantId,
+            organizationId: activeOrganizationId,
             title: label,
           }),
         ).unwrap();
@@ -2506,10 +2802,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "call-center" || activeId === "whatsapp") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing this channel",
+            "Enable API sync and organization context before managing this channel",
           ),
         );
         return;
@@ -2528,7 +2824,7 @@ export default function CrmDashboardPage() {
                 activeId === "call-center"
                   ? "dialer_recording"
                   : "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
@@ -2537,7 +2833,7 @@ export default function CrmDashboardPage() {
                 activeId === "call-center"
                   ? "dialer_recording"
                   : "whatsapp_business",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -2550,12 +2846,12 @@ export default function CrmDashboardPage() {
                 : `/${activeId === "call-center" ? "call-center" : "whatsapp"}/${firstServerRecordId}`,
               body: normalized.includes("complete")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     outcome: "completed",
                     result: { action: label },
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     payload: {
                       automation: normalized.includes("automation"),
                       buttons: normalized.includes("button"),
@@ -2582,7 +2878,7 @@ export default function CrmDashboardPage() {
             runCrmRecordAction({
               path: activeId === "call-center" ? "/call-center" : "/whatsapp",
               body: {
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
                 title:
                   activeId === "call-center"
                     ? `${label} record`
@@ -2634,10 +2930,10 @@ export default function CrmDashboardPage() {
         "tasks",
       ].includes(activeId)
     ) {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before running this module action",
+            "Enable API sync and organization context before running this module action",
           ),
         );
         return;
@@ -2647,7 +2943,7 @@ export default function CrmDashboardPage() {
         if (activeId === "documents") {
           if (normalized.includes("load")) {
             const result = await dispatch(
-              loadDocuments({ tenantId: activeTenantId }),
+              loadDocuments({ organizationId: activeOrganizationId }),
             ).unwrap();
             dispatch(
               crmSessionActions.setToast(
@@ -2660,7 +2956,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             createSampleDocument({
               entityId: firstServerRecordId || "000000000000000000000000",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Sample document requested"));
@@ -2684,13 +2980,13 @@ export default function CrmDashboardPage() {
                 : `/applications/${firstServerRecordId}/review`,
               body: normalized.includes("offer")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     decision: "offer_issued",
                     offer: { expiresInDays: 7, seatType: "regular" },
                     reason: "MVP CRM offer action",
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     documentRequirements: [
                       { category: "academic", name: "Class 12 marksheet" },
                     ],
@@ -2708,7 +3004,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             updateCampaignMetrics({
               campaignId: firstServerRecordId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Campaign ROI metrics updated"));
@@ -2723,12 +3019,12 @@ export default function CrmDashboardPage() {
                 : `/admissions/${firstServerRecordId}/allocate`,
               body: normalized.includes("handoff")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     targetSystem: "mentora-lms",
                     payload: { syncMode: "queued" },
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     allocation: {
                       feeCollection:
                         normalized.includes("fee") ||
@@ -2761,7 +3057,7 @@ export default function CrmDashboardPage() {
                 : `/interviews/${firstServerRecordId}`,
               body: shouldComplete
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     outcome: "recommended",
                     result: {
                       admissionHandoff:
@@ -2774,7 +3070,7 @@ export default function CrmDashboardPage() {
                     score: normalized.includes("score") ? 86 : undefined,
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     payload: {
                       interviewer: "Senior counselor",
                       panel: ["Academic mentor", "Admissions manager"],
@@ -2797,7 +3093,7 @@ export default function CrmDashboardPage() {
             runCrmRecordAction({
               path: `/finance-ledgers/${firstServerRecordId}/reconcile`,
               body: {
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
                 externalReference: "SANDBOX-SETTLEMENT",
                 reconciliation: { matched: true },
               },
@@ -2815,12 +3111,12 @@ export default function CrmDashboardPage() {
                 : `/events/${firstServerRecordId}`,
               body: normalized.includes("complete")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     outcome: "completed",
                     result: { action: label },
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     payload: {
                       attendance: normalized.includes("attendance"),
                       campusVisit: normalized.includes("campus"),
@@ -2846,13 +3142,13 @@ export default function CrmDashboardPage() {
             await dispatch(
               upsertIntegrationProvider({
                 providerKey: "geo_telemetry",
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
               }),
             ).unwrap();
             await dispatch(
               testIntegrationProvider({
                 providerKey: "geo_telemetry",
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
               }),
             ).unwrap();
           }
@@ -2864,12 +3160,12 @@ export default function CrmDashboardPage() {
                 : `/field-force/${firstServerRecordId}`,
               body: normalized.includes("complete")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     outcome: "completed",
                     result: { action: label },
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     payload: {
                       attendance: normalized.includes("attendance"),
                       checkIn: normalized.includes("check-in"),
@@ -2895,7 +3191,7 @@ export default function CrmDashboardPage() {
                 : `/scholarships/${firstServerRecordId}/evaluate`,
               body: normalized.includes("decision")
                 ? {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     decision: "approved",
                     reason: normalized.includes("award")
                       ? "Award amount approved"
@@ -2911,7 +3207,7 @@ export default function CrmDashboardPage() {
                     },
                   }
                 : {
-                    tenantId: activeTenantId,
+                    organizationId: activeOrganizationId,
                     criteria: {
                       academicScore: 82,
                       entranceScore: 78,
@@ -2932,7 +3228,7 @@ export default function CrmDashboardPage() {
             runCrmRecordAction({
               path: `/tasks/${firstServerRecordId}/workflow`,
               body: {
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
                 boardColumn: normalized.includes("complete")
                   ? "done"
                   : "blocked",
@@ -2974,7 +3270,7 @@ export default function CrmDashboardPage() {
         "ai-features",
       ].includes(activeId)
     ) {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         requestApiContext("Syncing CRM workspace before running this operation");
         return;
       }
@@ -2984,13 +3280,13 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "calendar_sync",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey: "calendar_sync",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -3004,13 +3300,13 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "accounting_export",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey: "accounting_export",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -3019,13 +3315,13 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "ai_provider_metering",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey: "ai_provider_metering",
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
@@ -3058,7 +3354,7 @@ export default function CrmDashboardPage() {
                 ? "high"
                 : "medium",
             status: normalized.includes("complete") ? "completed" : "open",
-            tenantId: activeTenantId,
+            organizationId: activeOrganizationId,
             title: label,
           }),
         ).unwrap();
@@ -3081,10 +3377,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "security") {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before managing security policy",
+            "Enable API sync and organization context before managing security policy",
           ),
         );
         return;
@@ -3098,13 +3394,13 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           await dispatch(
             testIntegrationProvider({
               providerKey,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(
@@ -3119,7 +3415,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             createReportDefinition({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(
@@ -3132,7 +3428,7 @@ export default function CrmDashboardPage() {
           const result = await dispatch(
             exportModuleRecords({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
@@ -3147,20 +3443,20 @@ export default function CrmDashboardPage() {
 
         if (normalized.includes("update")) {
           await dispatch(
-            updateSecurityPolicy({ tenantId: activeTenantId }),
+            updateSecurityPolicy({ organizationId: activeOrganizationId }),
           ).unwrap();
           dispatch(
             crmSessionActions.setToast(
-              "Tenant security policy updated with MFA and masking controls",
+              "Organization security policy updated with MFA and masking controls",
             ),
           );
           return;
         }
 
         await dispatch(
-          loadSecurityPolicy({ tenantId: activeTenantId }),
+          loadSecurityPolicy({ organizationId: activeOrganizationId }),
         ).unwrap();
-        dispatch(crmSessionActions.setToast("Tenant security policy loaded"));
+        dispatch(crmSessionActions.setToast("Organization security policy loaded"));
         return;
       } catch (error) {
         dispatch(
@@ -3175,10 +3471,10 @@ export default function CrmDashboardPage() {
     }
 
     if (normalized.includes("export") || normalized.includes("report")) {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before exporting records",
+            "Enable API sync and organization context before exporting records",
           ),
         );
         return;
@@ -3189,14 +3485,14 @@ export default function CrmDashboardPage() {
           await dispatch(
             createReportDefinition({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
         }
         const result = await dispatch(
           exportModuleRecords({
             moduleKey: activeId,
-            tenantId: activeTenantId,
+            organizationId: activeOrganizationId,
           }),
         ).unwrap();
         const data = normalizeResponseObject(result);
@@ -3220,10 +3516,10 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "automation" || normalized.includes("workflow")) {
-      if (!apiSyncEnabled || !activeTenantId) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and tenant context before running workflow actions",
+            "Enable API sync and organization context before running workflow actions",
           ),
         );
         return;
@@ -3244,7 +3540,7 @@ export default function CrmDashboardPage() {
           await dispatch(
             createWorkflowRule({
               moduleKey: activeId,
-              tenantId: activeTenantId,
+              organizationId: activeOrganizationId,
             }),
           ).unwrap();
           dispatch(crmSessionActions.setToast("Workflow rule created"));
@@ -3252,7 +3548,7 @@ export default function CrmDashboardPage() {
         }
 
         await dispatch(
-          executeWorkflow({ moduleKey: activeId, tenantId: activeTenantId }),
+          executeWorkflow({ moduleKey: activeId, organizationId: activeOrganizationId }),
         ).unwrap();
         dispatch(crmSessionActions.setToast("Workflow execution completed"));
         return;
@@ -3277,8 +3573,8 @@ export default function CrmDashboardPage() {
 
   async function archiveRow(row: string[]) {
     if (!activeModule) return;
-    if (!activeTenantId) {
-      dispatch(crmSessionActions.setToast("Tenant context is required"));
+    if (!activeOrganizationId) {
+      dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
     const recordId = findModuleRecordIdForRow(
@@ -3294,7 +3590,7 @@ export default function CrmDashboardPage() {
         deleteDedicatedCrmRecord({
           moduleKey: activeModule.id,
           recordId,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     } else {
@@ -3302,7 +3598,7 @@ export default function CrmDashboardPage() {
         deleteModuleRecord({
           moduleKey: activeModule.id,
           recordId,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     }
@@ -3311,8 +3607,8 @@ export default function CrmDashboardPage() {
 
   async function restoreRow(row: string[]) {
     if (!activeModule) return;
-    if (!activeTenantId) {
-      dispatch(crmSessionActions.setToast("Tenant context is required"));
+    if (!activeOrganizationId) {
+      dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
     const recordId = findModuleRecordIdForRow(
@@ -3328,7 +3624,7 @@ export default function CrmDashboardPage() {
         restoreDedicatedCrmRecord({
           moduleKey: activeModule.id,
           recordId,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     } else {
@@ -3336,7 +3632,7 @@ export default function CrmDashboardPage() {
         restoreModuleRecord({
           moduleKey: activeModule.id,
           recordId,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     }
@@ -3345,8 +3641,8 @@ export default function CrmDashboardPage() {
 
   async function bulkUpdateSelectedStatus(status: string) {
     if (!activeModule) return;
-    if (!activeTenantId) {
-      dispatch(crmSessionActions.setToast("Tenant context is required"));
+    if (!activeOrganizationId) {
+      dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
     const selectedRows = visibleRows.filter((row) =>
@@ -3367,7 +3663,7 @@ export default function CrmDashboardPage() {
           moduleKey: activeModule.id,
           recordIds,
           status,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     } else {
@@ -3376,7 +3672,7 @@ export default function CrmDashboardPage() {
           moduleKey: activeModule.id,
           recordIds,
           status,
-          tenantId: activeTenantId,
+          organizationId: activeOrganizationId,
         }),
       ).unwrap();
     }
@@ -3475,20 +3771,48 @@ export default function CrmDashboardPage() {
         <header className="header-right">
           <div className="login-info" role="toolbar" aria-label="CRM actions">
             <div className="utility-cluster">
+              <WorkspaceSwitcher
+                activeContext={currentContext}
+                activeBranchId={workspace.activeBranchId}
+                activeOrganizationId={activeOrganizationId}
+                branches={workspace.branches}
+                canSwitchBranch={canSwitchBranch}
+                canSwitchOrganization={canSwitchOrganization}
+                contexts={loggedInUser.contexts}
+                onChange={(context) =>
+                  dispatch(crmSessionActions.chooseContext(context))
+                }
+                onBranchChange={(branchId) =>
+                  dispatch(crmWorkspaceActions.setActiveBranchId(branchId))
+                }
+                onOrganizationChange={(organizationId) => {
+                  dispatch(crmWorkspaceActions.setActiveOrganizationId(organizationId));
+                  setApiSyncEnabled(true);
+                  void dispatch(loadCrmWorkspace({ organizationId }));
+                }}
+                organizations={workspace.organizations}
+              />
               <ThemeSelector
                 setThemeMode={(value) =>
                   dispatch(crmSessionActions.setThemeMode(value))
                 }
                 themeMode={themeMode}
               />
-              <ContextSummary
-                activeContext={currentContext}
-                canSwitchBranch={canSwitchBranch}
-                canSwitchTenant={canSwitchTenant}
-                contextCount={loggedInUser.contexts.length}
-                onSwitch={() =>
-                  dispatch(crmSessionActions.switchToNextContext())
-                }
+              <WorkspaceSyncAction
+                apiSyncEnabled={apiSyncEnabled}
+                onSync={() => {
+                  if (!accessToken) {
+                    dispatch(
+                      crmSessionActions.setToast(
+                        "Sign in with valid credentials before syncing API data",
+                      ),
+                    );
+                    return;
+                  }
+                  setApiSyncEnabled(true);
+                  void dispatch(loadCrmWorkspace());
+                }}
+                workspace={workspace}
               />
               <button
                 aria-label="Open notifications"
@@ -3513,24 +3837,6 @@ export default function CrmDashboardPage() {
             </div>
           </div>
         </header>
-
-        <ServerStatus
-          activeContext={currentContext}
-          apiSyncEnabled={apiSyncEnabled}
-          onSync={() => {
-            if (!accessToken) {
-              dispatch(
-                crmSessionActions.setToast(
-                  "Sign in with valid credentials before syncing API data",
-                ),
-              );
-              return;
-            }
-            setApiSyncEnabled(true);
-            void dispatch(loadCrmWorkspace());
-          }}
-          workspace={workspace}
-        />
 
         {activeId === "dashboard" ? (
           <Dashboard
@@ -3581,33 +3887,33 @@ export default function CrmDashboardPage() {
               const finalDraft = {
                 ...draft,
                 moduleKey: activeModule.id,
-                tenantId: activeTenantId,
+                organizationId: activeOrganizationId,
               };
-              if (!apiSyncEnabled || !activeTenantId || workspace.error) {
+              if (!apiSyncEnabled || !activeOrganizationId || workspace.error) {
                 dispatch(
                   crmSessionActions.setToast(
-                    "API sync and tenant context are required before saving",
+                    "API sync and organization context are required before saving",
                   ),
                 );
                 return;
               }
               try {
-                if (activeModule.id === "tenants") {
-                  const tenantId = findTenantIdByName(
-                    workspace.tenants,
+                if (activeModule.id === "organizations") {
+                  const organizationId = findOrganizationIdByName(
+                    workspace.organizations,
                     finalDraft.title,
                   );
-                  if (!tenantId) {
+                  if (!organizationId) {
                     dispatch(
                       crmSessionActions.setToast(
-                        "Tenant record was not found in the API response",
+                        "Organization record was not found in the API response",
                       ),
                     );
                     return;
                   }
                   await dispatch(
-                    updateTenant({
-                      id: tenantId,
+                    updateOrganization({
+                      id: organizationId,
                       name: finalDraft.title,
                       primaryDomain:
                         finalDraft.payload.primaryDomain ||
@@ -3617,7 +3923,7 @@ export default function CrmDashboardPage() {
                     }),
                   ).unwrap();
                   await dispatch(loadCrmWorkspace()).unwrap();
-                  dispatch(crmSessionActions.setToast("Tenant updated"));
+                  dispatch(crmSessionActions.setToast("Organization updated"));
                   setRecordForm(null);
                   return;
                 }
@@ -3641,28 +3947,43 @@ export default function CrmDashboardPage() {
           />
         ) : null}
 
-        {tenantFormOpen ? (
-          <TenantFormModal
-            onClose={() => setTenantFormOpen(false)}
+        {organizationFormOpen ? (
+          <OrganizationFormModal
+            onClose={() => setOrganizationFormOpen(false)}
             onSubmit={async (draft) => {
-              await dispatch(createTenant(draft)).unwrap();
-              await dispatch(loadCrmWorkspace()).unwrap();
-              dispatch(crmSessionActions.setToast("Tenant created"));
-              setTenantFormOpen(false);
+              const response = await dispatch(createOrganization(draft)).unwrap();
+              const created = normalizeResponseObject(response) as {
+                organization?: unknown;
+              };
+              const organizationId = getUnknownRecordId(created.organization ?? created);
+              await dispatch(
+                loadCrmWorkspace(organizationId ? { organizationId } : undefined),
+              ).unwrap();
+              if (organizationId) {
+                await dispatch(loadBranches({ organizationId })).unwrap();
+              }
+              dispatch(crmSessionActions.setToast("Organization created"));
+              setOrganizationFormOpen(false);
             }}
           />
         ) : null}
 
-        {tenantUserFormOpen ? (
-          <TenantUserFormModal
-            activeTenantId={activeTenantId}
-            onClose={() => setTenantUserFormOpen(false)}
+        {organizationUserFormOpen ? (
+          <OrganizationUserFormModal
+            activeOrganizationId={activeOrganizationId}
+            branches={workspace.branches}
+            businessUnits={workspace.businessUnits}
+            campuses={workspace.campuses}
+            departments={workspace.departments}
+            onClose={() => setOrganizationUserFormOpen(false)}
             onSubmit={async (draft) => {
-              await dispatch(createTenantUser(draft)).unwrap();
-              await dispatch(loadTenantUsers({ tenantId: draft.tenantId })).unwrap();
+              await dispatch(createOrganizationUser(draft)).unwrap();
+              await dispatch(loadOrganizationUsers({ organizationId: draft.organizationId })).unwrap();
               dispatch(crmSessionActions.setToast("CRM user created"));
-              setTenantUserFormOpen(false);
+              setOrganizationUserFormOpen(false);
             }}
+            teams={workspace.teams}
+            organizations={workspace.organizations}
           />
         ) : null}
 
@@ -3792,120 +4113,209 @@ function ThemeSelector({
   );
 }
 
-function ContextSummary({
+function WorkspaceSwitcher({
   activeContext,
+  activeBranchId,
+  activeOrganizationId,
+  branches,
   canSwitchBranch,
-  canSwitchTenant,
-  contextCount,
-  onSwitch,
+  canSwitchOrganization,
+  contexts,
+  onChange,
+  onBranchChange,
+  onOrganizationChange,
+  organizations,
 }: {
   activeContext: DemoContext;
+  activeBranchId: string;
+  activeOrganizationId: string;
+  branches: unknown[];
   canSwitchBranch: boolean;
-  canSwitchTenant: boolean;
-  contextCount: number;
-  onSwitch: () => void;
+  canSwitchOrganization: boolean;
+  contexts: DemoContext[];
+  onChange: (context: DemoContext) => void;
+  onBranchChange: (branchId: string) => void;
+  onOrganizationChange: (organizationId: string) => void;
+  organizations: unknown[];
 }) {
+  const organizationOptions = getOrganizationOptions(organizations, contexts);
+  const branchOptions = getBranchOptions(
+    branches,
+    contexts.filter((context) => context.organization === activeContext.organization),
+  );
+  const selectedOrganizationValue =
+    activeOrganizationId || organizationOptions[0]?.value || activeContext.organization;
+  const selectedBranchValue =
+    activeBranchId || branchOptions[0]?.value || activeContext.branch;
+
+  function selectContext(field: "organization" | "branch", value: string) {
+    if (field === "organization" && organizations.length > 0) {
+      onOrganizationChange(value);
+      return;
+    }
+    if (field === "branch" && branches.length > 0) {
+      onBranchChange(value);
+      return;
+    }
+    const exactMatch = contexts.find((context) => {
+      if (field === "organization") {
+        return (
+          context.organization === value &&
+          (!canSwitchBranch || context.branch === activeContext.branch)
+        );
+      }
+      return (
+        context.organization === activeContext.organization && context.branch === value
+      );
+    });
+    const fallbackMatch =
+      field === "organization"
+        ? contexts.find((context) => context.organization === value)
+        : undefined;
+    const match = exactMatch ?? fallbackMatch;
+    if (match) onChange(match);
+  }
+
   return (
-    <div className="context-summary" aria-label="Active CRM context">
-      <Icon name="tenant" />
-      <div>
-        <span>{canSwitchTenant ? "Tenant / Branch" : "Workspace"}</span>
-        <strong>
-          {canSwitchTenant
-            ? activeContext.tenant
-            : canSwitchBranch
-              ? activeContext.branch
-              : activeContext.label}
-        </strong>
-        <em>
-          {activeContext.role.replaceAll("_", " ")}
-          {canSwitchTenant
-            ? ` / ${activeContext.branch}`
-            : canSwitchBranch
-              ? ` / ${activeContext.tenant}`
-              : ""}
-        </em>
-      </div>
-      {(canSwitchTenant || canSwitchBranch) && contextCount > 1 ? (
-        <button className="context-switch-button" onClick={onSwitch} type="button">
-          Switch
-        </button>
+    <div className="header-workspace" aria-label="Workspace context">
+      {canSwitchOrganization ? (
+        <label>
+          <Icon name="organization" />
+          <select
+            aria-label="Organization"
+            onChange={(event) => selectContext("organization", event.target.value)}
+            value={selectedOrganizationValue}
+          >
+            {organizationOptions.map((organization) => (
+              <option key={organization.value} value={organization.value}>
+                {organization.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {canSwitchBranch ? (
+        <label>
+          <FontAwesomeIcon aria-hidden icon={faBuilding} />
+          <select
+            aria-label="Branch"
+            onChange={(event) => selectContext("branch", event.target.value)}
+            value={selectedBranchValue}
+          >
+            {branchOptions.map((branch) => (
+              <option key={branch.value} value={branch.value}>
+                {branch.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+      {!canSwitchOrganization && !canSwitchBranch ? (
+        <div className="workspace-static">
+          <Icon name="organization" />
+          <span>{activeContext.label}</span>
+        </div>
       ) : null}
     </div>
   );
 }
 
-function ServerStatus({
-  activeContext,
+function getOrganizationOptions(organizations: unknown[], contexts: DemoContext[]) {
+  const apiOptions = organizations
+    .map((organization) => {
+      const object =
+        organization && typeof organization === "object"
+          ? (organization as Record<string, unknown>)
+          : {};
+      const value = getUnknownRecordId(object);
+      const label =
+        typeof object.name === "string"
+          ? object.name
+          : typeof object.code === "string"
+            ? object.code
+            : value;
+      return value ? { label, value } : null;
+    })
+    .filter((item): item is { label: string; value: string } => Boolean(item));
+  if (apiOptions.length > 0) return apiOptions;
+  return Array.from(new Set(contexts.map((context) => context.organization)))
+    .filter(Boolean)
+    .map((organization) => ({ label: organization, value: organization }));
+}
+
+function getBranchOptions(branches: unknown[], contexts: DemoContext[]) {
+  const apiOptions = getRecordOptions(branches);
+  if (apiOptions.length > 0) return apiOptions;
+  return Array.from(new Set(contexts.map((context) => context.branch)))
+    .filter(Boolean)
+    .map((branch) => ({ label: branch, value: branch }));
+}
+
+function getRecordOptions(records: unknown[]) {
+  return records
+    .map((branch) => {
+      const object =
+        branch && typeof branch === "object"
+          ? (branch as Record<string, unknown>)
+          : {};
+      const value = getUnknownRecordId(object);
+      const name =
+        typeof object.name === "string"
+          ? object.name
+          : typeof object.code === "string"
+            ? object.code
+            : value;
+      const city = typeof object.city === "string" ? object.city : "";
+      const label = city ? `${name} / ${city}` : name;
+      return value ? { label, value } : null;
+    })
+    .filter((item): item is { label: string; value: string } => Boolean(item));
+}
+
+function WorkspaceSyncAction({
   apiSyncEnabled,
   onSync,
   workspace,
 }: {
-  activeContext: DemoContext;
   apiSyncEnabled: boolean;
   onSync: () => void;
   workspace: {
     coverage: unknown[];
-    activeTenantId: string;
+    activeOrganizationId: string;
     error: string | null;
     loading: boolean;
-    tenants: unknown[];
+    organizations: unknown[];
   };
 }) {
   const statusLabel = workspace.loading
-    ? "Syncing workspace"
+    ? "Syncing"
     : workspace.error
-      ? "API sync unavailable"
+      ? "Sync issue"
       : apiSyncEnabled
-        ? "Server workspace synced"
-        : "Sign in and sync workspace";
+        ? "Synced"
+        : "Sync";
+  const title = workspace.error
+    ? workspace.error
+    : apiSyncEnabled
+      ? `${workspace.organizations.length} organization${workspace.organizations.length === 1 ? "" : "s"} loaded / ${
+          workspace.coverage.length
+        } modules`
+      : "Load organization-scoped server records";
 
   return (
-    <section className="workspace-health" aria-label="API workspace status">
-      <div className="workspace-health-main">
-        <span
-          className={
-            workspace.error || !apiSyncEnabled
-              ? "server-dot warn"
-              : "server-dot"
-          }
-        />
-        <div>
-          <strong>{statusLabel}</strong>
-          <span>
-            {apiSyncEnabled
-              ? `${workspace.tenants.length} tenant${workspace.tenants.length === 1 ? "" : "s"} loaded / ${workspace.activeTenantId ? "tenant scoped" : "waiting for tenant scope"}`
-              : "Protected CRM APIs are idle until a valid auth token is synced."}
-          </span>
-        </div>
-      </div>
-      <div className="workspace-health-meta">
-        <div>
-          <span>Role</span>
-          <strong>{activeContext.role.replaceAll("_", " ")}</strong>
-        </div>
-        <div>
-          <span>Branch</span>
-          <strong>{activeContext.branch}</strong>
-        </div>
-        <div>
-          <span>Modules</span>
-          <strong>{workspace.coverage.length || activeContext.modules.length}</strong>
-        </div>
-      </div>
-      {workspace.error ? (
-        <em className="workspace-health-error">{workspace.error}</em>
-      ) : null}
-      <button
-        className="server-sync-button"
-        disabled={workspace.loading}
-        onClick={onSync}
-        type="button"
-      >
-        <FontAwesomeIcon icon={faArrowsRotate} />
-        {workspace.loading ? "Syncing" : "Refresh"}
-      </button>
-    </section>
+    <button
+      aria-label={title}
+      className={`sync-action ${workspace.error ? "has-error" : ""} ${
+        apiSyncEnabled ? "is-synced" : ""
+      }`}
+      disabled={workspace.loading}
+      onClick={onSync}
+      title={title}
+      type="button"
+    >
+      <FontAwesomeIcon icon={faArrowsRotate} />
+      <span>{statusLabel}</span>
+    </button>
   );
 }
 
@@ -3920,7 +4330,7 @@ function Dashboard({
     coverage: unknown[];
     dashboard: unknown;
     moduleRecords: Record<string, unknown[]>;
-    tenants: unknown[];
+    organizations: unknown[];
   };
 }) {
   const dashboard = normalizeResponseObject(workspace.dashboard);
@@ -3999,12 +4409,12 @@ function Dashboard({
       <section className="kpi-grid" aria-label="CRM key metrics">
         <button
           className="metric-card"
-          onClick={() => openModule("tenants")}
+          onClick={() => openModule("organizations")}
           type="button"
         >
-          <Icon name="tenant" />
-          <span>Server tenants</span>
-          <strong>{workspace.tenants.length}</strong>
+          <Icon name="organization" />
+          <span>Organizations</span>
+          <strong>{workspace.organizations.length}</strong>
           <p>
             <em>Live</em>
             API workspace
@@ -4168,7 +4578,7 @@ function ModulePanel(props: {
           <p>{module.description}</p>
           <div className="module-context-chips">
             <span>{props.activeContext.role.replaceAll("_", " ")}</span>
-            <span>{props.activeContext.tenant}</span>
+            <span>{props.activeContext.organization}</span>
             <span>{props.activeContext.branch}</span>
             <strong className={statusClass(readinessLabel)}>
               {readinessLabel}
@@ -4189,15 +4599,6 @@ function ModulePanel(props: {
             <strong>{props.currentPage}/{props.totalPages}</strong>
           </div>
         </div>
-      </div>
-
-      <div className="insight-grid" aria-label={`${module.title} insights`}>
-        {module.insights?.map((insight, index) => (
-          <div className="insight-card" key={insight}>
-            <span>Insight {index + 1}</span>
-            <strong>{insight}</strong>
-          </div>
-        ))}
       </div>
 
       {module.id === "security" ? (
@@ -4392,7 +4793,7 @@ function ModulePanel(props: {
                         <strong>No data found</strong>
                         <span>
                           No {props.module.title.toLowerCase()} records match
-                          the current tenant, filters, and search.
+                          the current organization, filters, and search.
                         </span>
                         <button
                           className="btn btn-light btn-sm"
@@ -4484,7 +4885,7 @@ function ModulePanel(props: {
                 <strong>No data found</strong>
                 <span>
                   No {props.module.title.toLowerCase()} records match the
-                  current tenant, filters, and search.
+                  current organization, filters, and search.
                 </span>
                 <button
                   className="btn btn-light btn-sm"
@@ -4702,7 +5103,7 @@ function SecurityControlCenter({
           type="button"
         >
           <Icon name="shield" />
-          Load Tenant Policy
+          Load Organization Policy
         </button>
       </div>
       <div className="security-control-grid">
@@ -4748,18 +5149,18 @@ function RecordFormModal({
   onSubmit: (draft: ModuleRecordDraft) => Promise<void>;
   row?: string[];
 }) {
+  const editableColumns = getEditableModuleColumns(module);
   const [title, setTitle] = useState(row?.[0] ?? "");
-  const [description, setDescription] = useState(
-    row ? `${module.title} record update` : "",
-  );
+  const [description, setDescription] = useState("");
   const [status, setStatus] = useState("open");
   const [priority, setPriority] = useState("medium");
   const [dueAt, setDueAt] = useState("");
   const [payload, setPayload] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      module.columns
-        .slice(1, 6)
-        .map((column, index) => [toPayloadKey(column), row?.[index + 1] ?? ""]),
+      editableColumns.map((column) => {
+        const rowIndex = module.columns.indexOf(column);
+        return [toPayloadKey(column), rowIndex >= 0 ? (row?.[rowIndex] ?? "") : ""];
+      }),
     ),
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -4856,7 +5257,7 @@ function RecordFormModal({
               value={dueAt}
             />
           </label>
-          {module.columns.slice(1, 6).map((column) => {
+          {editableColumns.map((column) => {
             const key = toPayloadKey(column);
             return (
               <label className="formrow" key={column}>
@@ -4894,14 +5295,18 @@ function RecordFormModal({
   );
 }
 
-function TenantFormModal({
+function OrganizationFormModal({
   onClose,
   onSubmit,
 }: {
   onClose: () => void;
-  onSubmit: (draft: TenantDraft) => Promise<void>;
+  onSubmit: (draft: OrganizationDraft) => Promise<void>;
 }) {
-  const [draft, setDraft] = useState<TenantDraft>({
+  const [draft, setDraft] = useState<OrganizationDraft>({
+    branchCity: "",
+    branchCode: "",
+    branchName: "",
+    branchState: "",
     code: "",
     name: "",
     primaryDomain: "",
@@ -4912,18 +5317,24 @@ function TenantFormModal({
 
   async function submit() {
     const code = draft.code?.trim() ?? "";
-    if (!draft.name.trim() || !code) return;
+    const branchName = draft.branchName?.trim() ?? "";
+    const branchCode = draft.branchCode?.trim() ?? "";
+    if (!draft.name.trim() || !code || !branchName || !branchCode) return;
     setIsSaving(true);
     setError("");
     try {
       await onSubmit({
         ...draft,
+        branchCity: draft.branchCity?.trim() || undefined,
+        branchCode: branchCode.toUpperCase(),
+        branchName,
+        branchState: draft.branchState?.trim() || undefined,
         code: code.toUpperCase(),
         name: draft.name.trim(),
         primaryDomain: draft.primaryDomain?.trim() || undefined,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Tenant creation failed");
+      setError(err instanceof Error ? err.message : "Organization creation failed");
     } finally {
       setIsSaving(false);
     }
@@ -4935,7 +5346,7 @@ function TenantFormModal({
         <div className="record-modal-head">
           <div>
             <span className="eyebrow">Organization Management</span>
-            <h3>Create Tenant</h3>
+            <h3>Create Organization</h3>
           </div>
           <button className="btn btn-light btn-sm" onClick={onClose} type="button">
             Close
@@ -4943,7 +5354,7 @@ function TenantFormModal({
         </div>
         <div className="record-form-grid">
           <label className="formrow wide">
-            <span className="label">Tenant Name</span>
+            <span className="label">Organization Name</span>
             <input
               className="input form-control"
               onChange={(event) =>
@@ -4991,6 +5402,48 @@ function TenantFormModal({
               value={draft.primaryDomain}
             />
           </label>
+          <label className="formrow wide">
+            <span className="label">Default Branch Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, branchName: event.target.value })
+              }
+              placeholder="Main Campus"
+              value={draft.branchName}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Branch Code</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, branchCode: event.target.value })
+              }
+              placeholder="MAIN"
+              value={draft.branchCode}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">City</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, branchCity: event.target.value })
+              }
+              value={draft.branchCity}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">State</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, branchState: event.target.value })
+              }
+              value={draft.branchState}
+            />
+          </label>
         </div>
         {error ? <div className="auth-error modal-error">{error}</div> : null}
         <div className="record-modal-actions">
@@ -4999,13 +5452,19 @@ function TenantFormModal({
           </button>
           <button
             className="btn btn-primary"
-            disabled={!draft.name.trim() || !draft.code?.trim() || isSaving}
+            disabled={
+              !draft.name.trim() ||
+              !draft.code?.trim() ||
+              !draft.branchName?.trim() ||
+              !draft.branchCode?.trim() ||
+              isSaving
+            }
             onClick={() => {
               void submit();
             }}
             type="button"
           >
-            {isSaving ? "Creating" : "Create Tenant"}
+            {isSaving ? "Creating" : "Create Organization"}
           </button>
         </div>
       </section>
@@ -5013,27 +5472,45 @@ function TenantFormModal({
   );
 }
 
-function TenantUserFormModal({
-  activeTenantId,
+function OrganizationUserFormModal({
+  activeOrganizationId,
+  branches,
+  businessUnits,
+  campuses,
+  departments,
   onClose,
   onSubmit,
+  teams,
+  organizations,
 }: {
-  activeTenantId: string;
+  activeOrganizationId: string;
+  branches: unknown[];
+  businessUnits: unknown[];
+  campuses: unknown[];
+  departments: unknown[];
   onClose: () => void;
-  onSubmit: (draft: TenantUserDraft) => Promise<void>;
+  onSubmit: (draft: OrganizationUserDraft) => Promise<void>;
+  teams: unknown[];
+  organizations: unknown[];
 }) {
-  const [draft, setDraft] = useState<TenantUserDraft>({
+  const organizationOptions = getOrganizationOptions(organizations, []);
+  const businessUnitOptions = getRecordOptions(businessUnits);
+  const campusOptions = getRecordOptions(campuses);
+  const branchOptions = getBranchOptions(branches, []);
+  const departmentOptions = getRecordOptions(departments);
+  const teamOptions = getRecordOptions(teams);
+  const [draft, setDraft] = useState<OrganizationUserDraft>({
     email: "",
     password: "",
     role: "admission_counselor",
-    tenantId: activeTenantId,
+    organizationId: activeOrganizationId || organizationOptions[0]?.value || "",
   });
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   async function submit() {
-    if (!draft.tenantId || !draft.email.trim() || draft.password.length < 8) {
-      setError("Tenant, email, and an 8 character password are required");
+    if (!draft.organizationId || !draft.email.trim() || draft.password.length < 8) {
+      setError("Organization, email, and an 8 character password are required");
       return;
     }
     setIsSaving(true);
@@ -5061,15 +5538,140 @@ function TenantUserFormModal({
         </div>
         <div className="record-form-grid">
           <label className="formrow wide">
-            <span className="label">Tenant ID</span>
-            <input
-              className="input form-control"
+            <span className="label">Organization</span>
+            <select
+              className="form-select form-select-sm"
               onChange={(event) =>
-                setDraft({ ...draft, tenantId: event.target.value })
+                setDraft({ ...draft, organizationId: event.target.value })
               }
-              value={draft.tenantId}
-            />
+              value={draft.organizationId}
+            >
+              <option value="">Select organization</option>
+              {organizationOptions.map((organization) => (
+                <option key={organization.value} value={organization.value}>
+                  {organization.label}
+                </option>
+              ))}
+            </select>
           </label>
+          {businessUnitOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Business Unit</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    businessUnitIds: event.target.value
+                      ? [event.target.value]
+                      : undefined,
+                  })
+                }
+                value={draft.businessUnitIds?.[0] ?? ""}
+              >
+                <option value="">All business units</option>
+                {businessUnitOptions.map((unit) => (
+                  <option key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {campusOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Campus</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    campusIds: event.target.value
+                      ? [event.target.value]
+                      : undefined,
+                  })
+                }
+                value={draft.campusIds?.[0] ?? ""}
+              >
+                <option value="">All campuses</option>
+                {campusOptions.map((campus) => (
+                  <option key={campus.value} value={campus.value}>
+                    {campus.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {branchOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Branch</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    branchIds: event.target.value
+                      ? [event.target.value]
+                      : undefined,
+                  })
+                }
+                value={draft.branchIds?.[0] ?? ""}
+              >
+                <option value="">All branches</option>
+                {branchOptions.map((branch) => (
+                  <option key={branch.value} value={branch.value}>
+                    {branch.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {departmentOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Department</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    departmentIds: event.target.value
+                      ? [event.target.value]
+                      : undefined,
+                  })
+                }
+                value={draft.departmentIds?.[0] ?? ""}
+              >
+                <option value="">All departments</option>
+                {departmentOptions.map((department) => (
+                  <option key={department.value} value={department.value}>
+                    {department.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {teamOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Team</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    teamIds: event.target.value ? [event.target.value] : undefined,
+                  })
+                }
+                value={draft.teamIds?.[0] ?? ""}
+              >
+                <option value="">All teams</option>
+                {teamOptions.map((team) => (
+                  <option key={team.value} value={team.value}>
+                    {team.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="formrow">
             <span className="label">Email</span>
             <input
@@ -5121,7 +5723,7 @@ function TenantUserFormModal({
           </button>
           <button
             className="btn btn-primary"
-            disabled={!draft.tenantId || !draft.email.trim() || isSaving}
+            disabled={!draft.organizationId || !draft.email.trim() || isSaving}
             onClick={() => {
               void submit();
             }}

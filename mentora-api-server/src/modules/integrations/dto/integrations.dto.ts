@@ -2,7 +2,7 @@ import { IsIn, IsMongoId, IsObject, IsOptional } from 'class-validator';
 
 export class UpsertIntegrationProviderDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn([

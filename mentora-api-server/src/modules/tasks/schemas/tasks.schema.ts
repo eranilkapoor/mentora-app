@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '../../tenants/schemas/tenants.schema';
+import { Organization } from '../../organizations/schemas/organizations.schema';
 
 export type TaskDocument = HydratedDocument<Task>;
 
@@ -10,8 +10,13 @@ export type TaskDocument = HydratedDocument<Task>;
   timestamps: true,
 })
 export class Task {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({
     enum: ['lead', 'application', 'student', 'payment', 'campaign', 'general'],
@@ -72,8 +77,13 @@ export class Task {
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);
-TaskSchema.index({ tenantId: 1, assignedTo: 1, status: 1, dueAt: 1 });
-TaskSchema.index({ tenantId: 1, boardColumn: 1, priority: 1 });
-TaskSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
-TaskSchema.index({ tenantId: 1, boardColumn: 1, dueAt: 1, priority: -1 });
-TaskSchema.index({ tenantId: 1, entityType: 1, entityId: 1, createdAt: -1 });
+TaskSchema.index({ organizationId: 1, assignedTo: 1, status: 1, dueAt: 1 });
+TaskSchema.index({ organizationId: 1, boardColumn: 1, priority: 1 });
+TaskSchema.index({ organizationId: 1, dueAt: 1, createdAt: -1 });
+TaskSchema.index({ organizationId: 1, boardColumn: 1, dueAt: 1, priority: -1 });
+TaskSchema.index({
+  organizationId: 1,
+  entityType: 1,
+  entityId: 1,
+  createdAt: -1,
+});

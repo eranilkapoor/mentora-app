@@ -21,10 +21,10 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import { WhatsappService } from '../services/whatsapp.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('whatsapp')
 export class WhatsappController {
   constructor(private readonly service: WhatsappService) {}
@@ -39,7 +39,7 @@ export class WhatsappController {
     );
   }
   @Get() @Permissions(Permission.CRM_COMMUNICATION_VIEW) async list(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -57,7 +57,7 @@ export class WhatsappController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'CRM_WHATSAPP_FETCHED',
       'CRM WhatsApp conversations fetched',
@@ -67,10 +67,10 @@ export class WhatsappController {
   @Permissions(Permission.CRM_COMMUNICATION_VIEW)
   async getById(
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.getById(recordId, tenantId),
+      await this.service.getById(recordId, organizationId),
       'CRM_WHATSAPP_RECORD_FETCHED',
       'CRM WhatsApp conversation fetched',
     );
@@ -92,10 +92,10 @@ export class WhatsappController {
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archive(req.user.sub, recordId, tenantId),
+      await this.service.archive(req.user.sub, recordId, organizationId),
       'CRM_WHATSAPP_ARCHIVED',
       'CRM WhatsApp conversation archived',
     );
@@ -105,10 +105,10 @@ export class WhatsappController {
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.restore(req.user.sub, recordId, tenantId),
+      await this.service.restore(req.user.sub, recordId, organizationId),
       'CRM_WHATSAPP_RESTORED',
       'CRM WhatsApp conversation restored',
     );

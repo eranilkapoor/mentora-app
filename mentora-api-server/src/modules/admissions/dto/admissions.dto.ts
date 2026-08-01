@@ -2,7 +2,7 @@ import { IsMongoId, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class AllocateAdmissionDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -19,7 +19,7 @@ export class AllocateAdmissionDto {
 
 export class HandoffAdmissionDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   targetSystem!: string;

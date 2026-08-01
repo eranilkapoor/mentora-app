@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { toTenantObjectId } from '@/common/utils/tenant-scope.util';
+import { toOrganizationObjectId } from '@/common/utils/organization-scope.util';
 import { ContextsService } from '@/modules/contexts/services/contexts.service';
 import { ModuleCoverageService } from '@/modules/module-records/services/module-coverage.service';
-import { TenantsService } from '@/modules/tenants/services/tenants.service';
+import { OrganizationsService } from '@/modules/organizations/services/organizations.service';
 import {
   Application,
   ApplicationDocument,
@@ -35,28 +35,31 @@ export class DashboardService {
     private readonly communications: Model<CommunicationDocument>,
     private readonly contextsService: ContextsService,
     private readonly moduleCoverageService: ModuleCoverageService,
-    private readonly tenantsService: TenantsService,
+    private readonly organizationsService: OrganizationsService,
   ) {}
 
-  async getBootstrap(userId: string, tenantId?: string) {
-    const [contexts, tenantResult] = await Promise.all([
+  async getBootstrap(userId: string, organizationId?: string) {
+    const [contexts, organizationResult] = await Promise.all([
       this.contextsService.listUserContexts(userId),
-      this.tenantsService.listTenants({ limit: '100', status: 'active' }),
+      this.organizationsService.listOrganizations({
+        limit: '100',
+        status: 'active',
+      }),
     ]);
-    const tenants = tenantResult.items;
+    const organizations = organizationResult.items;
     const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
-    const activeTenantId =
-      tenantId ??
-      this.getContextTenantId(contexts[0]) ??
-      this.getRecordId(tenants[0]);
+    const activeOrganizationId =
+      organizationId ??
+      this.getContextOrganizationId(contexts[0]) ??
+      this.getRecordId(organizations[0]);
 
     return {
-      activeTenantId,
+      activeOrganizationId,
       contexts,
-      tenants,
+      organizations,
       moduleCoverage,
-      dashboard: activeTenantId
-        ? await this.getDashboard(activeTenantId)
+      dashboard: activeOrganizationId
+        ? await this.getDashboard(activeOrganizationId)
         : {
             applications: 0,
             campaigns: 0,
@@ -64,13 +67,13 @@ export class DashboardService {
             hotLeads: 0,
             newLeads: 0,
             openTasks: 0,
-            tenantId: '',
+            organizationId: '',
           },
     };
   }
 
-  async getDashboard(tenantId: string) {
-    const tenantObjectId = toTenantObjectId(tenantId);
+  async getDashboard(organizationId: string) {
+    const organizationObjectId = toOrganizationObjectId(organizationId);
     const [
       newLeads,
       openTasks,
@@ -79,21 +82,28 @@ export class DashboardService {
       campaigns,
       communications,
     ] = await Promise.all([
-      this.leads.countDocuments({ tenantId: tenantObjectId, status: 'new' }),
+      this.leads.countDocuments({
+        organizationId: organizationObjectId,
+        status: 'new',
+      }),
       this.tasks.countDocuments({
-        tenantId: tenantObjectId,
+        organizationId: organizationObjectId,
         status: { $in: ['open', 'in_progress'] },
       }),
-      this.applications.countDocuments({ tenantId: tenantObjectId }),
+      this.applications.countDocuments({
+        organizationId: organizationObjectId,
+      }),
       this.leads.countDocuments({
-        tenantId: tenantObjectId,
+        organizationId: organizationObjectId,
         temperature: 'hot',
       }),
-      this.campaigns.countDocuments({ tenantId: tenantObjectId }),
-      this.communications.countDocuments({ tenantId: tenantObjectId }),
+      this.campaigns.countDocuments({ organizationId: organizationObjectId }),
+      this.communications.countDocuments({
+        organizationId: organizationObjectId,
+      }),
     ]);
     return {
-      tenantId,
+      organizationId,
       newLeads,
       openTasks,
       applications,
@@ -103,10 +113,11 @@ export class DashboardService {
     };
   }
 
-  private getContextTenantId(context: unknown) {
+  private getContextOrganizationId(context: unknown) {
     if (!context || typeof context !== 'object') return undefined;
-    const tenant = (context as { tenantId?: unknown }).tenantId;
-    return this.getRecordId(tenant) || this.getRecordId(context);
+    const organization = (context as { organizationId?: unknown })
+      .organizationId;
+    return this.getRecordId(organization) || this.getRecordId(context);
   }
 
   private getRecordId(record: unknown) {

@@ -10,7 +10,7 @@ Education organizations need a single platform to manage enquiries, admissions, 
 
 Mentora combines both needs:
 
-- Multi-tenant education CRM for institutes, colleges, universities, coaching brands, counselors, marketing teams, finance teams, and platform administrators.
+- Multi-organization education CRM for institutes, colleges, universities, coaching brands, counselors, marketing teams, finance teams, and platform administrators.
 - Parent/student AI tutoring and mentorship app with student profiles, schedules, entitlements, assessments, progress, safety controls, and subscriptions.
 
 ## Objectives
@@ -18,7 +18,7 @@ Mentora combines both needs:
 | Objective | Success measure |
 | --- | --- |
 | Deliver a working four-application platform | API, mobile app, public website, and admin CRM run from the same repository and share Mentora domain models. |
-| Enable education CRM operations | Tenants can manage users, branches, leads, applications, admissions, tasks, communications, campaigns, payments, reports, workflows, integrations, and security policies. |
+| Enable education CRM operations | Organizations can manage users, branches, leads, applications, admissions, tasks, communications, campaigns, payments, reports, workflows, integrations, and security policies. |
 | Enable parent/student learning | Parents and eligible students can create student profiles, manage academic details, schedule learning, purchase plans, and view progress. |
 | Protect revenue and access | AI tutor and class access are gated by schedule, entitlement, plan limits, device/session rules, parental controls, and safety checks. |
 | Prepare for enterprise launch | Production gates are documented, tracked, and completed before live customer traffic. |
@@ -31,9 +31,9 @@ In scope:
 - MongoDB schemas, indexes, seed data, and database runbooks.
 - Expo mobile app for students, parents, counselors, and field staff where applicable.
 - Next.js public website for brand, legal, support, plans, and lead capture.
-- Next.js admin CRM for platform and tenant users.
+- Next.js admin CRM for platform and organization users.
 - Multi-theme and English/Hindi support where applicable.
-- Security, audit, role, permission, tenant, branch, and provider-readiness controls.
+- Security, audit, role, permission, organization, branch, and provider-readiness controls.
 - Launch, operations, integrations, and project-management documentation.
 
 Out of scope for initial production:
@@ -47,10 +47,10 @@ Out of scope for initial production:
 
 | Deliverable | Description |
 | --- | --- |
-| API server | Domain APIs, auth, tenant context, CRM modules, learning modules, payments, integrations, security policies, audit. |
+| API server | Domain APIs, auth, organization context, CRM modules, learning modules, payments, integrations, security policies, audit. |
 | Mobile app | Student/parent learning app with onboarding, profile, learn, schedule, progress, settings, billing, notifications, themes, i18n. |
 | Public website | Product pages, legal pages, support, plans, lead/demo capture. |
-| Admin CRM | Enterprise CRM shell with module routes, tenant/branch context, server-backed CRUD/action flows, themes, navigation, pagination. |
+| Admin CRM | Enterprise CRM shell with module routes, organization/branch context, server-backed CRUD/action flows, themes, navigation, pagination. |
 | Documentation | Product, technical, database, flow, launch, operations, integration, standards, and project-management packs. |
 
 ## Milestone Summary
@@ -69,7 +69,7 @@ Out of scope for initial production:
 ## Assumptions
 
 - MongoDB remains the primary operational database for the current modular-monolith.
-- Multi-tenant enforcement is required for all tenant-owned CRM records.
+- Multi-organization enforcement is required for all organization-owned CRM records.
 - Production launch will use real provider accounts for AI, email, SMS, WhatsApp, push, payments, storage, monitoring, and selected CRM integrations.
 - Legal review is required for child/student data, subscriptions, account deletion, AI tutoring disclosures, and self-managed student eligibility.
 

@@ -1,14 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
 export type CrmDocumentDocument = HydratedDocument<CrmDocument>;
 
 @Schema({ collection: COLLECTION_NAMES.CRM_DOCUMENT, timestamps: true })
 export class CrmDocument {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({
     enum: ['lead', 'application', 'admission', 'student', 'scholarship'],
@@ -73,13 +78,18 @@ export class CrmDocument {
 }
 
 export const CrmDocumentSchema = SchemaFactory.createForClass(CrmDocument);
-CrmDocumentSchema.index({ tenantId: 1, updatedAt: -1 });
-CrmDocumentSchema.index({ tenantId: 1, status: 1, updatedAt: -1 });
-CrmDocumentSchema.index({ tenantId: 1, entityType: 1, entityId: 1, status: 1 });
+CrmDocumentSchema.index({ organizationId: 1, updatedAt: -1 });
+CrmDocumentSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
 CrmDocumentSchema.index({
-  tenantId: 1,
+  organizationId: 1,
+  entityType: 1,
+  entityId: 1,
+  status: 1,
+});
+CrmDocumentSchema.index({
+  organizationId: 1,
   entityType: 1,
   entityId: 1,
   updatedAt: -1,
 });
-CrmDocumentSchema.index({ tenantId: 1, category: 1, status: 1 });
+CrmDocumentSchema.index({ organizationId: 1, category: 1, status: 1 });

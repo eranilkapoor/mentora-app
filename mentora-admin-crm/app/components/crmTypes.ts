@@ -51,5 +51,5 @@ export type IconName =
   | "settings"
   | "shield"
   | "task"
-  | "tenant"
+  | "organization"
   | "user";

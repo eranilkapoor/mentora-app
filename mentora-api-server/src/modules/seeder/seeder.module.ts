@@ -94,9 +94,9 @@ import {
   LeadStageSchema,
   Team,
   TeamSchema,
-  Tenant,
-  TenantSchema,
-} from '../tenants/schemas/tenants.schema';
+  Organization,
+  OrganizationSchema,
+} from '../organizations/schemas/organizations.schema';
 import {
   UserMembership,
   UserMembershipSchema,
@@ -161,7 +161,7 @@ import {
       { name: Topic.name, schema: TopicSchema },
       { name: Curriculum.name, schema: CurriculumSchema },
       { name: StudyPlan.name, schema: StudyPlanSchema },
-      { name: Tenant.name, schema: TenantSchema },
+      { name: Organization.name, schema: OrganizationSchema },
       { name: Branch.name, schema: BranchSchema },
       { name: Department.name, schema: DepartmentSchema },
       { name: Team.name, schema: TeamSchema },

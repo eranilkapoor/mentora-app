@@ -18,7 +18,7 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateCrmDocumentDto,
   UpdateCrmDocumentDto,
@@ -26,7 +26,7 @@ import {
 } from '../dto/documents.dto';
 import { DocumentsService } from '../services/documents.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('documents')
 export class DocumentsController {
   constructor(private readonly service: DocumentsService) {}
@@ -48,7 +48,7 @@ export class DocumentsController {
   @Get()
   @Permissions(Permission.CRM_DOCUMENT_VIEW)
   async listDocuments(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
     @Query('category') category?: string,
@@ -70,7 +70,7 @@ export class DocumentsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'CRM_DOCUMENTS_FETCHED',
       'CRM documents fetched',
@@ -94,10 +94,10 @@ export class DocumentsController {
   @Permissions(Permission.CRM_DOCUMENT_MANAGE)
   async archiveDocument(
     @Param('documentId') documentId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveDocument(documentId, tenantId),
+      await this.service.archiveDocument(documentId, organizationId),
       'CRM_DOCUMENT_ARCHIVED',
       'CRM document archived',
     );

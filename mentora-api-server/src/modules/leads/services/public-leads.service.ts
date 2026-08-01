@@ -1,25 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TenantsService } from '../../tenants/services/tenants.service';
+import { OrganizationsService } from '../../organizations/services/organizations.service';
 import { PublicLeadCaptureDto } from '../dto/public-leads.dto';
 import { LeadsService } from './leads.service';
 
 @Injectable()
 export class PublicLeadsService {
   constructor(
-    private readonly tenantsService: TenantsService,
+    private readonly organizationsService: OrganizationsService,
     private readonly leadsService: LeadsService,
   ) {}
 
   async capturePublicLead(dto: PublicLeadCaptureDto) {
-    const tenant = await this.tenantsService.findActiveTenantByCode(
-      dto.tenantCode,
-    );
-    if (!tenant) {
-      throw new NotFoundException('Tenant not found');
+    const organization =
+      await this.organizationsService.findActiveOrganizationByCode(
+        dto.organizationCode,
+      );
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
     }
 
     return this.leadsService.createLead(undefined, {
-      tenantId: String(tenant._id),
+      organizationId: String(organization._id),
       firstName: dto.firstName,
       lastName: dto.lastName,
       email: dto.email,

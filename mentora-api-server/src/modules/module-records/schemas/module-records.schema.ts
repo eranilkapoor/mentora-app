@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-platform.constants';
-import { Tenant } from '../../tenants/schemas/tenants.schema';
+import { Organization } from '../../organizations/schemas/organizations.schema';
 
 export type ModuleRecordDocument = HydratedDocument<ModuleRecord>;
 
@@ -11,8 +11,13 @@ export type ModuleRecordDocument = HydratedDocument<ModuleRecord>;
   timestamps: true,
 })
 export class ModuleRecord {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ enum: EDUCATION_PLATFORM_MODULE_KEYS, required: true, index: true })
   moduleKey!: string;
@@ -54,19 +59,19 @@ export class ModuleRecord {
 }
 
 export const ModuleRecordSchema = SchemaFactory.createForClass(ModuleRecord);
-ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
-ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, dueAt: 1 });
+ModuleRecordSchema.index({ organizationId: 1, moduleKey: 1, status: 1 });
+ModuleRecordSchema.index({ organizationId: 1, moduleKey: 1, dueAt: 1 });
 ModuleRecordSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   moduleKey: 1,
   dueAt: 1,
   createdAt: -1,
 });
 ModuleRecordSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   moduleKey: 1,
   status: 1,
   dueAt: 1,
   createdAt: -1,
 });
-ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, ownerId: 1 });
+ModuleRecordSchema.index({ organizationId: 1, moduleKey: 1, ownerId: 1 });

@@ -26,7 +26,7 @@ Last reviewed: 2026-08-01
 | --- | --- |
 | Product | User journeys match approved scope. |
 | Technical | Build, lint, typecheck, smoke checks, and key tests pass. |
-| Security | Tenant isolation, RBAC, secrets, CORS, sessions, audit, retention reviewed. |
+| Security | Organization isolation, RBAC, secrets, CORS, sessions, audit, retention reviewed. |
 | Compliance | Legal pages, child/student consent, age/document policy, subscription disclosures reviewed. |
 | Provider | Selected provider credentials and callbacks pass smoke tests. |
 | QA | CRM desktop/tablet, mobile release builds, public website, and API flows tested. |
@@ -37,7 +37,7 @@ Last reviewed: 2026-08-01
 For a CRM SaaS module to be accepted as code-side production ready, it must support:
 
 - Create record.
-- List records with pagination, search, filters, sorting, and tenant scope.
+- List records with pagination, search, filters, sorting, and organization scope.
 - View record detail by id.
 - Update record.
 - Archive record.
@@ -50,7 +50,7 @@ For a CRM SaaS module to be accepted as code-side production ready, it must supp
 
 | Scenario | Expected result |
 | --- | --- |
-| Super admin creates tenant, branches, users, roles, and context. | Tenant users can access only authorized scope. |
+| Super admin creates organization, branches, users, roles, and context. | Organization users can access only authorized scope. |
 | Website captures demo enquiry. | Lead is created in CRM with source and timeline. |
 | Counselor manages lead to application. | Lead, tasks, notes, status, and audit update correctly. |
 | Admissions confirms enrollment. | Admission, payment metadata, learning plan handoff, and student profile link are recorded. |
@@ -75,7 +75,7 @@ For a CRM SaaS module to be accepted as code-side production ready, it must supp
 
 Rollback or disable affected module when:
 
-- Tenant data exposure is detected.
+- Organization data exposure is detected.
 - Payment settlement or entitlement enforcement fails.
 - AI safety controls fail.
 - Login/session security fails.

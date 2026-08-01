@@ -10,7 +10,7 @@ import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-pla
 
 export class CreateReportDefinitionDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   name!: string;
@@ -42,7 +42,7 @@ export class CreateReportDefinitionDto {
 
 export class UpdateReportDefinitionDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -76,7 +76,7 @@ export class UpdateReportDefinitionDto {
 
 export class CreateReportExportJobDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsMongoId()
   reportDefinitionId!: string;

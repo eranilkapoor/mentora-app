@@ -35,14 +35,14 @@ Additional CRM hardening checks passed on 2026-08-01:
 
 | Application | Current state | Production blockers |
 | --- | --- | --- |
-| `mentora-api-server` | NestJS API builds and lints. Core student, parent, learning, payments, admin CRM, tenant, security, integrations, and operations modules exist. | Production `.env`, MongoDB/Redis/S3/queue infrastructure, provider credentials, webhook callback verification, load testing, security testing, and backup evidence. |
-| `mentora-admin-crm` | Next.js CRM builds and typechecks. Multi-tenant shell, tenant context, module routes, server-backed lists/actions, themes, icons, pagination, and enterprise navigation are implemented. | Production auth policy validation, role/permission QA, real provider smoke tests, desktop/tablet screenshot QA, and removal of any demo-only operational assumptions before customer rollout. |
+| `mentora-api-server` | NestJS API builds and lints. Core student, parent, learning, payments, admin CRM, organization, security, integrations, and operations modules exist. | Production `.env`, MongoDB/Redis/S3/queue infrastructure, provider credentials, webhook callback verification, load testing, security testing, and backup evidence. |
+| `mentora-admin-crm` | Next.js CRM builds and typechecks. Multi-organization shell, organization context, module routes, server-backed lists/actions, themes, icons, pagination, and enterprise navigation are implemented. | Production auth policy validation, role/permission QA, real provider smoke tests, desktop/tablet screenshot QA, and removal of any demo-only operational assumptions before customer rollout. |
 | `mentora-mobile-app` | Expo mobile app typechecks, lints, and passes i18n key validation. Student/parent learning flows, themes, Hindi/English support, billing and learning surfaces exist. | Native Android/iOS release builds, device matrix QA, push notification credentials, store billing sandbox evidence, app-store safety disclosures, and legal URL hosting. |
 | `mentora-public-website` | Next.js website builds and typechecks. Public pages and lead/demo capture foundations exist. | Production domain, SSL, SEO metadata review, analytics consent setup, CRM lead capture smoke test against production API, and legal URL publication. |
 
 ## Module Readiness Interpretation
 
-The roadmap uses **Product Ready** to mean the repository has dedicated code-side module ownership, tenant guards, API surfaces, frontend entry points, and audit-aware operations where applicable. It does not mean the module is live-production enabled.
+The roadmap uses **Product Ready** to mean the repository has dedicated code-side module ownership, organization guards, API surfaces, frontend entry points, and audit-aware operations where applicable. It does not mean the module is live-production enabled.
 
 As of 2026-08-01, the dedicated operational CRM modules and the shared module-record fallback support the expected CRM record lifecycle: create, list with pagination/search/filter/sort, get by id, update, archive, restore, complete/execute where applicable, and selected-record bulk status update from the admin CRM.
 
@@ -50,8 +50,8 @@ For production launch, every externally connected module must pass provider acti
 
 | Module group | Code-side state | Live-production requirement |
 | --- | --- | --- |
-| Authentication, users, RBAC, security | Code-side complete for CRM foundation, sessions, permissions, tenant context, policies, audit exports, MFA/SSO configuration surfaces. | Real MFA/SSO provider setup, callback URLs, tenant policy enforcement tests, recovery process, and admin access review. |
-| Tenants and organization | Code-side complete for tenants, branches, departments, teams, campuses, domains, branding, and channel settings. | DNS/domain verification, production branding assets, payment/channel secrets, and tenant onboarding checklist. |
+| Authentication, users, RBAC, security | Code-side complete for CRM foundation, sessions, permissions, organization context, policies, audit exports, MFA/SSO configuration surfaces. | Real MFA/SSO provider setup, callback URLs, organization policy enforcement tests, recovery process, and admin access review. |
+| Organizations and organization | Code-side complete for organizations, branches, departments, teams, campuses, domains, branding, and channel settings. | DNS/domain verification, production branding assets, payment/channel secrets, and organization onboarding checklist. |
 | Leads, applications, admissions, scholarships, interviews | Code-side complete for core lifecycle and CRM operations. | Import mapping QA, duplicate merge QA, document review SOP, offer/admission approvals, ERP/LMS/payment handoff credentials if used. |
 | Communications, WhatsApp, email, SMS, call center | Code-side complete for records, templates, statuses, provider configuration, and action metadata. | Approved sender domains, WhatsApp templates, SMS DLT/templates, dialer/recording provider, callback verification, unsubscribe/bounce handling. |
 | Payments and finance | Code-side complete for payments, subscriptions, entitlements, invoices, ledgers, refunds, reconciliation/export surfaces. | Gateway credentials, settlement callbacks, tax/accounting export validation, finance reconciliation sign-off. |
@@ -66,7 +66,7 @@ Mentora should not be marked production-live until all P0 gates below are comple
 | --- | --- |
 | Environment | Production `.env` validated with no local/demo secrets, strict CORS, production MongoDB/Redis/S3, and seeder disabled except controlled bootstrap. |
 | Provider smoke tests | Email, SMS, WhatsApp, push, payments, AI, storage, monitoring, calendar, OCR, dialer, geo, webinar, and accounting providers either pass live smoke tests or are explicitly disabled. |
-| Auth and tenant safety | Super admin, tenant admin, branch manager, counselor, finance, support, parent, and student access verified with tenant/branch restrictions and token-expiry redirects. |
+| Auth and organization safety | Super admin, organization admin, branch manager, counselor, finance, support, parent, and student access verified with organization/branch restrictions and token-expiry redirects. |
 | Data safety | Backup/restore tested, retention/anonymization verified, audit export reviewed, legal pages hosted, child/student consent and age-document flows approved. |
 | QA | API smoke, CRM desktop/tablet QA, public website smoke, mobile Android/iOS release builds, push deep links, store billing sandbox, slow/offline states, and error states verified. |
 | Performance | Slow-query audit reviewed in target database, indexes synced, API load test baseline captured, frontend bundle/performance checked. |
@@ -76,7 +76,7 @@ Mentora should not be marked production-live until all P0 gates below are comple
 
 1. Create a staging deployment using production-like MongoDB, Redis, S3, queue workers, and strict environment variables.
 2. Configure provider credentials in the secret store and run provider smoke tests.
-3. Run end-to-end CRM flows for tenants, users/RBAC, leads, applications, admissions, communications, payments, workflows, and reports.
+3. Run end-to-end CRM flows for organizations, users/RBAC, leads, applications, admissions, communications, payments, workflows, and reports.
 4. Run mobile release builds and device QA for student, parent, billing, AI tutor, schedule, progress, notification, and token-expiry flows.
 5. Complete legal/security review for children, self-managed students, AI tutoring disclosures, subscriptions, and account deletion.
 

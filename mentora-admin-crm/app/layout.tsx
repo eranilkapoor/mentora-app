@@ -6,7 +6,7 @@ import { AppProviders } from "./providers";
 export const metadata: Metadata = {
   title: "Mentora CRM Admin",
   description:
-    "Admin CRM portal for multi-tenant education CRM, admissions, marketing, finance, and analytics.",
+    "Admin CRM portal for multi-organization education CRM, admissions, marketing, finance, and analytics.",
 };
 
 export default function RootLayout({

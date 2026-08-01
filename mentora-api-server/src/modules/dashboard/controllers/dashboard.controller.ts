@@ -5,10 +5,10 @@ import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import { DashboardService } from '../services/dashboard.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly service: DashboardService) {}
@@ -17,10 +17,10 @@ export class DashboardController {
   @Permissions(Permission.DASHBOARD_VIEW)
   async bootstrap(
     @Req() req: AuthenticatedRequest,
-    @Query('tenantId') tenantId?: string,
+    @Query('organizationId') organizationId?: string,
   ) {
     return successResponse(
-      await this.service.getBootstrap(req.user.sub, tenantId),
+      await this.service.getBootstrap(req.user.sub, organizationId),
       'EDUCATION_PLATFORM_DASHBOARD_BOOTSTRAPPED',
       'CRM dashboard bootstrap fetched',
     );
@@ -28,9 +28,9 @@ export class DashboardController {
 
   @Get()
   @Permissions(Permission.DASHBOARD_VIEW)
-  async dashboard(@Query('tenantId') tenantId: string) {
+  async dashboard(@Query('organizationId') organizationId: string) {
     return successResponse(
-      await this.service.getDashboard(tenantId),
+      await this.service.getDashboard(organizationId),
       'EDUCATION_PLATFORM_DASHBOARD_FETCHED',
       'CRM dashboard fetched',
     );

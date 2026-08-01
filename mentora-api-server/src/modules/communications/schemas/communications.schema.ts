@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '../../tenants/schemas/tenants.schema';
+import { Organization } from '../../organizations/schemas/organizations.schema';
 
 export type CommunicationDocument = HydratedDocument<Communication>;
 
@@ -10,8 +10,13 @@ export type CommunicationDocument = HydratedDocument<Communication>;
   timestamps: true,
 })
 export class Communication {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({
     enum: ['lead', 'application', 'student', 'payment', 'general'],
@@ -56,10 +61,10 @@ export class Communication {
 }
 
 export const CommunicationSchema = SchemaFactory.createForClass(Communication);
-CommunicationSchema.index({ tenantId: 1, createdAt: -1 });
-CommunicationSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
+CommunicationSchema.index({ organizationId: 1, createdAt: -1 });
+CommunicationSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
 CommunicationSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   entityType: 1,
   entityId: 1,
   createdAt: -1,

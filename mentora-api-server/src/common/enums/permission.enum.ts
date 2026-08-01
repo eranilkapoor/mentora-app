@@ -123,8 +123,8 @@ export enum Permission {
   // =========================
   //  EDUCATION CRM
   // =========================
-  CRM_TENANT_VIEW = 'crm_tenant:view',
-  CRM_TENANT_MANAGE = 'crm_tenant:manage',
+  CRM_ORGANIZATION_VIEW = 'crm_organization:view',
+  CRM_ORGANIZATION_MANAGE = 'crm_organization:manage',
   CRM_LEAD_VIEW = 'crm_lead:view',
   CRM_LEAD_CREATE = 'crm_lead:create',
   CRM_LEAD_UPDATE = 'crm_lead:update',

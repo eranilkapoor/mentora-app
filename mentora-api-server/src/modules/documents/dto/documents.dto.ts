@@ -9,7 +9,7 @@ import {
 
 export class CreateCrmDocumentDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['lead', 'application', 'admission', 'student', 'scholarship'])
   entityType!: string;
@@ -38,7 +38,7 @@ export class CreateCrmDocumentDto {
 
 export class VerifyCrmDocumentDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['verified', 'rejected', 'expired'])
   status!: string;
@@ -54,7 +54,7 @@ export class VerifyCrmDocumentDto {
 
 export class UpdateCrmDocumentDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()

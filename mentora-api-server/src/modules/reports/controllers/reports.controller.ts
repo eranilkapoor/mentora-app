@@ -18,7 +18,7 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateReportDefinitionDto,
   CreateReportExportJobDto,
@@ -26,7 +26,7 @@ import {
 } from '../dto/reports.dto';
 import { ReportsService } from '../services/reports.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly service: ReportsService) {}
@@ -48,7 +48,7 @@ export class ReportsController {
   @Get('definitions')
   @Permissions(Permission.CRM_REPORT_VIEW)
   async listDefinitions(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -66,7 +66,7 @@ export class ReportsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_REPORT_DEFINITIONS_FETCHED',
       'CRM report definitions fetched',
@@ -92,13 +92,13 @@ export class ReportsController {
   async archiveDefinition(
     @Req() req: AuthenticatedRequest,
     @Param('definitionId') definitionId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.archiveDefinition(
         req.user.sub,
         definitionId,
-        tenantId,
+        organizationId,
       ),
       'EDUCATION_PLATFORM_REPORT_DEFINITION_ARCHIVED',
       'CRM report definition archived',
@@ -122,7 +122,7 @@ export class ReportsController {
   @Get('exports')
   @Permissions(Permission.CRM_REPORT_EXPORT)
   async listExportJobs(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('status') status?: string,
@@ -136,7 +136,7 @@ export class ReportsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_REPORT_EXPORTS_FETCHED',
       'CRM report exports fetched',

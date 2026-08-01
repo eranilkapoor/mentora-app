@@ -37,10 +37,10 @@ npm run smoke:providers:strict
 The admin CRM can also test configured providers through the API:
 
 ```text
-GET /api/v1/integrations/providers/:providerKey/test?tenantId=<tenantId>
+GET /api/v1/integrations/providers/:providerKey/test?organizationId=<organizationId>
 ```
 
-The provider catalogue reports required environment keys, missing keys, tenant configuration status, and whether the provider is ready for live use. A provider should not be enabled for production workflows until this readiness check passes in the target environment.
+The provider catalogue reports required environment keys, missing keys, organization configuration status, and whether the provider is ready for live use. A provider should not be enabled for production workflows until this readiness check passes in the target environment.
 
 For mobile build-time public variables:
 

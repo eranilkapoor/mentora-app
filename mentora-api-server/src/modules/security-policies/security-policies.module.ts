@@ -4,8 +4,8 @@ import { AdminModule } from '../admin/admin.module';
 import { ContextsModule } from '../contexts/contexts.module';
 import { SecurityPoliciesController } from './controllers/security-policies.controller';
 import {
-  TenantSecurityPolicy,
-  TenantSecurityPolicySchema,
+  OrganizationSecurityPolicy,
+  OrganizationSecurityPolicySchema,
 } from './schemas/security-policies.schema';
 import { SecurityPoliciesService } from './services/security-policies.service';
 
@@ -14,7 +14,10 @@ import { SecurityPoliciesService } from './services/security-policies.service';
     AdminModule,
     ContextsModule,
     MongooseModule.forFeature([
-      { name: TenantSecurityPolicy.name, schema: TenantSecurityPolicySchema },
+      {
+        name: OrganizationSecurityPolicy.name,
+        schema: OrganizationSecurityPolicySchema,
+      },
     ]),
   ],
   controllers: [SecurityPoliciesController],

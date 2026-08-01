@@ -9,7 +9,7 @@ import {
 
 export class CreateTaskDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['lead', 'application', 'student', 'payment', 'campaign', 'general'])
   entityType!: string;
@@ -46,7 +46,7 @@ export class CreateTaskDto {
 
 export class UpdateTaskWorkflowDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn(['open', 'in_progress', 'completed', 'cancelled'])
@@ -71,7 +71,7 @@ export class UpdateTaskWorkflowDto {
 
 export class UpdateTaskDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()

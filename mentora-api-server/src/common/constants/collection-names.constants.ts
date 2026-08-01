@@ -89,12 +89,13 @@ export const COLLECTION_NAMES = {
   TUTOR_SESSION_NOTE: 'tutor_session_notes',
   SAFETY_EVENT: 'safety_events',
 
-  TENANT: 'tenants',
+  ORGANIZATION: 'organizations',
+  BUSINESS_UNIT: 'business_units',
   BRANCH: 'branches',
   DEPARTMENT: 'departments',
   TEAM: 'teams',
   CAMPUS: 'campuses',
-  TENANT_BRANDING: 'tenant_branding',
+  ORGANIZATION_BRANDING: 'organization_branding',
   CHANNEL_SETTING: 'channel_settings',
   LEAD_SOURCE: 'lead_sources',
   LEAD_STAGE: 'lead_stages',
@@ -120,6 +121,6 @@ export const COLLECTION_NAMES = {
   FIELD_VISIT: 'field_visits',
   FINANCE_LEDGER_ENTRY: 'finance_ledger_entries',
   INTEGRATION_PROVIDER_CONFIG: 'integration_provider_configs',
-  TENANT_SECURITY_POLICY: 'tenant_security_policies',
+  ORGANIZATION_SECURITY_POLICY: 'organization_security_policies',
   USER_MEMBERSHIP: 'user_memberships',
 };

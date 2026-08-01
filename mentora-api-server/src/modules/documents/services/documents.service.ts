@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import {
   CreateCrmDocumentDto,
   UpdateCrmDocumentDto,
@@ -22,7 +22,7 @@ type DocumentListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -35,7 +35,7 @@ export class DocumentsService {
   createDocument(userId: string, dto: CreateCrmDocumentDto) {
     return this.documents.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       entityId: toRequiredObjectId(dto.entityId),
       size: dto.size ?? 0,
       uploadedBy: toRequiredObjectId(userId),
@@ -48,7 +48,7 @@ export class DocumentsService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.category ? { category: options.category } : {}),
       ...(options.entityType ? { entityType: options.entityType } : {}),
       ...(options.entityId
@@ -88,11 +88,11 @@ export class DocumentsService {
 
   async updateDocument(documentId: string, dto: UpdateCrmDocumentDto) {
     const update: Record<string, unknown> = { ...dto };
-    delete update.tenantId;
+    delete update.organizationId;
     const document = await this.documents.findOneAndUpdate(
       {
         _id: toRequiredObjectId(documentId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
@@ -101,11 +101,11 @@ export class DocumentsService {
     return document;
   }
 
-  async archiveDocument(documentId: string, tenantId: string) {
+  async archiveDocument(documentId: string, organizationId: string) {
     const document = await this.documents.findOneAndUpdate(
       {
         _id: toRequiredObjectId(documentId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -122,7 +122,7 @@ export class DocumentsService {
     const document = await this.documents.findOneAndUpdate(
       {
         _id: toRequiredObjectId(documentId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         ocrResult: dto.ocrResult ?? {},

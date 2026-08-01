@@ -6,9 +6,9 @@ Last reviewed: 2026-08-01
 
 | Source | Examples |
 | --- | --- |
-| Product vision | Parent/student AI tutoring, education CRM, multi-tenant SaaS. |
+| Product vision | Parent/student AI tutoring, education CRM, multi-organization SaaS. |
 | Existing code | Current API modules, CRM routes, mobile screens, website pages. |
-| User requests | Mentora-specific cleanup, CRM module depth, enterprise UI, tenant context, production readiness. |
+| User requests | Mentora-specific cleanup, CRM module depth, enterprise UI, organization context, production readiness. |
 | Market reference | Education CRM, admissions, tutoring, communications, payments, reports, and learning operations. |
 | Compliance needs | Child/student data, consent, age eligibility, subscriptions, account deletion, security. |
 
@@ -38,7 +38,7 @@ Last reviewed: 2026-08-01
 | --- | --- | --- | --- |
 | Parent/student learning | [Project Plan](../planning/PROJECT-PLAN.md), [Flow Plan](../planning/FLOW-PLAN.md) | API, mobile app | Mobile QA, API smoke, entitlement/schedule guard tests |
 | Student profile | [Student Profile Model](../planning/STUDENT-PROFILE-MODEL.md) | API, mobile app, CRM where applicable | Profile completeness, CRUD, permission QA |
-| CRM modules | [Education CRM Platform Plan](../planning/EDUCATION-CRM-PLATFORM-PLAN.md), [CRM Flow Plan](../planning/CRM-FLOW-PLAN.md) | API, admin CRM, public website lead capture | CRM UAT, tenant/branch QA, module CRUD/action checks |
+| CRM modules | [Education CRM Platform Plan](../planning/EDUCATION-CRM-PLATFORM-PLAN.md), [CRM Flow Plan](../planning/CRM-FLOW-PLAN.md) | API, admin CRM, public website lead capture | CRM UAT, organization/branch QA, module CRUD/action checks |
 | Payments and entitlements | [Plan Feature Packaging](../planning/PLAN-FEATURE-PACKAGING.md), launch docs | API, mobile, CRM | Gateway sandbox/live smoke, entitlement access checks |
 | Integrations | [Integrations](../integrations/README.md), [Secrets Checklist](../launch/PRODUCTION-SECRETS-CHECKLIST.md) | API, CRM provider screens | Provider readiness tests |
 | Production launch | [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md), [Launch Plan](../launch/LAUNCH-PLAN.md) | All apps | Release gate sign-off |
@@ -51,7 +51,7 @@ Each requirement should define:
 - Preconditions.
 - Primary flow.
 - Error and empty states.
-- Security/tenant rules.
+- Security/organization rules.
 - Data created or changed.
 - Audit/logging expectation.
 - Frontend and backend validation.
@@ -62,7 +62,7 @@ Each requirement should define:
 Changes require approval when they:
 
 - Add or remove a paid feature.
-- Affect tenant isolation, RBAC, child/student safety, payments, or legal obligations.
+- Affect organization isolation, RBAC, child/student safety, payments, or legal obligations.
 - Add a new vendor/provider.
 - Change data model or migration strategy.
 - Move production launch date or release scope.

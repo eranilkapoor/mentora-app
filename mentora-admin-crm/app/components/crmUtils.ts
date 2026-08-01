@@ -51,9 +51,9 @@ export function extractFirstId(records: unknown[]) {
   return "";
 }
 
-export function findTenantIdByName(records: unknown[], name: string) {
+export function findOrganizationIdByName(records: unknown[], name: string) {
   const normalizedName = name.trim().toLowerCase();
-  const tenant = records.find((record) => {
+  const organization = records.find((record) => {
     if (!record || typeof record !== "object") return false;
     const object = record as Record<string, unknown>;
     return (
@@ -61,7 +61,7 @@ export function findTenantIdByName(records: unknown[], name: string) {
       object.name.trim().toLowerCase() === normalizedName
     );
   });
-  return getUnknownRecordId(tenant);
+  return getUnknownRecordId(organization);
 }
 
 export function getUnknownRecordId(record: unknown) {
@@ -85,11 +85,11 @@ export function getModuleCardMetric(
   workspace: {
     dashboard: unknown;
     moduleRecords: Record<string, unknown[]>;
-    tenants: unknown[];
+    organizations: unknown[];
   },
 ) {
-  if (module.id === "tenants") {
-    return `${workspace.tenants.length.toLocaleString()} loaded`;
+  if (module.id === "organizations") {
+    return `${workspace.organizations.length.toLocaleString()} loaded`;
   }
 
   const dashboard = normalizeResponseObject(workspace.dashboard);
@@ -141,11 +141,11 @@ export function getServerRowsForModule(
   module: CrmModule,
   workspace: {
     moduleRecords: Record<string, unknown[]>;
-    tenants: unknown[];
+    organizations: unknown[];
   },
 ) {
-  if (module.id === "tenants") {
-    return tenantRecordsToRows(workspace.tenants, module);
+  if (module.id === "organizations") {
+    return organizationRecordsToRows(workspace.organizations, module);
   }
 
   return recordsToRows(workspace.moduleRecords[module.id], module);
@@ -214,7 +214,7 @@ export function getServerFilterValue(
     .find((value) => normalized.has(value));
 }
 
-function tenantRecordsToRows(records: unknown[] | undefined, module: CrmModule) {
+function organizationRecordsToRows(records: unknown[] | undefined, module: CrmModule) {
   if (!records?.length) return [];
 
   return records.map((record) => {
@@ -232,7 +232,7 @@ function tenantRecordsToRows(records: unknown[] | undefined, module: CrmModule) 
       Branches: branchCount,
       Plan: object.plan ?? object.planCode ?? object.subscriptionPlan,
       Status: object.status,
-      Tenant: object.name ?? object.title,
+      Organization: object.name ?? object.title,
       Type: object.type,
       Users: userCount,
     };

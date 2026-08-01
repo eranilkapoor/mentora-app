@@ -1,23 +1,23 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
-export type TenantSecurityPolicyDocument =
-  HydratedDocument<TenantSecurityPolicy>;
+export type OrganizationSecurityPolicyDocument =
+  HydratedDocument<OrganizationSecurityPolicy>;
 
 @Schema({
-  collection: COLLECTION_NAMES.TENANT_SECURITY_POLICY,
+  collection: COLLECTION_NAMES.ORGANIZATION_SECURITY_POLICY,
   timestamps: true,
 })
-export class TenantSecurityPolicy {
+export class OrganizationSecurityPolicy {
   @Prop({
     type: Types.ObjectId,
-    ref: Tenant.name,
+    ref: Organization.name,
     required: true,
     unique: true,
   })
-  tenantId!: Types.ObjectId;
+  organizationId!: Types.ObjectId;
 
   @Prop({ default: false })
   mfaRequired!: boolean;
@@ -41,5 +41,6 @@ export class TenantSecurityPolicy {
   updatedBy?: Types.ObjectId;
 }
 
-export const TenantSecurityPolicySchema =
-  SchemaFactory.createForClass(TenantSecurityPolicy);
+export const OrganizationSecurityPolicySchema = SchemaFactory.createForClass(
+  OrganizationSecurityPolicy,
+);

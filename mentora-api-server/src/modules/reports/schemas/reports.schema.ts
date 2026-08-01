@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
 export type ReportDefinitionDocument = HydratedDocument<ReportDefinition>;
 export type ReportExportJobDocument = HydratedDocument<ReportExportJob>;
@@ -11,8 +11,13 @@ export type ReportExportJobDocument = HydratedDocument<ReportExportJob>;
   timestamps: true,
 })
 export class ReportDefinition {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   name!: string;
@@ -41,15 +46,20 @@ export class ReportDefinition {
 
 export const ReportDefinitionSchema =
   SchemaFactory.createForClass(ReportDefinition);
-ReportDefinitionSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
+ReportDefinitionSchema.index({ organizationId: 1, moduleKey: 1, status: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.REPORT_EXPORT_JOB,
   timestamps: true,
 })
 export class ReportExportJob {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
@@ -86,9 +96,9 @@ export class ReportExportJob {
 
 export const ReportExportJobSchema =
   SchemaFactory.createForClass(ReportExportJob);
-ReportExportJobSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
+ReportExportJobSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
 ReportExportJobSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   reportDefinitionId: 1,
   createdAt: -1,
 });

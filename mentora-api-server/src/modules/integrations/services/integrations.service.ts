@@ -4,8 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import { UpsertIntegrationProviderDto } from '../dto/integrations.dto';
 import {
@@ -240,10 +240,10 @@ export class IntegrationsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async listProviders(tenantId: string) {
-    const tenantObjectId = toTenantObjectId(tenantId);
+  async listProviders(organizationId: string) {
+    const organizationObjectId = toOrganizationObjectId(organizationId);
     const configs = await this.configs
-      .find({ tenantId: tenantObjectId })
+      .find({ organizationId: organizationObjectId })
       .lean();
     return providerCatalog.map((provider) => {
       const config = configs.find((item) => item.providerKey === provider.key);
@@ -264,7 +264,7 @@ export class IntegrationsService {
     });
   }
 
-  testProvider(tenantId: string, providerKey: string) {
+  testProvider(organizationId: string, providerKey: string) {
     const provider = providerCatalog.find((item) => item.key === providerKey);
     if (!provider) {
       return {
@@ -275,7 +275,7 @@ export class IntegrationsService {
     }
     const missingEnvKeys = this.missingEnvKeys(provider);
     return {
-      tenantId,
+      organizationId,
       providerKey,
       module: provider.module,
       readyForLive: missingEnvKeys.length === 0,
@@ -292,9 +292,12 @@ export class IntegrationsService {
     dto: UpsertIntegrationProviderDto,
   ) {
     const record = await this.configs.findOneAndUpdate(
-      { tenantId: toTenantObjectId(dto.tenantId), providerKey },
       {
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+        providerKey,
+      },
+      {
+        organizationId: toOrganizationObjectId(dto.organizationId),
         providerKey,
         status: dto.status ?? 'configured',
         settings: dto.settings ?? {},
@@ -314,7 +317,7 @@ export class IntegrationsService {
         string,
         unknown
       >,
-      metadata: { tenantId: dto.tenantId, providerKey },
+      metadata: { organizationId: dto.organizationId, providerKey },
     });
     return record;
   }

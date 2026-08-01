@@ -8,8 +8,8 @@ import { FilterQuery, Model, Types } from 'mongoose';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AddLeadActivityDto,
@@ -54,7 +54,7 @@ export class LeadsService {
         : undefined;
     const lead = await this.leads.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       sourceId: toOptionalObjectId(dto.sourceId),
       stageId: toOptionalObjectId(dto.stageId),
       branchId: toOptionalObjectId(dto.branchId),
@@ -65,14 +65,20 @@ export class LeadsService {
       createdBy,
     });
     await this.addLeadActivity(userId, String(lead._id), {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'lead_created',
       subject: 'Lead created',
       metadata: { source: dto.sourceId },
     });
-    await this.writeAudit(userId, 'crm_lead.created', dto.tenantId, lead._id, {
-      after: this.toAuditRecord(lead.toObject()),
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.created',
+      dto.organizationId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+      },
+    );
     return lead;
   }
 
@@ -82,7 +88,7 @@ export class LeadsService {
     const sortBy = this.resolveLeadSortBy(query.sortBy);
     const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
     const filter: FilterQuery<LeadDocument> = {
-      tenantId: toTenantObjectId(query.tenantId),
+      organizationId: toOrganizationObjectId(query.organizationId),
       ...(query.assignedTo
         ? { assignedTo: toRequiredObjectId(query.assignedTo) }
         : {}),
@@ -145,47 +151,59 @@ export class LeadsService {
         ? { nextFollowUpAt: new Date(dto.nextFollowUpAt) }
         : {}),
     };
-    delete update.tenantId;
+    delete update.organizationId;
     const lead = await this.leads.findOneAndUpdate(
       {
         _id: toRequiredObjectId(leadId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'note_added',
       subject: 'Lead updated',
       metadata: { fields: Object.keys(update) },
     });
-    await this.writeAudit(userId, 'crm_lead.updated', dto.tenantId, lead._id, {
-      after: this.toAuditRecord(lead.toObject()),
-      metadata: { fields: Object.keys(update) },
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.updated',
+      dto.organizationId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: { fields: Object.keys(update) },
+      },
+    );
     return lead;
   }
 
-  async archiveLead(userId: string, leadId: string, tenantId: string) {
+  async archiveLead(userId: string, leadId: string, organizationId: string) {
     const lead = await this.leads.findOneAndUpdate(
       {
         _id: toRequiredObjectId(leadId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true, runValidators: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.addLeadActivity(userId, leadId, {
-      tenantId,
+      organizationId,
       type: 'note_added',
       subject: 'Lead archived',
     });
-    await this.writeAudit(userId, 'crm_lead.archived', tenantId, lead._id, {
-      after: this.toAuditRecord(lead.toObject()),
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.archived',
+      organizationId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+      },
+    );
     return lead;
   }
 
@@ -193,14 +211,14 @@ export class LeadsService {
     const lead = await this.leads.findOneAndUpdate(
       {
         _id: toRequiredObjectId(leadId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { tags: this.normalizeTags(dto.tags) },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'note_added',
       subject: 'Lead tags updated',
       metadata: { tags: lead.tags },
@@ -208,7 +226,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.tags_updated',
-      dto.tenantId,
+      dto.organizationId,
       lead._id,
       {
         after: this.toAuditRecord(lead.toObject()),
@@ -235,14 +253,14 @@ export class LeadsService {
     const lead = await this.leads.findOneAndUpdate(
       {
         _id: toRequiredObjectId(leadId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $push: { [field]: attachment } },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'note_added',
       subject:
         attachment.type === 'voice_note'
@@ -253,7 +271,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.attachment_added',
-      dto.tenantId,
+      dto.organizationId,
       lead._id,
       {
         after: this.toAuditRecord(lead.toObject()),
@@ -264,10 +282,10 @@ export class LeadsService {
   }
 
   async scoreLead(userId: string, leadId: string, dto: ScoreLeadDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const lead = await this.leads.findOne({
       _id: toRequiredObjectId(leadId),
-      tenantId,
+      organizationId,
     });
     if (!lead) throw new NotFoundException('Education CRM lead not found');
 
@@ -302,22 +320,28 @@ export class LeadsService {
     });
     await lead.save();
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'note_added',
       subject: 'Lead score recalculated',
       metadata: { score, temperature },
     });
-    await this.writeAudit(userId, 'crm_lead.scored', dto.tenantId, lead._id, {
-      after: this.toAuditRecord(lead.toObject()),
-      metadata: { score, temperature },
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.scored',
+      dto.organizationId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: { score, temperature },
+      },
+    );
     return lead;
   }
 
   async transferLead(userId: string, leadId: string, dto: TransferLeadDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const lead = await this.leads.findOneAndUpdate(
-      { _id: toRequiredObjectId(leadId), tenantId },
+      { _id: toRequiredObjectId(leadId), organizationId },
       {
         assignedTo: toRequiredObjectId(dto.assignedTo),
         branchId: toOptionalObjectId(dto.branchId),
@@ -327,14 +351,14 @@ export class LeadsService {
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.assignments.create({
-      tenantId: lead.tenantId,
+      organizationId: lead.organizationId,
       leadId: lead._id,
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
       assignmentMethod: 'manual',
     });
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'assignment_changed',
       subject: 'Lead transferred',
       description: dto.reason,
@@ -343,7 +367,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.transferred',
-      dto.tenantId,
+      dto.organizationId,
       lead._id,
       {
         reason: dto.reason,
@@ -354,11 +378,11 @@ export class LeadsService {
     return lead;
   }
 
-  async getLead(tenantId: string, leadId: string) {
+  async getLead(organizationId: string, leadId: string) {
     const lead = await this.leads
       .findOne({
         _id: toRequiredObjectId(leadId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       })
       .lean();
     if (!lead) throw new NotFoundException('Education CRM lead not found');
@@ -366,30 +390,36 @@ export class LeadsService {
   }
 
   async assignLead(userId: string, leadId: string, dto: AssignLeadDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const lead = await this.leads.findOneAndUpdate(
-      { _id: toRequiredObjectId(leadId), tenantId },
+      { _id: toRequiredObjectId(leadId), organizationId },
       { assignedTo: toRequiredObjectId(dto.assignedTo), status: 'open' },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.assignments.create({
-      tenantId: lead.tenantId,
+      organizationId: lead.organizationId,
       leadId: lead._id,
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
       assignmentMethod: dto.assignmentMethod ?? 'manual',
     });
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'assignment_changed',
       subject: 'Lead assigned',
       metadata: { assignedTo: dto.assignedTo },
     });
-    await this.writeAudit(userId, 'crm_lead.assigned', dto.tenantId, lead._id, {
-      after: this.toAuditRecord(lead.toObject()),
-      metadata: { assignedTo: dto.assignedTo },
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.assigned',
+      dto.organizationId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: { assignedTo: dto.assignedTo },
+      },
+    );
     return lead;
   }
 
@@ -398,15 +428,15 @@ export class LeadsService {
     leadId: string,
     dto: ChangeLeadStageDto,
   ) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const lead = await this.leads.findOneAndUpdate(
-      { _id: toRequiredObjectId(leadId), tenantId },
+      { _id: toRequiredObjectId(leadId), organizationId },
       { stageId: toRequiredObjectId(dto.stageId) },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.addLeadActivity(userId, leadId, {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'stage_changed',
       subject: 'Lead stage changed',
       description: dto.reason,
@@ -415,7 +445,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.stage_changed',
-      dto.tenantId,
+      dto.organizationId,
       lead._id,
       {
         after: this.toAuditRecord(lead.toObject()),
@@ -431,9 +461,9 @@ export class LeadsService {
     leadId: string,
     dto: AddLeadActivityDto,
   ) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const lead = await this.leads
-      .findOne({ _id: toRequiredObjectId(leadId), tenantId })
+      .findOne({ _id: toRequiredObjectId(leadId), organizationId })
       .lean();
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     const performedBy =
@@ -442,17 +472,17 @@ export class LeadsService {
         : undefined;
     return this.activities.create({
       ...dto,
-      tenantId: lead.tenantId,
+      organizationId: lead.organizationId,
       leadId: lead._id,
       performedBy,
       occurredAt: new Date(),
     });
   }
 
-  async listLeadTimeline(tenantId: string, leadId: string) {
+  async listLeadTimeline(organizationId: string, leadId: string) {
     return this.activities
       .find({
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
         leadId: toRequiredObjectId(leadId),
       })
       .sort({ occurredAt: -1 })
@@ -470,7 +500,7 @@ export class LeadsService {
 
     return this.leads
       .find({
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
         $or: conditions,
       })
       .sort({ createdAt: -1 })
@@ -483,12 +513,15 @@ export class LeadsService {
       throw new BadRequestException('Master and source lead must be different');
     }
 
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const [masterLead, sourceLead] = await Promise.all([
-      this.leads.findOne({ _id: toRequiredObjectId(masterLeadId), tenantId }),
+      this.leads.findOne({
+        _id: toRequiredObjectId(masterLeadId),
+        organizationId,
+      }),
       this.leads.findOne({
         _id: toRequiredObjectId(dto.sourceLeadId),
-        tenantId,
+        organizationId,
       }),
     ]);
 
@@ -541,11 +574,11 @@ export class LeadsService {
 
     await Promise.all([masterLead.save(), sourceLead.save()]);
     await this.activities.updateMany(
-      { tenantId, leadId: sourceLead._id },
+      { organizationId, leadId: sourceLead._id },
       { $set: { leadId: masterLead._id } },
     );
     await this.addLeadActivity(userId, String(masterLead._id), {
-      tenantId: dto.tenantId,
+      organizationId: dto.organizationId,
       type: 'note_added',
       subject: 'Duplicate lead merged',
       description: dto.reason,
@@ -554,7 +587,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.merged',
-      dto.tenantId,
+      dto.organizationId,
       masterLead._id,
       {
         reason: dto.reason,
@@ -575,7 +608,7 @@ export class LeadsService {
 
     for (const row of dto.rows) {
       const duplicateMatches = await this.findDuplicates({
-        tenantId: dto.tenantId,
+        organizationId: dto.organizationId,
         email: row.email,
         phone: row.phone,
       }).catch(() => []);
@@ -592,7 +625,7 @@ export class LeadsService {
 
       const lead = await this.createLead(userId, {
         ...row,
-        tenantId: dto.tenantId,
+        organizationId: dto.organizationId,
       });
       results.push({ status: 'created', leadId: String(lead._id) });
     }
@@ -600,7 +633,7 @@ export class LeadsService {
     await this.writeAudit(
       userId,
       'crm_lead.imported',
-      dto.tenantId,
+      dto.organizationId,
       undefined,
       {
         metadata: {
@@ -615,8 +648,8 @@ export class LeadsService {
     return { totalRows: dto.rows.length, results };
   }
 
-  async exportLeads(userId: string, tenantId: string) {
-    const leadResult = await this.listLeads({ tenantId, limit: '1000' });
+  async exportLeads(userId: string, organizationId: string) {
+    const leadResult = await this.listLeads({ organizationId, limit: '1000' });
     const leads = leadResult.items;
     const headers = [
       'id',
@@ -639,9 +672,15 @@ export class LeadsService {
       ),
     ].join('\n');
 
-    await this.writeAudit(userId, 'crm_lead.exported', tenantId, undefined, {
-      metadata: { exportedRows: leads.length },
-    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.exported',
+      organizationId,
+      undefined,
+      {
+        metadata: { exportedRows: leads.length },
+      },
+    );
 
     return {
       filename: `mentora-leads-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -654,7 +693,7 @@ export class LeadsService {
   private async writeAudit(
     userId: string | undefined,
     action: string,
-    tenantId: string,
+    organizationId: string,
     targetId: Types.ObjectId | undefined,
     details: {
       reason?: string;
@@ -675,7 +714,7 @@ export class LeadsService {
       reason: details.reason,
       before: details.before,
       after: details.after,
-      metadata: { tenantId, ...(details.metadata ?? {}) },
+      metadata: { organizationId, ...(details.metadata ?? {}) },
     });
   }
 

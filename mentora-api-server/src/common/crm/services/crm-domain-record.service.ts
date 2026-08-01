@@ -3,8 +3,8 @@ import { Model, Types } from 'mongoose';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   BulkUpdateCrmDomainRecordStatusDto,
@@ -15,7 +15,7 @@ import {
 
 type CrmDomainRecordDocument = {
   _id: Types.ObjectId;
-  tenantId: Types.ObjectId;
+  organizationId: Types.ObjectId;
   title: string;
   status: string;
   payload?: Record<string, unknown>;
@@ -32,7 +32,7 @@ export type CrmDomainRecordListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
@@ -48,7 +48,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   ): Promise<TDocument> {
     const record = await this.model.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       ownerId: toOptionalObjectId(dto.ownerId),
       relatedLeadId: toOptionalObjectId(dto.relatedLeadId),
       relatedApplicationId: toOptionalObjectId(dto.relatedApplicationId),
@@ -58,7 +58,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     await this.writeAudit(
       userId,
       `${this.resource}.created`,
-      dto.tenantId,
+      dto.organizationId,
       record,
     );
     return record as TDocument;
@@ -79,7 +79,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.priority ? { priority: options.priority } : {}),
       ...(options.status ? { status: options.status } : {}),
     };
@@ -122,11 +122,11 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const record = await this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         ...dto,
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
         ownerId: toOptionalObjectId(dto.ownerId),
         dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       },
@@ -137,16 +137,16 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     await this.writeAudit(
       userId,
       `${this.resource}.updated`,
-      dto.tenantId,
+      dto.organizationId,
       record,
     );
     return record;
   }
 
-  async getById(recordId: string, tenantId: string): Promise<TDocument> {
+  async getById(recordId: string, organizationId: string): Promise<TDocument> {
     const record = await this.model.findOne({
       _id: toRequiredObjectId(recordId),
-      tenantId: toTenantObjectId(tenantId),
+      organizationId: toOrganizationObjectId(organizationId),
     });
     if (!record)
       throw new NotFoundException(`${this.resource} record not found`);
@@ -161,7 +161,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const record = await this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         $set: {
@@ -183,7 +183,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     await this.writeAudit(
       userId,
       `${this.resource}.completed`,
-      dto.tenantId,
+      dto.organizationId,
       record,
     );
     return record;
@@ -192,12 +192,12 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   async restore(
     userId: string,
     recordId: string,
-    tenantId: string,
+    organizationId: string,
   ): Promise<TDocument> {
     const record = await this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'open' } },
       { new: true },
@@ -207,7 +207,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     await this.writeAudit(
       userId,
       `${this.resource}.restored`,
-      tenantId,
+      organizationId,
       record,
     );
     return record;
@@ -223,7 +223,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const result = await this.model.updateMany(
       {
         _id: { $in: recordIds },
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         $set: {
@@ -243,7 +243,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       },
       metadata: {
         recordIds: dto.recordIds,
-        tenantId: dto.tenantId,
+        organizationId: dto.organizationId,
       },
     });
     return {
@@ -256,12 +256,12 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   async archive(
     userId: string,
     recordId: string,
-    tenantId: string,
+    organizationId: string,
   ): Promise<TDocument> {
     const record = await this.model.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -271,7 +271,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     await this.writeAudit(
       userId,
       `${this.resource}.archived`,
-      tenantId,
+      organizationId,
       record,
     );
     return record;
@@ -297,7 +297,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   private async writeAudit(
     userId: string,
     action: string,
-    tenantId: string,
+    organizationId: string,
     record: TDocument,
   ): Promise<void> {
     await this.auditService.write({
@@ -309,7 +309,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
         string,
         unknown
       >,
-      metadata: { tenantId },
+      metadata: { organizationId },
     });
   }
 }

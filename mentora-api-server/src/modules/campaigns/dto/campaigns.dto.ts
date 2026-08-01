@@ -10,7 +10,7 @@ import {
 
 export class CreateCampaignDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   name!: string;
@@ -53,7 +53,7 @@ export class CreateCampaignDto {
 
 export class UpdateCampaignMetricsDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn(['draft', 'scheduled', 'running', 'completed', 'paused'])
@@ -70,7 +70,7 @@ export class UpdateCampaignMetricsDto {
 
 export class UpdateCampaignDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()

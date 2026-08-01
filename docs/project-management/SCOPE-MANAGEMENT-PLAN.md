@@ -9,18 +9,18 @@ Mentora will deliver a four-application Education SaaS CRM and AI tutoring platf
 - `mentora-api-server`: backend API, security, data, integrations, and domain logic.
 - `mentora-mobile-app`: student/parent learning app.
 - `mentora-public-website`: public product, support, legal, plans, and lead capture website.
-- `mentora-admin-crm`: multi-tenant education CRM for platform and tenant users.
+- `mentora-admin-crm`: multi-organization education CRM for platform and organization users.
 
 ## Product Scope
 
 | Product area | Included capabilities |
 | --- | --- |
-| Identity | Login, sessions, roles, permissions, tenant memberships, context switching, MFA/SSO configuration surfaces. |
-| Organization | Tenants, branches, departments, teams, campuses, domains, branding, channel settings. |
+| Identity | Login, sessions, roles, permissions, organization memberships, context switching, MFA/SSO configuration surfaces. |
+| Organization | Organizations, branches, departments, teams, campuses, domains, branding, channel settings. |
 | CRM | Leads, applications, admissions, tasks, campaigns, communications, call center, WhatsApp, email, SMS, interviews, scholarships, events, field force, reports, analytics, workflows. |
 | Learning | Students, parents, relationships, academic records, subjects, schedules, entitlements, AI tutor, classrooms, assessments, progress. |
 | Finance | Payments, subscriptions, invoices, refunds, finance ledgers, reconciliation, accounting export metadata. |
-| Security | Security policies, audit logs, access review, retention controls, token/session behavior, tenant isolation. |
+| Security | Security policies, audit logs, access review, retention controls, token/session behavior, organization isolation. |
 | Public website | Brand, legal pages, plans, support, lead/demo capture. |
 | Operations | Deployment, database runbook, monitoring, secrets, launch, production readiness. |
 
@@ -50,10 +50,10 @@ Scope is accepted when:
 
 - Requirement is implemented in code or explicitly deferred.
 - API and UI are connected where the requirement is user-facing.
-- Tenant/security behavior is verified where applicable.
+- Organization/security behavior is verified where applicable.
 - Documentation and roadmap status are updated.
 - Remaining external blockers are listed.
 
 ## Scope Control
 
-Any change that affects module boundaries, launch scope, provider selection, legal obligations, pricing, tenant data model, security policy, or release timeline must follow [Change Control Plan](CHANGE-CONTROL-PLAN.md).
+Any change that affects module boundaries, launch scope, provider selection, legal obligations, pricing, organization data model, security policy, or release timeline must follow [Change Control Plan](CHANGE-CONTROL-PLAN.md).

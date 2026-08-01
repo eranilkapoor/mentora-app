@@ -16,7 +16,7 @@ import { Lead, LeadSchema } from '../leads/schemas/leads.schema';
 import { ContextsModule } from '../contexts/contexts.module';
 import { ModuleRecordsModule } from '../module-records/module-records.module';
 import { Task, TaskSchema } from '../tasks/schemas/tasks.schema';
-import { TenantsModule } from '../tenants/tenants.module';
+import { OrganizationsModule } from '../organizations/organizations.module';
 import { DashboardController } from './controllers/dashboard.controller';
 import { DashboardService } from './services/dashboard.service';
 
@@ -24,7 +24,7 @@ import { DashboardService } from './services/dashboard.service';
   imports: [
     ContextsModule,
     ModuleRecordsModule,
-    TenantsModule,
+    OrganizationsModule,
     MongooseModule.forFeature([
       { name: Lead.name, schema: LeadSchema },
       { name: Task.name, schema: TaskSchema },

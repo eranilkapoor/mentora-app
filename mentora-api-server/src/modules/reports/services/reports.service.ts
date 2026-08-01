@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   CreateReportDefinitionDto,
@@ -26,7 +26,7 @@ type ReportListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -42,7 +42,7 @@ export class ReportsService {
   async createDefinition(userId: string, dto: CreateReportDefinitionDto) {
     const definition = await this.reportDefinitions.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       createdBy: toRequiredObjectId(userId),
     });
     await this.auditService.write({
@@ -51,7 +51,10 @@ export class ReportsService {
       resource: 'crm_report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
-      metadata: { tenantId: dto.tenantId, moduleKey: dto.moduleKey },
+      metadata: {
+        organizationId: dto.organizationId,
+        moduleKey: dto.moduleKey,
+      },
     });
     return definition;
   }
@@ -62,7 +65,7 @@ export class ReportsService {
     const sortBy = this.resolveDefinitionSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
       ...(options.status ? { status: options.status } : {}),
     };
@@ -101,11 +104,11 @@ export class ReportsService {
     dto: UpdateReportDefinitionDto,
   ) {
     const update: Record<string, unknown> = { ...dto };
-    delete update.tenantId;
+    delete update.organizationId;
     const definition = await this.reportDefinitions.findOneAndUpdate(
       {
         _id: toRequiredObjectId(definitionId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
@@ -118,7 +121,7 @@ export class ReportsService {
       resource: 'crm_report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
-      metadata: { tenantId: dto.tenantId },
+      metadata: { organizationId: dto.organizationId },
     });
     return definition;
   }
@@ -126,12 +129,12 @@ export class ReportsService {
   async archiveDefinition(
     userId: string,
     definitionId: string,
-    tenantId: string,
+    organizationId: string,
   ) {
     const definition = await this.reportDefinitions.findOneAndUpdate(
       {
         _id: toRequiredObjectId(definitionId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -144,17 +147,17 @@ export class ReportsService {
       resource: 'crm_report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
-      metadata: { tenantId },
+      metadata: { organizationId },
     });
     return definition;
   }
 
   async createExportJob(userId: string, dto: CreateReportExportJobDto) {
-    const tenantId = toTenantObjectId(dto.tenantId);
+    const organizationId = toOrganizationObjectId(dto.organizationId);
     const definition = await this.reportDefinitions
       .findOne({
         _id: toRequiredObjectId(dto.reportDefinitionId),
-        tenantId,
+        organizationId,
       })
       .lean();
 
@@ -163,7 +166,7 @@ export class ReportsService {
     }
 
     const job = await this.reportExportJobs.create({
-      tenantId,
+      organizationId,
       reportDefinitionId: definition._id,
       format: dto.format ?? 'csv',
       status: 'completed',
@@ -185,7 +188,10 @@ export class ReportsService {
       resource: 'crm_report_export_job',
       targetId: String(job._id),
       after: this.toAuditRecord(job.toObject()),
-      metadata: { tenantId: dto.tenantId, moduleKey: definition.moduleKey },
+      metadata: {
+        organizationId: dto.organizationId,
+        moduleKey: definition.moduleKey,
+      },
     });
 
     return job;
@@ -197,7 +203,7 @@ export class ReportsService {
     const sortBy = this.resolveExportSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.status ? { status: options.status } : {}),
     };
     const [items, total] = await Promise.all([

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Tenant } from '@/modules/tenants/schemas/tenants.schema';
+import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
 export type WorkflowRuleDocument = HydratedDocument<WorkflowRule>;
 export type WorkflowExecutionDocument = HydratedDocument<WorkflowExecution>;
@@ -11,8 +11,13 @@ export type WorkflowExecutionDocument = HydratedDocument<WorkflowExecution>;
   timestamps: true,
 })
 export class WorkflowRule {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   name!: string;
@@ -49,17 +54,17 @@ export class WorkflowRule {
 }
 
 export const WorkflowRuleSchema = SchemaFactory.createForClass(WorkflowRule);
-WorkflowRuleSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
-WorkflowRuleSchema.index({ tenantId: 1, trigger: 1, priority: -1 });
-WorkflowRuleSchema.index({ tenantId: 1, priority: -1, createdAt: -1 });
+WorkflowRuleSchema.index({ organizationId: 1, moduleKey: 1, status: 1 });
+WorkflowRuleSchema.index({ organizationId: 1, trigger: 1, priority: -1 });
+WorkflowRuleSchema.index({ organizationId: 1, priority: -1, createdAt: -1 });
 WorkflowRuleSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   moduleKey: 1,
   priority: -1,
   createdAt: -1,
 });
 WorkflowRuleSchema.index({
-  tenantId: 1,
+  organizationId: 1,
   moduleKey: 1,
   trigger: 1,
   status: 1,
@@ -72,8 +77,13 @@ WorkflowRuleSchema.index({
   timestamps: true,
 })
 export class WorkflowExecution {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
-  tenantId!: Types.ObjectId;
+  @Prop({
+    type: Types.ObjectId,
+    ref: Organization.name,
+    required: true,
+    index: true,
+  })
+  organizationId!: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
@@ -122,10 +132,14 @@ export class WorkflowExecution {
 
 export const WorkflowExecutionSchema =
   SchemaFactory.createForClass(WorkflowExecution);
-WorkflowExecutionSchema.index({ tenantId: 1, moduleKey: 1, executedAt: -1 });
-WorkflowExecutionSchema.index({ tenantId: 1, executedAt: -1 });
 WorkflowExecutionSchema.index({
-  tenantId: 1,
+  organizationId: 1,
+  moduleKey: 1,
+  executedAt: -1,
+});
+WorkflowExecutionSchema.index({ organizationId: 1, executedAt: -1 });
+WorkflowExecutionSchema.index({
+  organizationId: 1,
   workflowRuleId: 1,
   executedAt: -1,
 });

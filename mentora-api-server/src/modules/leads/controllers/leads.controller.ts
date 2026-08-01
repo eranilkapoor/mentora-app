@@ -18,7 +18,7 @@ import { successResponse } from '@/common/utils/response.util';
 import { Permission } from '@/common/enums';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   AddLeadActivityDto,
   AddLeadAttachmentDto,
@@ -36,7 +36,7 @@ import {
 } from '../dto/leads.dto';
 import { LeadsService } from '../services/leads.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('leads')
 export class LeadsController {
   constructor(private readonly service: LeadsService) {}
@@ -84,10 +84,10 @@ export class LeadsController {
   async archiveLead(
     @Req() req: AuthenticatedRequest,
     @Param('leadId') leadId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveLead(req.user.sub, leadId, tenantId),
+      await this.service.archiveLead(req.user.sub, leadId, organizationId),
       'EDUCATION_PLATFORM_LEAD_ARCHIVED',
       'CRM lead archived',
     );
@@ -97,10 +97,10 @@ export class LeadsController {
   @Permissions(Permission.CRM_LEAD_EXPORT)
   async exportLeads(
     @Req() req: AuthenticatedRequest,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.exportLeads(req.user.sub, tenantId),
+      await this.service.exportLeads(req.user.sub, organizationId),
       'EDUCATION_PLATFORM_LEADS_EXPORTED',
       'CRM leads exported',
     );
@@ -109,11 +109,11 @@ export class LeadsController {
   @Get(':leadId')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async getLead(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Param('leadId') leadId: string,
   ) {
     return successResponse(
-      await this.service.getLead(tenantId, leadId),
+      await this.service.getLead(organizationId, leadId),
       'EDUCATION_PLATFORM_LEAD_FETCHED',
       'CRM lead fetched',
     );
@@ -220,11 +220,11 @@ export class LeadsController {
   @Get(':leadId/timeline')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async listLeadTimeline(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Param('leadId') leadId: string,
   ) {
     return successResponse(
-      await this.service.listLeadTimeline(tenantId, leadId),
+      await this.service.listLeadTimeline(organizationId, leadId),
       'EDUCATION_PLATFORM_LEAD_TIMELINE_FETCHED',
       'CRM lead timeline fetched',
     );

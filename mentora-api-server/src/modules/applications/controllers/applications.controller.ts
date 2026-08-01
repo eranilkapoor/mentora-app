@@ -16,7 +16,7 @@ import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   ApproveApplicationDto,
   CreateApplicationDto,
@@ -25,7 +25,7 @@ import {
 } from '../dto/applications.dto';
 import { ApplicationsService } from '../services/applications.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('applications')
 export class ApplicationsController {
   constructor(private readonly service: ApplicationsService) {}
@@ -44,7 +44,7 @@ export class ApplicationsController {
   @Get()
   @Permissions(Permission.CRM_APPLICATION_VIEW)
   async listApplications(
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
@@ -64,7 +64,7 @@ export class ApplicationsController {
         sortBy,
         sortOrder,
         status,
-        tenantId,
+        organizationId,
       }),
       'EDUCATION_PLATFORM_APPLICATIONS_FETCHED',
       'CRM applications fetched',
@@ -88,10 +88,10 @@ export class ApplicationsController {
   @Permissions(Permission.CRM_APPLICATION_MANAGE)
   async archiveApplication(
     @Param('applicationId') applicationId: string,
-    @Query('tenantId') tenantId: string,
+    @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveApplication(applicationId, tenantId),
+      await this.service.archiveApplication(applicationId, organizationId),
       'EDUCATION_PLATFORM_APPLICATION_ARCHIVED',
       'CRM application archived',
     );

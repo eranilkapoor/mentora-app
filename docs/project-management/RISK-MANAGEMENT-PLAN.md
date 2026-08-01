@@ -18,7 +18,7 @@ Risk exposure = probability x impact.
 
 - Product scope.
 - Technical architecture.
-- Data and tenant isolation.
+- Data and organization isolation.
 - Security and compliance.
 - Provider/vendor dependency.
 - Payment and revenue leakage.
@@ -39,4 +39,4 @@ Risk exposure = probability x impact.
 
 Any risk with exposure 6 or higher requires owner assignment, mitigation plan, and weekly review.
 
-Any risk involving student safety, payment loss, tenant data leakage, auth bypass, or legal non-compliance blocks production until closed or formally accepted by the sponsor and security/compliance owner.
+Any risk involving student safety, payment loss, organization data leakage, auth bypass, or legal non-compliance blocks production until closed or formally accepted by the sponsor and security/compliance owner.

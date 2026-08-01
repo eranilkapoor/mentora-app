@@ -26,9 +26,9 @@ Last reviewed: 2026-08-01
 | 1.2 | Status and reporting | Weekly status, milestone report, release readiness report. |
 | 2.1 | Product scope | Project plan, CRM plan, AI tutor plan, flow plans. |
 | 2.2 | Requirements traceability | Requirements plan, acceptance criteria, roadmap sync. |
-| 3.1 | API foundation | Auth, config, logging, health, RBAC, tenant context, audit. |
+| 3.1 | API foundation | Auth, config, logging, health, RBAC, organization context, audit. |
 | 3.2 | Learning backend | Students, parents, academic catalogue, schedules, entitlements, AI tutor, assessments, progress. |
-| 3.3 | CRM backend | Tenants, leads, applications, admissions, tasks, campaigns, communications, reports, workflows, operations modules. |
+| 3.3 | CRM backend | Organizations, leads, applications, admissions, tasks, campaigns, communications, reports, workflows, operations modules. |
 | 3.4 | Finance backend | Payments, subscriptions, invoices, refunds, ledgers, reconciliation. |
 | 4.1 | Mobile identity and onboarding | Login, register, account switcher, student/parent onboarding. |
 | 4.2 | Mobile learning | Home, Learn, Schedule, Progress, Profile, AI tutor, billing, settings. |
@@ -40,7 +40,7 @@ Last reviewed: 2026-08-01
 | 6.3 | CRM enterprise controls | RBAC, audit views, security policies, integrations, exports. |
 | 7.1 | Database | Schemas, indexes, seed data, migrations, slow-query audit. |
 | 7.2 | Provider integrations | AI, email, SMS, WhatsApp, push, payments, storage, calendar, OCR, dialer, geo, monitoring. |
-| 8.1 | Security | Secrets, CORS, session policy, tenant isolation, masking, retention, access review. |
+| 8.1 | Security | Secrets, CORS, session policy, organization isolation, masking, retention, access review. |
 | 8.2 | Compliance | Child/student data, consent, legal pages, account deletion, subscription disclosures. |
 | 9.1 | Automated checks | Lint, typecheck, build, tests, i18n, contracts. |
 | 9.2 | Manual QA | CRM desktop/tablet, mobile device matrix, public website smoke, provider smoke. |

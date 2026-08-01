@@ -9,7 +9,7 @@ Last reviewed: 2026-08-01
 | Sponsor/Product Owner | Business success, product direction, launch approval. | High-touch decision updates and milestone reviews. |
 | Parents/Guardians | Safe learning, child progress, payments, controls. | Clear UX, trust, reporting, consent, support. |
 | Eligible students | Independent learning, schedules, AI tutor, assessments, progress. | Simple onboarding, engaging learning, privacy clarity. |
-| Education organizations | CRM operations, admissions, communications, revenue, reports. | Reliable tenant CRM, role controls, data import/export, support. |
+| Education organizations | CRM operations, admissions, communications, revenue, reports. | Reliable organization CRM, role controls, data import/export, support. |
 | Counselors/admissions teams | Leads, applications, tasks, calls, follow-ups. | Efficient CRM workflows, filters, notes, assignments, reminders. |
 | Marketing teams | Campaigns, source ROI, WhatsApp/email/SMS, lead capture. | Attribution, templates, approvals, delivery reports. |
 | Finance teams | Payments, invoices, refunds, ledgers, reconciliation. | Accurate reports, exports, audit trail, settlement matching. |

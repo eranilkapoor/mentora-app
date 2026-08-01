@@ -1,12 +1,26 @@
 # Mentora Education CRM Platform Plan
 
+## Core Product Layers
+
+Mentora CRM is organized into five enterprise product layers.
+
+| Layer | Purpose | Current code coverage |
+| --- | --- | --- |
+| Platform Foundation | SaaS control plane for organizations, plans, billing, flags, limits, activation, branding, domains, global settings, and audit. | `organizations`, `subscriptions`, `payments`, `feature-flags`, `settings`, `admin/audit`, `organization-branding`, `module-records/coverage`. |
+| Identity and Organization | Who can access what across organization, business unit, campus, branch, department, team, and user hierarchy. | `auth`, `admin/rbac`, `contexts`, `organization-users`, `identity/hierarchy`, `business-units`, `campuses`, `branches`, `departments`, `teams`, `security-policies`. |
+| Generic CRM | Reusable CRM foundation for leads, contacts, sources, stages, activities, notes, tasks, follow-ups, meetings, assignments, tags, custom fields, imports/exports, and timelines. | Dedicated `leads`, `tasks`, `communications`, `events`, and generic `module-records` coverage for contacts, notes, meetings, tags, custom fields, and imports/exports. |
+| Education-Specific Modules | Admissions product depth: academic sessions, programs, courses, applications, documents, interviews, offers, scholarships, enrollment, fees, and student portal. | `learning`, `students`, `applications`, `admissions`, `documents`, `interviews`, `scholarships`, `payments`, `finance-ledgers`, `classrooms`, schedules, entitlements. |
+| Growth and Automation | Campaigns, landing pages, email/SMS/WhatsApp, workflow automation, scoring, attribution, telephony, chatbots, analytics, and AI assistance. | `campaigns`, `communications`, `whatsapp`, `call-center`, `workflows`, `analytics`, `ai-features`, `integrations`, `notifications`. |
+
+The backend coverage endpoint now returns a `layer` value per module so the CRM can display readiness by product layer instead of a flat, hard-to-govern module list.
+
 Last reviewed: 2026-07-29
 
 Current readiness note: the CRM codebase is build-clean and the 30-module roadmap has code-side Product Ready coverage, but customer production rollout still depends on the gates documented in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md).
 
 ## Positioning
 
-Mentora should become a multi-tenant education CRM and learning platform, inspired by education enrollment platforms such as Meritto but implemented with Mentora branding, data model, UX, and workflows.
+Mentora should become a multi-organization education CRM and learning platform, inspired by education enrollment platforms such as Meritto but implemented with Mentora branding, data model, UX, and workflows.
 
 Do not copy Meritto visual design, text, trademarks, or proprietary implementation. Build a functionally comparable platform for coaching institutes, schools, colleges, universities, study-abroad consultants, EdTech businesses, and franchise education teams.
 
@@ -26,7 +40,7 @@ mentora-admin-crm        Next.js admin CRM portal for organizations and platform
 | Lead centralization    | Leads, sources, widgets, landing pages, imports, duplicate blocking           |
 | Lead nurturing         | One-view lead profile, timeline, notes, tasks, follow-ups, scoring            |
 | Sales automation       | Assignment, stages, counselor queues, reminders, escalations                  |
-| User management        | Tenants, branches, departments, teams, roles, permissions, hierarchy          |
+| User management        | Organizations, branches, departments, teams, roles, permissions, hierarchy    |
 | Marketing automation   | Campaigns, UTM tracking, drip workflows, email/SMS/WhatsApp                   |
 | WhatsApp CRM           | Templates, conversations, delivery reports, automation                        |
 | Call center/mobile app | Counselor dashboard, calls, notes, tasks, geo check-ins later                 |
@@ -41,7 +55,7 @@ mentora-admin-crm        Next.js admin CRM portal for organizations and platform
 Implemented backend modules. These are top-level reusable API modules, not admin-CRM-only modules, so the admin portal, public website, mobile app, and future integrations can reuse the same APIs.
 
 ```text
-src/modules/tenants
+src/modules/organizations
 src/modules/leads
 src/modules/applications
 src/modules/tasks
@@ -67,7 +81,7 @@ src/modules/dashboard
 
 Initial collections:
 
-- `tenants`
+- `organizations`
 - `branches`
 - `lead_sources`
 - `lead_stages`
@@ -90,7 +104,7 @@ Initial collections:
 - `report_definitions`
 - `report_export_jobs`
 - `scholarship_applications`
-- `tenant_security_policies`
+- `organization_security_policies`
 - `user_memberships`
 - `whatsapp_conversations`
 - `workflow_rules`
@@ -99,12 +113,12 @@ Initial collections:
 Initial APIs:
 
 ```text
-POST /api/v1/tenants
-GET  /api/v1/tenants
+POST /api/v1/organizations
+GET  /api/v1/organizations
 POST /api/v1/leads
 POST /api/v1/leads/public
-GET  /api/v1/leads?tenantId=:tenantId
-GET  /api/v1/leads/:leadId?tenantId=:tenantId
+GET  /api/v1/leads?organizationId=:organizationId
+GET  /api/v1/leads/:leadId?organizationId=:organizationId
 POST /api/v1/leads/:leadId/assign
 POST /api/v1/leads/:leadId/change-stage
 POST /api/v1/leads/:leadId/activities
@@ -112,33 +126,33 @@ POST /api/v1/leads/:leadId/tags
 POST /api/v1/leads/:leadId/attachments
 POST /api/v1/leads/:leadId/score
 POST /api/v1/leads/:leadId/transfer
-GET  /api/v1/leads/:leadId/timeline?tenantId=:tenantId
-GET  /api/v1/leads/operations/export?tenantId=:tenantId
+GET  /api/v1/leads/:leadId/timeline?organizationId=:organizationId
+GET  /api/v1/leads/operations/export?organizationId=:organizationId
 POST /api/v1/applications
 POST /api/v1/applications/:applicationId/review
 POST /api/v1/applications/:applicationId/decision
 POST /api/v1/tasks
-GET  /api/v1/tasks/board?tenantId=:tenantId
+GET  /api/v1/tasks/board?organizationId=:organizationId
 POST /api/v1/tasks/:taskId/workflow
 POST /api/v1/campaigns/:campaignId/metrics
 POST /api/v1/admissions/:recordId/allocate
 POST /api/v1/admissions/:recordId/handoff
 POST /api/v1/documents
-GET  /api/v1/documents?tenantId=:tenantId
+GET  /api/v1/documents?organizationId=:organizationId
 POST /api/v1/documents/:documentId/verify
 POST /api/v1/finance-ledgers/:recordId/reconcile
 POST /api/v1/finance-ledgers/operations/export
 POST /api/v1/scholarships/:recordId/evaluate
 POST /api/v1/scholarships/:recordId/decision
-GET  /api/v1/integrations/providers?tenantId=:tenantId
+GET  /api/v1/integrations/providers?organizationId=:organizationId
 PUT  /api/v1/integrations/providers/:providerKey
-GET  /api/v1/security-policies?tenantId=:tenantId
+GET  /api/v1/security-policies?organizationId=:organizationId
 PUT  /api/v1/security-policies
 POST /api/v1/workflows/rules
 POST /api/v1/workflows/execute
 POST /api/v1/workflows/executions/:executionId/retry
 GET  /api/v1/dashboard/bootstrap
-GET  /api/v1/dashboard?tenantId=:tenantId
+GET  /api/v1/dashboard?organizationId=:organizationId
 GET  /api/v1/module-records/coverage
 ```
 
@@ -154,7 +168,7 @@ That route validates the minimum lead payload and forwards to `POST /api/v1/lead
 
 ## MVP Build Order
 
-1. Tenant management, branches, teams, RBAC, and audit.
+1. Organization management, branches, teams, RBAC, and audit.
 2. Lead CRM: sources, stages, lead list/detail, notes, timeline, tasks, assignment.
 3. Application/admission workflow: forms, applications, documents, stages, review.
 4. Communication: templates, email, SMS, WhatsApp, campaign logs.
@@ -165,7 +179,7 @@ That route validates the minimum lead payload and forwards to `POST /api/v1/lead
 
 ## Critical Architecture Rule
 
-Every tenant-owned CRM query must include `tenantId`. The MVP services use `src/common/utils/tenant-scope.util.ts` to convert and validate tenant IDs and user-provided ObjectIds before database access. Expand this into request-context enforcement after real CRM auth is wired, so tenant ID can be derived from the authenticated context rather than trusted from a query/body alone.
+Every organization-owned CRM query must include `organizationId`. The MVP services use `src/common/utils/organization-scope.util.ts` to convert and validate organization IDs and user-provided ObjectIds before database access. Expand this into request-context enforcement after real CRM auth is wired, so organization ID can be derived from the authenticated context rather than trusted from a query/body alone.
 
 ## Admin CRM UI Status
 
@@ -184,7 +198,7 @@ The admin portal now follows the existing Juaaree/Match Mate admin interaction m
 - Font Awesome React icons for module navigation, actions, status, and dashboard surfaces
 - Redux Toolkit state management for CRM login state, context selection, theme mode, active module, toast state, and server workspace loading
 - compact module icons and stronger visual hierarchy
-- role/context selector for multi-tenant demo users
+- role/context selector for multi-organization demo users
 - module status labels: Production MVP, Workflow MVP, and Foundation
 - module insight cards for operational signals
 - module action strip for search, add, reset, and export actions
@@ -229,15 +243,15 @@ Current CRM sections:
 - AI features
 - integrations
 - learning operations
-- tenants and users
+- organizations and users
 - security
 - settings
 
-Backend status: the high-traffic CRM areas are now top-level reusable NestJS modules. Tenants, users, leads, applications, admissions, campaigns, tasks, documents, workflows, finance ledgers, scholarships, reports, integrations, security policies, WhatsApp, call center, events, interviews, and field force have dedicated API surfaces where their workflows need separate business rules. `module_records` remains useful as a generic fallback for lower-depth modules and shared MVP records.
+Backend status: the high-traffic CRM areas are now top-level reusable NestJS modules. Organizations, users, leads, applications, admissions, campaigns, tasks, documents, workflows, finance ledgers, scholarships, reports, integrations, security policies, WhatsApp, call center, events, interviews, and field force have dedicated API surfaces where their workflows need separate business rules. The backend still uses `organizations` as the SaaS collection/API name for organizations. `module_records` remains useful as a generic fallback for lower-depth modules and shared MVP records.
 
-Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, tenants, active tenant scope, dashboard metrics, and module coverage in one payload. Dedicated CRM modules load from their own APIs where available, while lower-depth modules can still load from `/api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey`. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
+Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, organizations, active organization scope, dashboard metrics, and module coverage in one payload. Dedicated CRM modules load from their own APIs where available, while lower-depth modules can still load from `/api/v1/module-records?organizationId=:organizationId&moduleKey=:moduleKey`. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
 
-Access and security status: Authentication, User Management, and Security are product-ready from the Mentora codebase side. CRM login uses real API credentials, tenant context is enforced before protected writes, tenant users can be created and refreshed from the CRM, RBAC/audit/security-policy APIs are available, and the CRM action bar now supports session/device review exports, access review exports, MFA/SSO sandbox provider configuration, tenant security policy load/update, and security report setup. Remaining work in these three areas is external only: production SSO/MFA app credentials/callbacks, email invite delivery, optional external identity-directory sync, and backup evidence automation against the selected storage/provider.
+Access and security status: Authentication, User Management, and Security are product-ready from the Mentora codebase side. CRM login uses real API credentials, organization context is enforced before protected writes, organization users can be created and refreshed from the CRM, RBAC/audit/security-policy APIs are available, and the CRM action bar now supports session/device review exports, access review exports, MFA/SSO sandbox provider configuration, organization security policy load/update, and security report setup. Remaining work in these three areas is external only: production SSO/MFA app credentials/callbacks, email invite delivery, optional external identity-directory sync, and backup evidence automation against the selected storage/provider.
 
 Core CRM module status: Organization Management, Lead Management, Applications, Admissions, Scholarship, and Interview are product-ready from the Mentora codebase side. Organization setup covers universities, colleges, institutes, schools, coaching brands, franchises, branches, departments, domains, branding, and channel settings. Lead Management covers website/API/import capture, dedupe, scoring, assignment, nurture actions, tags, attachments, exports, and activity tracking. Applications cover form lifecycle, documents, reviewer notes, stage movement, interviews, offers, and admission confirmation actions. Admissions cover offer-to-enrollment actions, fee metadata, batch allocation, onboarding handoff, and learning-plan provisioning metadata. Scholarship covers eligibility criteria, verification metadata, approval/rejection, awards, payment-plan impact metadata, and audit trail. Interview covers scheduling metadata, interviewer/panel, result, remarks, score, offer recommendation, and admission handoff. Remaining work in these areas is external only: DNS/payment validation, ad/WhatsApp callbacks, voice-note storage, optional external form embed providers, ERP/LMS/payment callbacks, finance discount sync, and calendar sync.
 
@@ -249,14 +263,14 @@ Responsive target: the CRM is desktop/tablet-first. It should be fully usable on
 
 Enterprise UX backlog:
 
-- Saved views with filter presets per role and tenant.
+- Saved views with filter presets per role and organization.
 - Column chooser, sticky columns, table density controls, and export scope.
 - Advanced filters with date ranges, owners, tags, SLA, source, branch, and status.
 - Bulk actions with confirmation, permission checks, and audit trail.
 - Kanban pipeline views for leads, applications, tasks, and admissions.
 - Global command palette and cross-module search.
 - Notification center with approvals, SLA alerts, failed syncs, and assigned work.
-- User profile menu with account, role, active tenant, branch, and session controls.
+- User profile menu with account, role, active organization, branch, and session controls.
 - Activity timeline on every important record.
 - Empty, loading, error, and permission-denied states per module.
 - Keyboard-friendly navigation and accessible focus states.

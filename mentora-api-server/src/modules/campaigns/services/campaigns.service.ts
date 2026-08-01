@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
-  toTenantObjectId,
-} from '@/common/utils/tenant-scope.util';
+  toOrganizationObjectId,
+} from '@/common/utils/organization-scope.util';
 import {
   CreateCampaignDto,
   UpdateCampaignDto,
@@ -20,7 +20,7 @@ type CampaignListOptions = {
   sortBy?: string;
   sortOrder?: string;
   status?: string;
-  tenantId: string;
+  organizationId: string;
 };
 
 @Injectable()
@@ -33,7 +33,7 @@ export class CampaignsService {
   async createCampaign(dto: CreateCampaignDto) {
     return this.campaigns.create({
       ...dto,
-      tenantId: toTenantObjectId(dto.tenantId),
+      organizationId: toOrganizationObjectId(dto.organizationId),
       scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
     });
   }
@@ -44,7 +44,7 @@ export class CampaignsService {
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
-      tenantId: toTenantObjectId(options.tenantId),
+      organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.channel ? { channel: options.channel } : {}),
       ...(options.status ? { status: options.status } : {}),
     };
@@ -81,22 +81,22 @@ export class CampaignsService {
       ...dto,
       ...(dto.scheduledAt ? { scheduledAt: new Date(dto.scheduledAt) } : {}),
     };
-    delete update.tenantId;
+    delete update.organizationId;
     return this.campaigns.findOneAndUpdate(
       {
         _id: toRequiredObjectId(campaignId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
     );
   }
 
-  async archiveCampaign(campaignId: string, tenantId: string) {
+  async archiveCampaign(campaignId: string, organizationId: string) {
     return this.campaigns.findOneAndUpdate(
       {
         _id: toRequiredObjectId(campaignId),
-        tenantId: toTenantObjectId(tenantId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
@@ -107,7 +107,7 @@ export class CampaignsService {
     return this.campaigns.findOneAndUpdate(
       {
         _id: toRequiredObjectId(campaignId),
-        tenantId: toTenantObjectId(dto.tenantId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
       },
       {
         ...(dto.status ? { status: dto.status } : {}),

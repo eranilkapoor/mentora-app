@@ -13,7 +13,7 @@ import {
 
 export class CreateCrmDomainRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsString()
   title!: string;
@@ -66,7 +66,7 @@ export class CreateCrmDomainRecordDto {
 
 export class UpdateCrmDomainRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -112,7 +112,7 @@ export class UpdateCrmDomainRecordDto {
 
 export class CompleteCrmDomainRecordDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -130,7 +130,7 @@ export class CompleteCrmDomainRecordDto {
 
 export class BulkUpdateCrmDomainRecordStatusDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsArray()
   @ArrayMinSize(1)

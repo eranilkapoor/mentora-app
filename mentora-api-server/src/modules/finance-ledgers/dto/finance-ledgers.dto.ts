@@ -8,7 +8,7 @@ import {
 
 export class ReconcileLedgerDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsString()
@@ -21,7 +21,7 @@ export class ReconcileLedgerDto {
 
 export class ExportLedgerDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn(['csv', 'json'])

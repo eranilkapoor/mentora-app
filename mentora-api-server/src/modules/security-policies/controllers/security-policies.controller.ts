@@ -13,30 +13,30 @@ import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
-import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
-import { UpdateTenantSecurityPolicyDto } from '../dto/security-policies.dto';
+import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
+import { UpdateOrganizationSecurityPolicyDto } from '../dto/security-policies.dto';
 import { SecurityPoliciesService } from '../services/security-policies.service';
 
-@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
 @Controller('security-policies')
 export class SecurityPoliciesController {
   constructor(private readonly service: SecurityPoliciesService) {}
 
   @Get()
-  @Permissions(Permission.CRM_TENANT_VIEW)
-  async getPolicy(@Query('tenantId') tenantId: string) {
+  @Permissions(Permission.CRM_ORGANIZATION_VIEW)
+  async getPolicy(@Query('organizationId') organizationId: string) {
     return successResponse(
-      await this.service.getPolicy(tenantId),
+      await this.service.getPolicy(organizationId),
       'CRM_SECURITY_POLICY_FETCHED',
       'CRM security policy fetched',
     );
   }
 
   @Put()
-  @Permissions(Permission.CRM_TENANT_MANAGE)
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
   async updatePolicy(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdateTenantSecurityPolicyDto,
+    @Body() dto: UpdateOrganizationSecurityPolicyDto,
   ) {
     return successResponse(
       await this.service.updatePolicy(req.user.sub, dto),

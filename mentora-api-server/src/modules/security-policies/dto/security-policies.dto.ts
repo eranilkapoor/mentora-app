@@ -7,9 +7,9 @@ import {
   IsString,
 } from 'class-validator';
 
-export class UpdateTenantSecurityPolicyDto {
+export class UpdateOrganizationSecurityPolicyDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsBoolean()

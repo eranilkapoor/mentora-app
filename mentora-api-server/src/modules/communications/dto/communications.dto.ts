@@ -2,7 +2,7 @@ import { IsIn, IsMongoId, IsOptional, IsString } from 'class-validator';
 
 export class CreateCommunicationDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsIn(['lead', 'application', 'student', 'payment', 'general'])
   entityType!: string;
@@ -28,7 +28,7 @@ export class CreateCommunicationDto {
 
 export class UpdateCommunicationDto {
   @IsMongoId()
-  tenantId!: string;
+  organizationId!: string;
 
   @IsOptional()
   @IsIn(['email', 'sms', 'whatsapp', 'push', 'call', 'in_app'])
