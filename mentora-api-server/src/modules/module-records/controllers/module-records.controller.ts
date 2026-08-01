@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
+  BulkUpdateModuleRecordStatusDto,
   CreateModuleRecordDto,
   ExecuteModuleRecordDto,
   UpdateModuleRecordDto,
@@ -101,6 +102,32 @@ export class ModuleRecordsController {
     );
   }
 
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateModuleRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'EDUCATION_PLATFORM_MODULE_RECORDS_BULK_STATUS_UPDATED',
+      'CRM module records bulk status updated',
+    );
+  }
+
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getModuleRecord(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getModuleRecord(recordId, tenantId),
+      'EDUCATION_PLATFORM_MODULE_RECORD_FETCHED',
+      'CRM module record fetched',
+    );
+  }
+
   @Delete(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async deleteModuleRecord(
@@ -112,6 +139,20 @@ export class ModuleRecordsController {
       await this.service.deleteModuleRecord(req.user.sub, recordId, tenantId),
       'EDUCATION_PLATFORM_MODULE_RECORD_ARCHIVED',
       'CRM module record archived',
+    );
+  }
+
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restoreModuleRecord(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restoreModuleRecord(req.user.sub, recordId, tenantId),
+      'EDUCATION_PLATFORM_MODULE_RECORD_RESTORED',
+      'CRM module record restored',
     );
   }
 

@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -70,6 +71,30 @@ export class AdmissionsController {
       'CRM admissions fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_ADMISSION_FETCHED',
+      'CRM admission fetched',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_ADMISSIONS_BULK_STATUS_UPDATED',
+      'CRM admissions bulk status updated',
+    );
+  }
   @Post(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
@@ -94,6 +119,19 @@ export class AdmissionsController {
       await this.service.archive(req.user.sub, recordId, tenantId),
       'CRM_ADMISSION_ARCHIVED',
       'CRM admission archived',
+    );
+  }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_ADMISSION_RESTORED',
+      'CRM admission restored',
     );
   }
   @Post(':recordId/complete')

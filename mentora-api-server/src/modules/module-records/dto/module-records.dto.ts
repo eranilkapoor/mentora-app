@@ -1,4 +1,5 @@
 import {
+  ArrayMinSize,
   IsArray,
   IsDateString,
   IsIn,
@@ -98,4 +99,17 @@ export class ExecuteModuleRecordDto {
   @IsOptional()
   @IsObject()
   result?: Record<string, unknown>;
+}
+
+export class BulkUpdateModuleRecordStatusDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMongoId({ each: true })
+  recordIds!: string[];
+
+  @IsIn(['draft', 'open', 'in_progress', 'blocked', 'completed', 'archived'])
+  status!: string;
 }

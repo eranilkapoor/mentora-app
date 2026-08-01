@@ -1508,6 +1508,13 @@ select:focus-visible {
   color: var(--brand);
 }
 
+.action-row .bulk-status-select {
+  flex: 0 0 154px;
+  font-size: 12px;
+  font-weight: 800;
+  min-height: 36px;
+}
+
 .action-row span {
   color: var(--muted);
   font-size: 12px;

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -11,6 +12,7 @@ import {
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -61,6 +63,30 @@ export class FieldForceController {
       'CRM field visits fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_FIELD_VISIT_FETCHED',
+      'CRM field visit fetched',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_FIELD_VISITS_BULK_STATUS_UPDATED',
+      'CRM field visits bulk status updated',
+    );
+  }
   @Post(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
@@ -72,6 +98,32 @@ export class FieldForceController {
       await this.service.update(req.user.sub, recordId, dto),
       'CRM_FIELD_VISIT_UPDATED',
       'CRM field visit updated',
+    );
+  }
+  @Delete(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async archive(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archive(req.user.sub, recordId, tenantId),
+      'CRM_FIELD_VISIT_ARCHIVED',
+      'CRM field visit archived',
+    );
+  }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_FIELD_VISIT_RESTORED',
+      'CRM field visit restored',
     );
   }
   @Post(':recordId/complete')

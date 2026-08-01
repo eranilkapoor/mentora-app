@@ -14,6 +14,18 @@ Roadmap status uses **Product Ready** for code-side readiness: module ownership,
 | P0 | CRM desktop/tablet, public website, and mobile Android/iOS release-mode QA | Pending staging/device QA |
 | P0 | Child/student legal, subscription, privacy, account deletion, and AI tutoring disclosure review | Pending legal/security sign-off |
 
+### 2026-08-01 CRM CRUD Hardening
+
+| Status | Item |
+| --- | --- |
+| Done | Added shared CRM-domain `GET by id`, restore, and bulk status update operations for dedicated operational modules. |
+| Done | Applied detail/restore/bulk-status endpoints to admissions, call center, WhatsApp, events, interviews, field force, finance ledgers, and scholarships. |
+| Done | Added archive support to field-force records so field visits match the same CRUD lifecycle as other CRM modules. |
+| Done | Added `GET by id`, restore, and bulk status update to shared `module-records` fallback APIs. |
+| Done | Fixed completion/execution updates so `payload.completion` and `payload.execution` no longer overwrite the full payload object. |
+| Done | Added admin CRM Redux operations and UI controls for restore and selected-record bulk status updates. |
+| Verified | API lint/build and admin CRM typecheck/build pass after the hardening pass. |
+
 ## P0 Foundation
 
 | Status | Task                                                                                               |

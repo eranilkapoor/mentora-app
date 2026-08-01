@@ -32,6 +32,20 @@ Last reviewed: 2026-08-01
 | QA | CRM desktop/tablet, mobile release builds, public website, and API flows tested. |
 | Operations | Monitoring, backup/restore, rollback, incident contacts, support workflow ready. |
 
+## CRM Module CRUD Acceptance
+
+For a CRM SaaS module to be accepted as code-side production ready, it must support:
+
+- Create record.
+- List records with pagination, search, filters, sorting, and tenant scope.
+- View record detail by id.
+- Update record.
+- Archive record.
+- Restore archived record.
+- Bulk status update for selected records where the operation is business-safe.
+- Module-specific actions such as complete, execute, reconcile, allocate, verify, export, or provider test where applicable.
+- Audit logging for create/update/archive/restore/bulk/action operations where applicable.
+
 ## UAT Scenarios
 
 | Scenario | Expected result |

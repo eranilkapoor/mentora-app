@@ -12,6 +12,7 @@ import {
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -62,6 +63,30 @@ export class WhatsappController {
       'CRM WhatsApp conversations fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_COMMUNICATION_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_WHATSAPP_RECORD_FETCHED',
+      'CRM WhatsApp conversation fetched',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_WHATSAPP_BULK_STATUS_UPDATED',
+      'CRM WhatsApp conversations bulk status updated',
+    );
+  }
   @Delete(':recordId')
   @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
   async archive(
@@ -73,6 +98,19 @@ export class WhatsappController {
       await this.service.archive(req.user.sub, recordId, tenantId),
       'CRM_WHATSAPP_ARCHIVED',
       'CRM WhatsApp conversation archived',
+    );
+  }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_WHATSAPP_RESTORED',
+      'CRM WhatsApp conversation restored',
     );
   }
   @Post(':recordId')

@@ -12,6 +12,7 @@ import {
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -66,6 +67,30 @@ export class ScholarshipsController {
       'CRM scholarships fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_SCHOLARSHIP_FETCHED',
+      'CRM scholarship fetched',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_SCHOLARSHIPS_BULK_STATUS_UPDATED',
+      'CRM scholarships bulk status updated',
+    );
+  }
   @Delete(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async archive(
@@ -77,6 +102,19 @@ export class ScholarshipsController {
       await this.service.archive(req.user.sub, recordId, tenantId),
       'CRM_SCHOLARSHIP_ARCHIVED',
       'CRM scholarship archived',
+    );
+  }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_SCHOLARSHIP_RESTORED',
+      'CRM scholarship restored',
     );
   }
   @Post(':recordId')

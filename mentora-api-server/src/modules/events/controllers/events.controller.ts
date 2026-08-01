@@ -12,6 +12,7 @@ import {
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -62,6 +63,30 @@ export class EventsController {
       'CRM events fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_EVENT_FETCHED',
+      'CRM event fetched',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_EVENTS_BULK_STATUS_UPDATED',
+      'CRM events bulk status updated',
+    );
+  }
   @Delete(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async archive(
@@ -73,6 +98,19 @@ export class EventsController {
       await this.service.archive(req.user.sub, recordId, tenantId),
       'CRM_EVENT_ARCHIVED',
       'CRM event archived',
+    );
+  }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_EVENT_RESTORED',
+      'CRM event restored',
     );
   }
   @Post(':recordId')

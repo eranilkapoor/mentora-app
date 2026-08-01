@@ -47,6 +47,8 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   crmSessionActions,
   addLeadAttachment,
+  bulkUpdateDedicatedCrmRecordStatus,
+  bulkUpdateModuleRecordStatus,
   createTenant,
   createTenantUser,
   deleteDedicatedCrmRecord,
@@ -69,6 +71,8 @@ import {
   loadModuleRecords,
   loadCrmWorkspace,
   loginWithCredentials,
+  restoreDedicatedCrmRecord,
+  restoreModuleRecord,
   saveModuleRecord,
   saveDedicatedCrmRecord,
   runCrmRecordAction,
@@ -3305,6 +3309,87 @@ export default function CrmDashboardPage() {
     dispatch(crmSessionActions.setToast(`${activeModule.title} record archived`));
   }
 
+  async function restoreRow(row: string[]) {
+    if (!activeModule) return;
+    if (!activeTenantId) {
+      dispatch(crmSessionActions.setToast("Tenant context is required"));
+      return;
+    }
+    const recordId = findModuleRecordIdForRow(
+      workspace.moduleRecords[activeModule.id],
+      row,
+    );
+    if (!recordId) {
+      dispatch(crmSessionActions.setToast("API record was not found"));
+      return;
+    }
+    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+      await dispatch(
+        restoreDedicatedCrmRecord({
+          moduleKey: activeModule.id,
+          recordId,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    } else {
+      await dispatch(
+        restoreModuleRecord({
+          moduleKey: activeModule.id,
+          recordId,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    }
+    dispatch(crmSessionActions.setToast(`${activeModule.title} record restored`));
+  }
+
+  async function bulkUpdateSelectedStatus(status: string) {
+    if (!activeModule) return;
+    if (!activeTenantId) {
+      dispatch(crmSessionActions.setToast("Tenant context is required"));
+      return;
+    }
+    const selectedRows = visibleRows.filter((row) =>
+      selected.includes(row.join("|")),
+    );
+    const recordIds = selectedRows
+      .map((row) =>
+        findModuleRecordIdForRow(workspace.moduleRecords[activeModule.id], row),
+      )
+      .filter(Boolean);
+    if (recordIds.length === 0) {
+      dispatch(crmSessionActions.setToast("Select API-backed records first"));
+      return;
+    }
+    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+      await dispatch(
+        bulkUpdateDedicatedCrmRecordStatus({
+          moduleKey: activeModule.id,
+          recordIds,
+          status,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    } else {
+      await dispatch(
+        bulkUpdateModuleRecordStatus({
+          moduleKey: activeModule.id,
+          recordIds,
+          status,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    }
+    setSelected([]);
+    dispatch(
+      crmSessionActions.setToast(
+        `${recordIds.length} ${activeModule.title} record${
+          recordIds.length === 1 ? "" : "s"
+        } moved to ${status.replaceAll("_", " ")}`,
+      ),
+    );
+  }
+
   return (
     <div
       className={`admin-shell theme-${themeMode} ${
@@ -3482,7 +3567,9 @@ export default function CrmDashboardPage() {
             setView={setModuleView}
             openRecordForm={setRecordForm}
             archiveRow={archiveRow}
+            bulkUpdateSelectedStatus={bulkUpdateSelectedStatus}
             runAction={runAction}
+            restoreRow={restoreRow}
           />
         )}
 
@@ -4028,7 +4115,9 @@ function ModulePanel(props: {
   setView: (view: "list" | "grid") => void;
   openRecordForm: (form: { mode: "create" | "edit"; row?: string[] }) => void;
   archiveRow: (row: string[]) => Promise<void>;
+  bulkUpdateSelectedStatus: (status: string) => Promise<void>;
   runAction: (label: string) => Promise<void>;
+  restoreRow: (row: string[]) => Promise<void>;
 }) {
   const module = props.module;
   const readinessLabel = props.coverage
@@ -4163,6 +4252,22 @@ function ModulePanel(props: {
           >
             Reset Search
           </button>
+          <select
+            aria-label="Bulk update selected status"
+            className="form-select form-select-sm bulk-status-select"
+            disabled={props.selectedCount === 0}
+            onChange={(event) => {
+              const value = event.target.value;
+              event.target.value = "";
+              if (value) void props.bulkUpdateSelectedStatus(value);
+            }}
+          >
+            <option value="">Bulk status</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In progress</option>
+            <option value="completed">Completed</option>
+            <option value="archived">Archived</option>
+          </select>
           <span>{props.selectedCount} selected</span>
         </div>
         <div className="view-toolbar">
@@ -4304,6 +4409,9 @@ function ModulePanel(props: {
                 ) : (
                   props.rows.map((row, rowIndex) => {
                   const id = row.join("|");
+                  const isArchived = row.some(
+                    (value) => value.toLowerCase() === "archived",
+                  );
                   return (
                     <tr
                       className={
@@ -4339,15 +4447,27 @@ function ModulePanel(props: {
                           <Icon name="settings" />
                           Edit
                         </button>
-                        <button
-                          onClick={() => {
-                            void props.archiveRow(row);
-                          }}
-                          type="button"
-                        >
-                          <Icon name="shield" />
-                          Archive
-                        </button>
+                        {isArchived ? (
+                          <button
+                            onClick={() => {
+                              void props.restoreRow(row);
+                            }}
+                            type="button"
+                          >
+                            <Icon name="check" />
+                            Restore
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              void props.archiveRow(row);
+                            }}
+                            type="button"
+                          >
+                            <Icon name="shield" />
+                            Archive
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -4377,6 +4497,9 @@ function ModulePanel(props: {
             ) : (
               props.rows.map((row) => {
               const id = row.join("|");
+              const isArchived = row.some(
+                (value) => value.toLowerCase() === "archived",
+              );
               return (
                 <article
                   className={`record-card ${
@@ -4417,15 +4540,27 @@ function ModulePanel(props: {
                     >
                       Edit
                     </button>
-                    <button
-                      className="btn btn-light btn-sm"
-                      onClick={() => {
-                        void props.archiveRow(row);
-                      }}
-                      type="button"
-                    >
-                      Archive
-                    </button>
+                    {isArchived ? (
+                      <button
+                        className="btn btn-light btn-sm"
+                        onClick={() => {
+                          void props.restoreRow(row);
+                        }}
+                        type="button"
+                      >
+                        Restore
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-light btn-sm"
+                        onClick={() => {
+                          void props.archiveRow(row);
+                        }}
+                        type="button"
+                      >
+                        Archive
+                      </button>
+                    )}
                   </div>
                 </article>
               );

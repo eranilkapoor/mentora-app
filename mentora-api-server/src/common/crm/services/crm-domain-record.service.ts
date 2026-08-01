@@ -7,6 +7,7 @@ import {
 } from '@/common/utils/tenant-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -142,6 +143,16 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     return record;
   }
 
+  async getById(recordId: string, tenantId: string): Promise<TDocument> {
+    const record = await this.model.findOne({
+      _id: toRequiredObjectId(recordId),
+      tenantId: toTenantObjectId(tenantId),
+    });
+    if (!record)
+      throw new NotFoundException(`${this.resource} record not found`);
+    return record;
+  }
+
   async complete(
     userId: string,
     recordId: string,
@@ -156,14 +167,12 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
         $set: {
           status: dto.outcome === 'failed' ? 'rejected' : 'completed',
           completedAt: new Date(),
-          payload: {
-            completion: {
-              completedAt: new Date().toISOString(),
-              completedBy: userId,
-              outcome: dto.outcome ?? 'completed',
-              score: dto.score,
-              result: dto.result ?? {},
-            },
+          'payload.completion': {
+            completedAt: new Date().toISOString(),
+            completedBy: userId,
+            outcome: dto.outcome ?? 'completed',
+            score: dto.score,
+            result: dto.result ?? {},
           },
         },
       },
@@ -178,6 +187,70 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       record,
     );
     return record;
+  }
+
+  async restore(
+    userId: string,
+    recordId: string,
+    tenantId: string,
+  ): Promise<TDocument> {
+    const record = await this.model.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(recordId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'open' } },
+      { new: true },
+    );
+    if (!record)
+      throw new NotFoundException(`${this.resource} record not found`);
+    await this.writeAudit(
+      userId,
+      `${this.resource}.restored`,
+      tenantId,
+      record,
+    );
+    return record;
+  }
+
+  async bulkUpdateStatus(
+    userId: string,
+    dto: BulkUpdateCrmDomainRecordStatusDto,
+  ): Promise<{ matched: number; modified: number; status: string }> {
+    const recordIds = dto.recordIds.map((recordId) =>
+      toRequiredObjectId(recordId),
+    );
+    const result = await this.model.updateMany(
+      {
+        _id: { $in: recordIds },
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      {
+        $set: {
+          status: dto.status,
+          updatedAt: new Date(),
+        },
+      },
+    );
+    await this.auditService.write({
+      actorId: userId,
+      action: `${this.resource}.bulk_status_updated`,
+      resource: this.resource,
+      after: {
+        matched: result.matchedCount,
+        modified: result.modifiedCount,
+        status: dto.status,
+      },
+      metadata: {
+        recordIds: dto.recordIds,
+        tenantId: dto.tenantId,
+      },
+    });
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
   }
 
   async archive(

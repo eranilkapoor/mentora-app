@@ -8,6 +8,7 @@ import {
 } from '@/common/utils/tenant-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
+  BulkUpdateModuleRecordStatusDto,
   CreateModuleRecordDto,
   ExecuteModuleRecordDto,
   UpdateModuleRecordDto,
@@ -140,6 +141,17 @@ export class ModuleRecordsService {
     return record;
   }
 
+  async getModuleRecord(recordId: string, tenantId: string) {
+    const record = await this.moduleRecords.findOne({
+      _id: toRequiredObjectId(recordId),
+      tenantId: toTenantObjectId(tenantId),
+    });
+    if (!record) {
+      throw new NotFoundException('Education CRM module record not found');
+    }
+    return record;
+  }
+
   async executeModuleRecord(
     userId: string,
     recordId: string,
@@ -151,13 +163,11 @@ export class ModuleRecordsService {
       {
         $set: {
           status: dto.outcome === 'failed' ? 'blocked' : 'completed',
-          payload: {
-            execution: {
-              executedAt: new Date().toISOString(),
-              executedBy: userId,
-              outcome: dto.outcome ?? 'completed',
-              result: dto.result ?? {},
-            },
+          'payload.execution': {
+            executedAt: new Date().toISOString(),
+            executedBy: userId,
+            outcome: dto.outcome ?? 'completed',
+            result: dto.result ?? {},
           },
         },
       },
@@ -180,6 +190,41 @@ export class ModuleRecordsService {
     );
 
     return record;
+  }
+
+  async bulkUpdateStatus(
+    userId: string | undefined,
+    dto: BulkUpdateModuleRecordStatusDto,
+  ) {
+    const recordIds = dto.recordIds.map((recordId) =>
+      toRequiredObjectId(recordId),
+    );
+    const result = await this.moduleRecords.updateMany(
+      {
+        _id: { $in: recordIds },
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: { status: dto.status, updatedAt: new Date() } },
+    );
+    await this.writeAudit(
+      userId,
+      'crm_module_record.bulk_status_updated',
+      dto.tenantId,
+      toRequiredObjectId(dto.recordIds[0]),
+      {
+        after: {
+          matched: result.matchedCount,
+          modified: result.modifiedCount,
+          status: dto.status,
+        },
+        metadata: { recordIds: dto.recordIds },
+      },
+    );
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
   }
 
   async exportModuleRecords(tenantId: string, moduleKey?: string) {
@@ -235,6 +280,35 @@ export class ModuleRecordsService {
     await this.writeAudit(
       userId,
       'crm_module_record.archived',
+      tenantId,
+      record._id,
+      {
+        after: this.toAuditRecord(record.toObject()),
+        metadata: { moduleKey: record.moduleKey },
+      },
+    );
+    return record;
+  }
+
+  async restoreModuleRecord(
+    userId: string | undefined,
+    recordId: string,
+    tenantId: string,
+  ) {
+    const record = await this.moduleRecords.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(recordId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'open' } },
+      { new: true },
+    );
+    if (!record) {
+      throw new NotFoundException('Education CRM module record not found');
+    }
+    await this.writeAudit(
+      userId,
+      'crm_module_record.restored',
       tenantId,
       record._id,
       {

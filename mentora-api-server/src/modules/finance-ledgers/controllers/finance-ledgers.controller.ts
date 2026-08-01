@@ -12,6 +12,7 @@ import {
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import {
+  BulkUpdateCrmDomainRecordStatusDto,
   CompleteCrmDomainRecordDto,
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
@@ -66,6 +67,18 @@ export class FinanceLedgersController {
       'CRM ledger entries fetched',
     );
   }
+  @Get(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async getById(
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.getById(recordId, tenantId),
+      'CRM_LEDGER_ENTRY_FETCHED',
+      'CRM ledger entry fetched',
+    );
+  }
 
   @Delete(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
@@ -80,6 +93,19 @@ export class FinanceLedgersController {
       'CRM ledger entry archived',
     );
   }
+  @Post(':recordId/restore')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async restore(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.restore(req.user.sub, recordId, tenantId),
+      'CRM_LEDGER_ENTRY_RESTORED',
+      'CRM ledger entry restored',
+    );
+  }
 
   @Post('operations/export')
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
@@ -88,6 +114,18 @@ export class FinanceLedgersController {
       await this.service.exportLedger(dto),
       'CRM_LEDGER_EXPORTED',
       'CRM ledger exported',
+    );
+  }
+  @Post('operations/bulk-status')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async bulkUpdateStatus(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
+  ) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(req.user.sub, dto),
+      'CRM_LEDGER_ENTRIES_BULK_STATUS_UPDATED',
+      'CRM ledger entries bulk status updated',
     );
   }
 

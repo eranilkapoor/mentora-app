@@ -534,6 +534,96 @@ export const deleteDedicatedCrmRecord = createAsyncThunk(
   },
 );
 
+export const restoreModuleRecord = createAsyncThunk(
+  "crmWorkspace/restoreModuleRecord",
+  async ({
+    moduleKey,
+    recordId,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordId: string;
+    tenantId: string;
+  }) => {
+    const response = await sendJson(
+      `/module-records/${recordId}/restore?tenantId=${encodeURIComponent(
+        tenantId,
+      )}`,
+      "POST",
+      {},
+    );
+    return { moduleKey, recordId, response };
+  },
+);
+
+export const restoreDedicatedCrmRecord = createAsyncThunk(
+  "crmWorkspace/restoreDedicatedCrmRecord",
+  async ({
+    moduleKey,
+    recordId,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordId: string;
+    tenantId: string;
+  }) => {
+    const route = dedicatedCrmRoutes[moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const response = await sendJson(
+      `${route}/${recordId}/restore?tenantId=${encodeURIComponent(tenantId)}`,
+      "POST",
+      {},
+    );
+    return { moduleKey, recordId, response };
+  },
+);
+
+export const bulkUpdateModuleRecordStatus = createAsyncThunk(
+  "crmWorkspace/bulkUpdateModuleRecordStatus",
+  async ({
+    moduleKey,
+    recordIds,
+    status,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordIds: string[];
+    status: string;
+    tenantId: string;
+  }) => {
+    const response = await sendJson("/module-records/operations/bulk-status", "POST", {
+      recordIds,
+      status,
+      tenantId,
+    });
+    return { moduleKey, recordIds, response, status };
+  },
+);
+
+export const bulkUpdateDedicatedCrmRecordStatus = createAsyncThunk(
+  "crmWorkspace/bulkUpdateDedicatedCrmRecordStatus",
+  async ({
+    moduleKey,
+    recordIds,
+    status,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordIds: string[];
+    status: string;
+    tenantId: string;
+  }) => {
+    const route = dedicatedCrmRoutes[moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const response = await sendJson(`${route}/operations/bulk-status`, "POST", {
+      recordIds,
+      status,
+      tenantId,
+    });
+    return { moduleKey, recordIds, response, status };
+  },
+);
+
 export const saveDedicatedCrmRecord = createAsyncThunk(
   "crmWorkspace/saveDedicatedCrmRecord",
   async (draft: ModuleRecordDraft) => {
@@ -1162,6 +1252,56 @@ const crmWorkspaceSlice = createSlice({
         const records = state.moduleRecords[action.payload.moduleKey] ?? [];
         state.moduleRecords[action.payload.moduleKey] = records.filter(
           (item) => getRecordId(item) !== action.payload.recordId,
+        );
+        state.error = null;
+      })
+      .addCase(restoreModuleRecord.fulfilled, (state, action) => {
+        const record = normalizeApiObject(action.payload.response);
+        const moduleKey = action.payload.moduleKey;
+        const records = state.moduleRecords[moduleKey] ?? [];
+        const index = records.findIndex(
+          (item) => getRecordId(item) === action.payload.recordId,
+        );
+        if (index >= 0) {
+          records[index] = record;
+        } else {
+          records.unshift(record);
+        }
+        state.moduleRecords[moduleKey] = records;
+        state.error = null;
+      })
+      .addCase(restoreDedicatedCrmRecord.fulfilled, (state, action) => {
+        const record = normalizeApiObject(action.payload.response);
+        const moduleKey = action.payload.moduleKey;
+        const records = state.moduleRecords[moduleKey] ?? [];
+        const index = records.findIndex(
+          (item) => getRecordId(item) === action.payload.recordId,
+        );
+        if (index >= 0) {
+          records[index] = record;
+        } else {
+          records.unshift(record);
+        }
+        state.moduleRecords[moduleKey] = records;
+        state.error = null;
+      })
+      .addCase(bulkUpdateModuleRecordStatus.fulfilled, (state, action) => {
+        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+        const recordIds = new Set(action.payload.recordIds);
+        state.moduleRecords[action.payload.moduleKey] = records.map((record) =>
+          recordIds.has(getRecordId(record))
+            ? { ...(record as Record<string, unknown>), status: action.payload.status }
+            : record,
+        );
+        state.error = null;
+      })
+      .addCase(bulkUpdateDedicatedCrmRecordStatus.fulfilled, (state, action) => {
+        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+        const recordIds = new Set(action.payload.recordIds);
+        state.moduleRecords[action.payload.moduleKey] = records.map((record) =>
+          recordIds.has(getRecordId(record))
+            ? { ...(record as Record<string, unknown>), status: action.payload.status }
+            : record,
         );
         state.error = null;
       })

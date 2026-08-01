@@ -22,6 +22,15 @@ These checks passed on 2026-07-29:
 | Mobile lint | `npm --prefix mentora-mobile-app run lint` | Passed |
 | Mobile i18n | `npm --prefix mentora-mobile-app run i18n:check` | Passed for 1183 static keys across English and Hindi |
 
+Additional CRM hardening checks passed on 2026-08-01:
+
+| Area | Command | Result |
+| --- | --- | --- |
+| API server lint | `npm --prefix mentora-api-server run lint:check` | Passed |
+| API server build | `npm --prefix mentora-api-server run build` | Passed |
+| Admin CRM typecheck | `npm --prefix mentora-admin-crm run lint` | Passed |
+| Admin CRM build | `npm --prefix mentora-admin-crm run build` | Passed |
+
 ## Application Readiness
 
 | Application | Current state | Production blockers |
@@ -34,6 +43,8 @@ These checks passed on 2026-07-29:
 ## Module Readiness Interpretation
 
 The roadmap uses **Product Ready** to mean the repository has dedicated code-side module ownership, tenant guards, API surfaces, frontend entry points, and audit-aware operations where applicable. It does not mean the module is live-production enabled.
+
+As of 2026-08-01, the dedicated operational CRM modules and the shared module-record fallback support the expected CRM record lifecycle: create, list with pagination/search/filter/sort, get by id, update, archive, restore, complete/execute where applicable, and selected-record bulk status update from the admin CRM.
 
 For production launch, every externally connected module must pass provider activation:
 

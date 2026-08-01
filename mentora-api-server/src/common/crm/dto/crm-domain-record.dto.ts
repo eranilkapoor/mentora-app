@@ -1,5 +1,6 @@
 import {
   IsArray,
+  ArrayMinSize,
   IsDateString,
   IsIn,
   IsMongoId,
@@ -125,4 +126,25 @@ export class CompleteCrmDomainRecordDto {
   @IsOptional()
   @IsObject()
   result?: Record<string, unknown>;
+}
+
+export class BulkUpdateCrmDomainRecordStatusDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMongoId({ each: true })
+  recordIds!: string[];
+
+  @IsIn([
+    'draft',
+    'open',
+    'in_progress',
+    'approved',
+    'rejected',
+    'completed',
+    'archived',
+  ])
+  status!: string;
 }
