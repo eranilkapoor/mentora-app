@@ -92,6 +92,28 @@ export type OrganizationUserDraft = {
   organizationId: string;
 };
 
+export type OrganizationSetupDraft = {
+  address?: string;
+  branchId?: string;
+  businessUnitId?: string;
+  channel?: string;
+  city?: string;
+  code?: string;
+  departmentId?: string;
+  domains?: string;
+  function?: string;
+  limits?: Record<string, unknown>;
+  logoUrl?: string;
+  name?: string;
+  organizationId: string;
+  primaryColor?: string;
+  providerKey?: string;
+  secondaryColor?: string;
+  senderName?: string;
+  state?: string;
+  status?: string;
+};
+
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
@@ -102,12 +124,12 @@ function setCrmAccessToken(token: string) {
   crmAccessToken = token;
 }
 
-type PersistedCrmSession = Pick<
+export type PersistedCrmSession = Pick<
   CrmSessionState,
   "accessToken" | "activeContext" | "activeId" | "loggedInUser" | "themeMode"
 >;
 
-function readPersistedCrmSession(): Partial<PersistedCrmSession> {
+export function readPersistedCrmSession(): Partial<PersistedCrmSession> {
   if (typeof window === "undefined") return {};
   try {
     const raw = window.localStorage.getItem(crmSessionStorageKey);
@@ -196,6 +218,69 @@ const dedicatedCrmRoutes: Record<string, string> = {
   tasks: "/tasks",
   whatsapp: "/whatsapp",
 };
+
+const allAdminModuleIds = [
+  "dashboard",
+  "platform-foundation",
+  "authentication",
+  "users",
+  "organizations",
+  "security",
+  "feature-flags",
+  "usage-limits",
+  "billing",
+  "branding",
+  "global-settings",
+  "audit-logs",
+  "leads",
+  "contacts",
+  "lead-sources",
+  "lead-stages",
+  "activities",
+  "notes",
+  "tasks",
+  "follow-ups",
+  "meetings",
+  "assignments",
+  "tags",
+  "custom-fields",
+  "imports-exports",
+  "students",
+  "academic-sessions",
+  "programs",
+  "courses",
+  "specializations",
+  "applications",
+  "admissions",
+  "enrollment",
+  "fees",
+  "scholarship",
+  "interview",
+  "campaigns",
+  "marketing-automation",
+  "landing-pages",
+  "lead-scoring",
+  "marketing-attribution",
+  "communications",
+  "emails",
+  "sms",
+  "notifications",
+  "call-center",
+  "whatsapp",
+  "telephony",
+  "chatbots",
+  "automation",
+  "mobile-app",
+  "calendar",
+  "finance",
+  "events",
+  "field-force",
+  "reports",
+  "analytics",
+  "ai-features",
+  "integrations",
+  "support",
+];
 
 const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   admissions: "POST",
@@ -408,9 +493,9 @@ export const loginWithCredentials = createAsyncThunk(
         {
           branch: "All Branches",
           label: "Authenticated CRM Workspace",
-          modules: ["dashboard", ...Object.keys(dedicatedCrmRoutes)],
+          modules: allAdminModuleIds,
           role: "super_admin",
-          organization: "Server Organizations",
+          organization: "All Organizations",
         },
       ],
     } satisfies AuthenticatedCrmUser;
@@ -425,6 +510,13 @@ export const loadCrmWorkspace = createAsyncThunk(
     return getJson(
       `/dashboard/bootstrap${query.size ? `?${query.toString()}` : ""}`,
     );
+  },
+);
+
+export const loadOrganizations = createAsyncThunk(
+  "crmWorkspace/loadOrganizations",
+  async () => {
+    return getJson("/organizations?limit=100&status=active");
   },
 );
 
@@ -864,60 +956,90 @@ export const runCrmRecordAction = createAsyncThunk(
   },
 );
 
-export const createSampleDepartment = createAsyncThunk(
-  "crmWorkspace/createSampleDepartment",
-  async ({ organizationId }: { organizationId: string }) => {
+export const createBranch = createAsyncThunk(
+  "crmWorkspace/createBranch",
+  async (draft: OrganizationSetupDraft) => {
+    return sendJson("/branches", "POST", {
+      organizationId: draft.organizationId,
+      businessUnitId: draft.businessUnitId || undefined,
+      city: draft.city || undefined,
+      code: draft.code,
+      name: draft.name,
+      state: draft.state || undefined,
+    });
+  },
+);
+
+export const createDepartment = createAsyncThunk(
+  "crmWorkspace/createDepartment",
+  async (draft: OrganizationSetupDraft) => {
     return sendJson("/departments", "POST", {
-      organizationId,
-      code: "ADM",
-      function: "admissions",
-      name: "Admissions",
+      organizationId: draft.organizationId,
+      branchId: draft.branchId || undefined,
+      businessUnitId: draft.businessUnitId || undefined,
+      code: draft.code,
+      function: draft.function || undefined,
+      name: draft.name,
     });
   },
 );
 
-export const createSampleTeam = createAsyncThunk(
-  "crmWorkspace/createSampleTeam",
-  async ({ organizationId }: { organizationId: string }) => {
+export const createTeam = createAsyncThunk(
+  "crmWorkspace/createTeam",
+  async (draft: OrganizationSetupDraft) => {
     return sendJson("/teams", "POST", {
-      organizationId,
-      capacityRules: {
-        maxOpenLeadsPerCounselor: 80,
-        roundRobin: true,
-      },
-      code: "COUNSELING",
-      name: "Counseling Team",
+      organizationId: draft.organizationId,
+      code: draft.code,
+      departmentId: draft.departmentId || undefined,
+      name: draft.name,
     });
   },
 );
 
-export const updateSampleBranding = createAsyncThunk(
-  "crmWorkspace/updateSampleBranding",
-  async ({ organizationId }: { organizationId: string }) => {
+export const createCampus = createAsyncThunk(
+  "crmWorkspace/createCampus",
+  async (draft: OrganizationSetupDraft) => {
+    return sendJson("/campuses", "POST", {
+      organizationId: draft.organizationId,
+      address: draft.address || undefined,
+      branchId: draft.branchId || undefined,
+      businessUnitId: draft.businessUnitId || undefined,
+      code: draft.code,
+      name: draft.name,
+    });
+  },
+);
+
+export const updateOrganizationBranding = createAsyncThunk(
+  "crmWorkspace/updateOrganizationBranding",
+  async (draft: OrganizationSetupDraft) => {
     return sendJson("/organization-branding", "POST", {
-      organizationId,
-      domains: ["mentora.test"],
-      primaryColor: "#2563eb",
-      secondaryColor: "#06b6d4",
-      senderName: "Mentora Admissions",
+      organizationId: draft.organizationId,
+      domains: draft.domains
+        ?.split(",")
+        .map((domain) => domain.trim())
+        .filter(Boolean),
+      logoUrl: draft.logoUrl || undefined,
+      primaryColor: draft.primaryColor || undefined,
+      secondaryColor: draft.secondaryColor || undefined,
+      senderName: draft.senderName || undefined,
     });
   },
 );
 
-export const updateSampleChannelSetting = createAsyncThunk(
-  "crmWorkspace/updateSampleChannelSetting",
-  async ({ organizationId }: { organizationId: string }) => {
+export const updateChannelSetting = createAsyncThunk(
+  "crmWorkspace/updateChannelSetting",
+  async (draft: OrganizationSetupDraft) => {
     return sendJson("/channel-settings", "POST", {
-      organizationId,
-      channel: "whatsapp",
-      limits: {
-        dailyMessages: 5000,
-      },
-      provider: {
-        mode: "sandbox",
-        providerKey: "whatsapp_business",
-      },
-      status: "sandbox",
+      organizationId: draft.organizationId,
+      channel: draft.channel,
+      limits: draft.limits,
+      provider: draft.providerKey
+        ? {
+            providerKey: draft.providerKey,
+          }
+        : undefined,
+      status: draft.status || "sandbox",
     });
   },
 );
@@ -1009,18 +1131,16 @@ export const updateSecurityPolicy = createAsyncThunk(
   },
 );
 
-const persistedSession = readPersistedCrmSession();
-
 const initialSessionState: CrmSessionState = {
-  activeContext: persistedSession.activeContext ?? null,
-  activeId: persistedSession.activeId ?? "dashboard",
-  accessToken: persistedSession.accessToken ?? "",
+  activeContext: null,
+  activeId: "dashboard",
+  accessToken: "",
   loginEmail: "",
   loginError: null,
   loginPassword: "",
-  loggedInUser: persistedSession.loggedInUser ?? null,
-  themeMode: persistedSession.themeMode ?? "system",
-  toast: persistedSession.accessToken ? "Session restored" : "Ready",
+  loggedInUser: null,
+  themeMode: "system",
+  toast: "Ready",
 };
 
 const initialWorkspaceState: CrmWorkspaceState = {
@@ -1132,6 +1252,23 @@ const crmSessionSlice = createSlice({
     setToast(state, action: PayloadAction<string>) {
       state.toast = action.payload;
     },
+    restorePersistedSession(
+      state,
+      action: PayloadAction<Partial<PersistedCrmSession>>,
+    ) {
+      const session = action.payload;
+      if (!session.accessToken || !session.loggedInUser) {
+        return;
+      }
+
+      state.activeContext = session.activeContext ?? null;
+      state.activeId = session.activeId ?? "dashboard";
+      state.accessToken = session.accessToken;
+      state.loggedInUser = session.loggedInUser;
+      state.themeMode = session.themeMode ?? "system";
+      state.toast = "Session restored";
+      setCrmAccessToken(session.accessToken);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -1213,8 +1350,11 @@ const crmWorkspaceSlice = createSlice({
           moduleCoverage?: unknown;
           organizations?: unknown;
         };
+        const organizations = normalizeApiData(data.organizations);
         state.activeOrganizationId =
-          typeof data.activeOrganizationId === "string" ? data.activeOrganizationId : "";
+          typeof data.activeOrganizationId === "string"
+            ? data.activeOrganizationId
+            : getRecordId(organizations[0]);
         state.activeBranchId = "";
         state.branches = [];
         state.businessUnits = [];
@@ -1224,8 +1364,16 @@ const crmWorkspaceSlice = createSlice({
         state.contexts = normalizeApiData(data.contexts);
         state.coverage = normalizeApiData(data.moduleCoverage);
         state.dashboard = data.dashboard ?? null;
-        state.organizations = normalizeApiData(data.organizations);
+        state.organizations = organizations;
         state.loading = false;
+      })
+      .addCase(loadOrganizations.fulfilled, (state, action) => {
+        const organizations = normalizeApiData(action.payload);
+        state.organizations = organizations;
+        if (!state.activeOrganizationId) {
+          state.activeOrganizationId = getRecordId(organizations[0]);
+        }
+        state.error = null;
       })
       .addCase(loadCrmWorkspace.rejected, (state, action) => {
         state.error =
@@ -1450,16 +1598,22 @@ const crmWorkspaceSlice = createSlice({
       .addCase(runCrmRecordAction.fulfilled, (state) => {
         state.error = null;
       })
-      .addCase(createSampleDepartment.fulfilled, (state) => {
+      .addCase(createBranch.fulfilled, (state) => {
         state.error = null;
       })
-      .addCase(createSampleTeam.fulfilled, (state) => {
+      .addCase(createCampus.fulfilled, (state) => {
         state.error = null;
       })
-      .addCase(updateSampleBranding.fulfilled, (state) => {
+      .addCase(createDepartment.fulfilled, (state) => {
         state.error = null;
       })
-      .addCase(updateSampleChannelSetting.fulfilled, (state) => {
+      .addCase(createTeam.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(updateOrganizationBranding.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(updateChannelSetting.fulfilled, (state) => {
         state.error = null;
       })
       .addCase(loadOrganizationUsers.fulfilled, (state, action) => {

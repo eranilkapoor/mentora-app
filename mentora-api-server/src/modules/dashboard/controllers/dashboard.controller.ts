@@ -20,7 +20,11 @@ export class DashboardController {
     @Query('organizationId') organizationId?: string,
   ) {
     return successResponse(
-      await this.service.getBootstrap(req.user.sub, organizationId),
+      await this.service.getBootstrap(
+        req.user.sub,
+        organizationId,
+        req.user.roles,
+      ),
       'EDUCATION_PLATFORM_DASHBOARD_BOOTSTRAPPED',
       'CRM dashboard bootstrap fetched',
     );

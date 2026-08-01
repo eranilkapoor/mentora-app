@@ -1,6 +1,6 @@
 export type ModuleStatus = "Active" | "Configured" | "Setup";
 
-export type CrmModule = {
+export type AdminModule = {
   actions?: string[];
   columns: string[];
   description: string;

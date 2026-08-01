@@ -1,1 +1,1 @@
-export { default } from "./components/CrmShell";
+export { default } from "./components/AdminShell";

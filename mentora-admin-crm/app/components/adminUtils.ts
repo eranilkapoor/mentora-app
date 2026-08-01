@@ -1,4 +1,4 @@
-import type { CrmModule, ModuleCoverage, ModuleStatus } from "./crmTypes";
+import type { AdminModule, ModuleCoverage, ModuleStatus } from "./adminTypes";
 
 export function statusClass(status?: ModuleStatus) {
   if (status === "Active") return "good";
@@ -81,7 +81,7 @@ export function getDashboardMetric(
 }
 
 export function getModuleCardMetric(
-  module: CrmModule,
+  module: AdminModule,
   workspace: {
     dashboard: unknown;
     moduleRecords: Record<string, unknown[]>;
@@ -138,7 +138,7 @@ export function normalizeResponseArray(value: unknown): unknown[] {
 }
 
 export function getServerRowsForModule(
-  module: CrmModule,
+  module: AdminModule,
   workspace: {
     moduleRecords: Record<string, unknown[]>;
     organizations: unknown[];
@@ -151,7 +151,7 @@ export function getServerRowsForModule(
   return recordsToRows(workspace.moduleRecords[module.id], module);
 }
 
-export function recordsToRows(records: unknown[] | undefined, module: CrmModule) {
+export function recordsToRows(records: unknown[] | undefined, module: AdminModule) {
   if (!records?.length) return [];
 
   return records.map((record) => {
@@ -214,7 +214,7 @@ export function getServerFilterValue(
     .find((value) => normalized.has(value));
 }
 
-function organizationRecordsToRows(records: unknown[] | undefined, module: CrmModule) {
+function organizationRecordsToRows(records: unknown[] | undefined, module: AdminModule) {
   if (!records?.length) return [];
 
   return records.map((record) => {

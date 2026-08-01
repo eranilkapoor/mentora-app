@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Role } from '@/common/enums';
 import { toOrganizationObjectId } from '@/common/utils/organization-scope.util';
 import { ContextsService } from '@/modules/contexts/services/contexts.service';
 import { ModuleCoverageService } from '@/modules/module-records/services/module-coverage.service';
@@ -38,7 +39,11 @@ export class DashboardService {
     private readonly organizationsService: OrganizationsService,
   ) {}
 
-  async getBootstrap(userId: string, organizationId?: string) {
+  async getBootstrap(
+    userId: string,
+    organizationId?: string,
+    roles: Role[] = [],
+  ) {
     const [contexts, organizationResult] = await Promise.all([
       this.contextsService.listUserContexts(userId),
       this.organizationsService.listOrganizations({
@@ -47,15 +52,33 @@ export class DashboardService {
       }),
     ]);
     const organizations = organizationResult.items;
+    const resolvedContexts =
+      contexts.length > 0 || !roles.includes(Role.SUPER_ADMIN)
+        ? contexts
+        : [
+            {
+              role: Role.SUPER_ADMIN,
+              status: 'active',
+              organizationId: null,
+              branchIds: [],
+              organization: {
+                name: 'All Organizations',
+                code: 'ALL',
+                status: 'active',
+              },
+              branches: [],
+              permissions: [],
+            },
+          ];
     const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
     const activeOrganizationId =
       organizationId ??
-      this.getContextOrganizationId(contexts[0]) ??
+      this.getContextOrganizationId(resolvedContexts[0]) ??
       this.getRecordId(organizations[0]);
 
     return {
       activeOrganizationId,
-      contexts,
+      contexts: resolvedContexts,
       organizations,
       moduleCoverage,
       dashboard: activeOrganizationId

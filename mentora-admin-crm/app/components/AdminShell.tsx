@@ -50,14 +50,16 @@ import {
   addLeadAttachment,
   bulkUpdateDedicatedCrmRecordStatus,
   bulkUpdateModuleRecordStatus,
+  createBranch,
+  createCampus,
+  createDepartment,
   createOrganization,
   createOrganizationUser,
+  createTeam,
   deleteDedicatedCrmRecord,
   deleteModuleRecord,
   createReportDefinition,
   createSampleDocument,
-  createSampleDepartment,
-  createSampleTeam,
   createWorkflowRule,
   executeWorkflow,
   exportLeads,
@@ -68,22 +70,24 @@ import {
   loadDocuments,
   loadIdentityHierarchy,
   loadIntegrationProviders,
+  loadOrganizations,
   loadSecurityPolicy,
   loadOrganizationUsers,
   loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
   loginWithCredentials,
+  readPersistedCrmSession,
   restoreDedicatedCrmRecord,
   restoreModuleRecord,
   saveModuleRecord,
   saveDedicatedCrmRecord,
   runCrmRecordAction,
   scoreLead,
-  updateSampleBranding,
-  updateSampleChannelSetting,
+  updateChannelSetting,
   updateLeadTags,
   updateCampaignMetrics,
+  updateOrganizationBranding,
   updateSecurityPolicy,
   updateOrganization,
   upsertIntegrationProvider,
@@ -92,11 +96,12 @@ import {
   type DemoUser,
   type ModuleRecordDraft,
   type OrganizationDraft,
+  type OrganizationSetupDraft,
   type OrganizationUserDraft,
   useAppDispatch,
   useAppSelector,
 } from "../store";
-import type { CrmModule, IconName, ModuleCoverage, ModuleStatus } from "./crmTypes";
+import type { AdminModule, IconName, ModuleCoverage, ModuleStatus } from "./adminTypes";
 import {
   extractFirstId,
   findModuleCoverage,
@@ -113,11 +118,18 @@ import {
   statusClass,
   toPayloadKey,
   toServerSortKey,
-} from "./crmUtils";
+} from "./adminUtils";
 
 type ThemeMode = "system" | "light" | "dark";
+type OrganizationSetupKind =
+  | "branch"
+  | "campus"
+  | "department"
+  | "team"
+  | "branding"
+  | "channel";
 
-const dedicatedCrmModuleIds = new Set([
+const dedicatedAdminModuleIds = new Set([
   "admissions",
   "applications",
   "automation",
@@ -165,7 +177,7 @@ const readonlyFormColumns = new Set([
   "updated at",
 ]);
 
-function getEditableModuleColumns(module: CrmModule) {
+function getEditableModuleColumns(module: AdminModule) {
   return module.columns.slice(1, 6).filter((column) => {
     const normalized = column.trim().toLowerCase().replaceAll("_", " ");
     return (
@@ -355,9 +367,9 @@ const moduleActions: Record<string, string[]> = {
   organizations: [
     "Create Organization",
     "Create Branch",
+    "Create Campus",
     "Create Department",
     "Create Team",
-    "Configure Domain",
     "Update Branding",
     "Configure Channel",
     "Export Setup",
@@ -700,7 +712,7 @@ const navGroups = [
   },
 ];
 
-const modules: CrmModule[] = [
+const modules: AdminModule[] = [
   {
     id: "leads",
     title: "Leads",
@@ -1049,7 +1061,7 @@ function createLayerModule(
   group: string,
   description: string,
   columns: string[] = ["Record", "Type", "Owner", "Status", "Updated", "Scope"],
-): CrmModule {
+): AdminModule {
   return {
     id,
     title,
@@ -1062,7 +1074,7 @@ function createLayerModule(
   };
 }
 
-const extraModules: CrmModule[] = [
+const extraModules: AdminModule[] = [
   createLayerModule(
     "platform-foundation",
     "Platform Foundation",
@@ -1742,7 +1754,7 @@ function getModuleStatus(id: string): ModuleStatus {
   return "Setup";
 }
 
-function enrichModule(module: CrmModule): CrmModule {
+function enrichModule(module: AdminModule): AdminModule {
   return {
     ...module,
     actions: module.actions ??
@@ -1807,7 +1819,7 @@ function Icon({ name }: { name: IconName }) {
   );
 }
 
-export default function CrmDashboardPage() {
+export default function AdminDashboardPage() {
   const dispatch = useAppDispatch();
   const pathname = usePathname();
   const router = useRouter();
@@ -1843,14 +1855,27 @@ export default function CrmDashboardPage() {
     row?: string[];
   } | null>(null);
   const [organizationFormOpen, setOrganizationFormOpen] = useState(false);
+  const [organizationSetupForm, setOrganizationSetupForm] = useState<{
+    kind: OrganizationSetupKind;
+    title: string;
+  } | null>(null);
   const [organizationUserFormOpen, setOrganizationUserFormOpen] = useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
   const mainMenuRef = useRef<HTMLElement | null>(null);
   const workspaceSyncKeyRef = useRef("");
+  const didRestoreSessionRef = useRef(false);
   const activeId = useMemo(
     () => resolveRouteModuleId(pathname, sessionActiveId),
     [pathname, sessionActiveId],
   );
+
+  useEffect(() => {
+    if (didRestoreSessionRef.current) return;
+    didRestoreSessionRef.current = true;
+    dispatch(
+      crmSessionActions.restorePersistedSession(readPersistedCrmSession()),
+    );
+  }, [dispatch]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -1868,6 +1893,7 @@ export default function CrmDashboardPage() {
     workspaceSyncKeyRef.current = syncKey;
     setApiSyncEnabled(true);
     void dispatch(loadCrmWorkspace());
+    void dispatch(loadOrganizations());
   }, [accessToken, activeContext, dispatch, loggedInUser]);
 
   const activeOrganizationId = useMemo(
@@ -1877,6 +1903,7 @@ export default function CrmDashboardPage() {
 
   useEffect(() => {
     if (!apiSyncEnabled || !activeOrganizationId) return;
+    void dispatch(loadBranches({ organizationId: activeOrganizationId }));
     void dispatch(loadIdentityHierarchy({ organizationId: activeOrganizationId }));
   }, [activeOrganizationId, apiSyncEnabled, dispatch]);
 
@@ -1890,7 +1917,7 @@ export default function CrmDashboardPage() {
     ) {
       return;
     }
-    if (dedicatedCrmModuleIds.has(activeId)) {
+    if (dedicatedAdminModuleIds.has(activeId)) {
       void dispatch(
         loadDedicatedCrmRecords({
           limit: pageSize,
@@ -2316,7 +2343,7 @@ export default function CrmDashboardPage() {
     }
 
     if (activeId === "organizations") {
-      if (normalized.includes("organization") || normalized.includes("organization")) {
+      if (normalized === "create organization") {
         if (!accessToken) {
           dispatch(
             crmSessionActions.setToast(
@@ -2330,10 +2357,10 @@ export default function CrmDashboardPage() {
         return;
       }
 
-      if (!apiSyncEnabled || !activeOrganizationId) {
+      if (!accessToken || !activeOrganizationId) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and organization context before managing organization setup",
+            "Sign in and select an organization before managing organization setup",
           ),
         );
         return;
@@ -2358,58 +2385,41 @@ export default function CrmDashboardPage() {
         }
 
         if (normalized.includes("branch")) {
-          setOrganizationFormOpen(true);
-          dispatch(
-            crmSessionActions.setToast(
-              "Use organization setup to add a campus, franchise, or branch",
-            ),
-          );
+          setOrganizationSetupForm({ kind: "branch", title: "Create Branch" });
+          return;
+        }
+
+        if (normalized.includes("campus")) {
+          setOrganizationSetupForm({ kind: "campus", title: "Create Campus" });
           return;
         }
 
         if (normalized.includes("department")) {
-          await dispatch(
-            createSampleDepartment({ organizationId: activeOrganizationId }),
-          ).unwrap();
-          dispatch(crmSessionActions.setToast("Admissions department saved"));
+          setOrganizationSetupForm({
+            kind: "department",
+            title: "Create Department",
+          });
           return;
         }
 
         if (normalized.includes("team")) {
-          await dispatch(
-            createSampleTeam({ organizationId: activeOrganizationId }),
-          ).unwrap();
-          dispatch(crmSessionActions.setToast("Counseling team saved"));
-          return;
-        }
-
-        if (normalized.includes("domain")) {
-          await dispatch(
-            updateSampleBranding({ organizationId: activeOrganizationId }),
-          ).unwrap();
-          dispatch(
-            crmSessionActions.setToast(
-              "Domain and branding metadata updated for this organization",
-            ),
-          );
+          setOrganizationSetupForm({ kind: "team", title: "Create Team" });
           return;
         }
 
         if (normalized.includes("branding")) {
-          await dispatch(
-            updateSampleBranding({ organizationId: activeOrganizationId }),
-          ).unwrap();
-          dispatch(crmSessionActions.setToast("Organization branding updated"));
+          setOrganizationSetupForm({
+            kind: "branding",
+            title: "Update Branding",
+          });
           return;
         }
 
         if (normalized.includes("channel")) {
-          await dispatch(
-            updateSampleChannelSetting({ organizationId: activeOrganizationId }),
-          ).unwrap();
-          dispatch(
-            crmSessionActions.setToast("WhatsApp channel setting saved"),
-          );
+          setOrganizationSetupForm({
+            kind: "channel",
+            title: "Configure Channel",
+          });
           return;
         }
       } catch (error) {
@@ -3585,7 +3595,7 @@ export default function CrmDashboardPage() {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
-    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+    if (dedicatedAdminModuleIds.has(activeModule.id)) {
       await dispatch(
         deleteDedicatedCrmRecord({
           moduleKey: activeModule.id,
@@ -3619,7 +3629,7 @@ export default function CrmDashboardPage() {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
-    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+    if (dedicatedAdminModuleIds.has(activeModule.id)) {
       await dispatch(
         restoreDedicatedCrmRecord({
           moduleKey: activeModule.id,
@@ -3657,7 +3667,7 @@ export default function CrmDashboardPage() {
       dispatch(crmSessionActions.setToast("Select API-backed records first"));
       return;
     }
-    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+    if (dedicatedAdminModuleIds.has(activeModule.id)) {
       await dispatch(
         bulkUpdateDedicatedCrmRecordStatus({
           moduleKey: activeModule.id,
@@ -3788,7 +3798,11 @@ export default function CrmDashboardPage() {
                 onOrganizationChange={(organizationId) => {
                   dispatch(crmWorkspaceActions.setActiveOrganizationId(organizationId));
                   setApiSyncEnabled(true);
-                  void dispatch(loadCrmWorkspace({ organizationId }));
+                  void (async () => {
+                    await dispatch(loadCrmWorkspace({ organizationId }));
+                    await dispatch(loadBranches({ organizationId }));
+                    await dispatch(loadIdentityHierarchy({ organizationId }));
+                  })();
                 }}
                 organizations={workspace.organizations}
               />
@@ -3811,6 +3825,7 @@ export default function CrmDashboardPage() {
                   }
                   setApiSyncEnabled(true);
                   void dispatch(loadCrmWorkspace());
+                  void dispatch(loadOrganizations());
                 }}
                 workspace={workspace}
               />
@@ -3873,6 +3888,7 @@ export default function CrmDashboardPage() {
             setView={setModuleView}
             openRecordForm={setRecordForm}
             archiveRow={archiveRow}
+            bulkStatusEnabled={activeModule.id !== "organizations"}
             bulkUpdateSelectedStatus={bulkUpdateSelectedStatus}
             runAction={runAction}
             restoreRow={restoreRow}
@@ -3927,7 +3943,7 @@ export default function CrmDashboardPage() {
                   setRecordForm(null);
                   return;
                 }
-                if (dedicatedCrmModuleIds.has(activeModule.id)) {
+                if (dedicatedAdminModuleIds.has(activeModule.id)) {
                   await dispatch(saveDedicatedCrmRecord(finalDraft)).unwrap();
                 } else {
                   await dispatch(saveModuleRecord(finalDraft)).unwrap();
@@ -3965,6 +3981,48 @@ export default function CrmDashboardPage() {
               dispatch(crmSessionActions.setToast("Organization created"));
               setOrganizationFormOpen(false);
             }}
+          />
+        ) : null}
+
+        {organizationSetupForm ? (
+          <OrganizationSetupModal
+            activeOrganizationId={activeOrganizationId}
+            branches={workspace.branches}
+            businessUnits={workspace.businessUnits}
+            departments={workspace.departments}
+            kind={organizationSetupForm.kind}
+            onClose={() => setOrganizationSetupForm(null)}
+            onSubmit={async (draft) => {
+              const normalizedDraft = {
+                ...draft,
+                code: draft.code?.trim().toUpperCase(),
+                name: draft.name?.trim(),
+                organizationId: draft.organizationId,
+              };
+
+              if (organizationSetupForm.kind === "branch") {
+                await dispatch(createBranch(normalizedDraft)).unwrap();
+                await dispatch(loadBranches({ organizationId: draft.organizationId })).unwrap();
+              } else if (organizationSetupForm.kind === "campus") {
+                await dispatch(createCampus(normalizedDraft)).unwrap();
+              } else if (organizationSetupForm.kind === "department") {
+                await dispatch(createDepartment(normalizedDraft)).unwrap();
+              } else if (organizationSetupForm.kind === "team") {
+                await dispatch(createTeam(normalizedDraft)).unwrap();
+              } else if (organizationSetupForm.kind === "branding") {
+                await dispatch(updateOrganizationBranding(normalizedDraft)).unwrap();
+              } else {
+                await dispatch(updateChannelSetting(normalizedDraft)).unwrap();
+              }
+
+              await dispatch(
+                loadIdentityHierarchy({ organizationId: draft.organizationId }),
+              ).unwrap();
+              dispatch(crmSessionActions.setToast(`${organizationSetupForm.title} saved`));
+              setOrganizationSetupForm(null);
+            }}
+            organizations={workspace.organizations}
+            title={organizationSetupForm.title}
           />
         ) : null}
 
@@ -4502,7 +4560,7 @@ function ModulePanel(props: {
   coverage: ModuleCoverage | null;
   detail: string[] | null;
   filterValues: Record<string, string>;
-  module: CrmModule;
+  module: AdminModule;
   pageSize: number;
   currentPage: number;
   pageStart: number;
@@ -4525,6 +4583,7 @@ function ModulePanel(props: {
   setView: (view: "list" | "grid") => void;
   openRecordForm: (form: { mode: "create" | "edit"; row?: string[] }) => void;
   archiveRow: (row: string[]) => Promise<void>;
+  bulkStatusEnabled: boolean;
   bulkUpdateSelectedStatus: (status: string) => Promise<void>;
   runAction: (label: string) => Promise<void>;
   restoreRow: (row: string[]) => Promise<void>;
@@ -4607,14 +4666,16 @@ function ModulePanel(props: {
 
       <div className="navigationlist">
         <div className="action-row">
-          <button
-            className="btn btn-primary"
-            onClick={() => props.openRecordForm({ mode: "create" })}
-            type="button"
-          >
-            <Icon name="check" />
-            New Record
-          </button>
+          {module.id !== "organizations" ? (
+            <button
+              className="btn btn-primary"
+              onClick={() => props.openRecordForm({ mode: "create" })}
+              type="button"
+            >
+              <Icon name="check" />
+              New Record
+            </button>
+          ) : null}
           {module.actions?.map((action, index) => (
             <button
               className={
@@ -4653,22 +4714,24 @@ function ModulePanel(props: {
           >
             Reset Search
           </button>
-          <select
-            aria-label="Bulk update selected status"
-            className="form-select form-select-sm bulk-status-select"
-            disabled={props.selectedCount === 0}
-            onChange={(event) => {
-              const value = event.target.value;
-              event.target.value = "";
-              if (value) void props.bulkUpdateSelectedStatus(value);
-            }}
-          >
-            <option value="">Bulk status</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In progress</option>
-            <option value="completed">Completed</option>
-            <option value="archived">Archived</option>
-          </select>
+          {props.bulkStatusEnabled ? (
+            <select
+              aria-label="Bulk update selected status"
+              className="form-select form-select-sm bulk-status-select"
+              disabled={props.selectedCount === 0}
+              onChange={(event) => {
+                const value = event.target.value;
+                event.target.value = "";
+                if (value) void props.bulkUpdateSelectedStatus(value);
+              }}
+            >
+              <option value="">Bulk status</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="completed">Completed</option>
+              <option value="archived">Archived</option>
+            </select>
+          ) : null}
           <span>{props.selectedCount} selected</span>
         </div>
         <div className="view-toolbar">
@@ -5144,7 +5207,7 @@ function RecordFormModal({
   onSubmit,
   row,
 }: {
-  module: CrmModule;
+  module: AdminModule;
   onClose: () => void;
   onSubmit: (draft: ModuleRecordDraft) => Promise<void>;
   row?: string[];
@@ -5465,6 +5528,377 @@ function OrganizationFormModal({
             type="button"
           >
             {isSaving ? "Creating" : "Create Organization"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function OrganizationSetupModal({
+  activeOrganizationId,
+  branches,
+  businessUnits,
+  departments,
+  kind,
+  onClose,
+  onSubmit,
+  organizations,
+  title,
+}: {
+  activeOrganizationId: string;
+  branches: unknown[];
+  businessUnits: unknown[];
+  departments: unknown[];
+  kind: OrganizationSetupKind;
+  onClose: () => void;
+  onSubmit: (draft: OrganizationSetupDraft) => Promise<void>;
+  organizations: unknown[];
+  title: string;
+}) {
+  const organizationOptions = getOrganizationOptions(organizations, []);
+  const businessUnitOptions = getRecordOptions(businessUnits);
+  const branchOptions = getBranchOptions(branches, []);
+  const departmentOptions = getRecordOptions(departments);
+  const [draft, setDraft] = useState<OrganizationSetupDraft>({
+    channel: "whatsapp",
+    organizationId: activeOrganizationId || organizationOptions[0]?.value || "",
+    primaryColor: "#2563eb",
+    secondaryColor: "#06b6d4",
+    status: "sandbox",
+  });
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const needsNameAndCode = ["branch", "campus", "department", "team"].includes(
+    kind,
+  );
+  const canSubmit =
+    Boolean(draft.organizationId) &&
+    (!needsNameAndCode || Boolean(draft.name?.trim() && draft.code?.trim())) &&
+    (kind !== "channel" || Boolean(draft.channel));
+
+  async function submit() {
+    if (!canSubmit) {
+      setError("Complete the required fields before saving");
+      return;
+    }
+    setIsSaving(true);
+    setError("");
+    try {
+      await onSubmit(draft);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `${title} failed`);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section className="record-modal" role="dialog" aria-modal="true">
+        <div className="record-modal-head">
+          <div>
+            <span className="eyebrow">Organization Setup</span>
+            <h3>{title}</h3>
+          </div>
+          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <div className="record-form-grid">
+          {organizationOptions.length > 1 ? (
+            <label className="formrow wide">
+              <span className="label">Organization</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({ ...draft, organizationId: event.target.value })
+                }
+                value={draft.organizationId}
+              >
+                {organizationOptions.map((organization) => (
+                  <option key={organization.value} value={organization.value}>
+                    {organization.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          {needsNameAndCode ? (
+            <>
+              <label className="formrow wide">
+                <span className="label">{kind === "team" ? "Team" : title.replace("Create ", "")} Name</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, name: event.target.value })
+                  }
+                  value={draft.name ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Code</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, code: event.target.value })
+                  }
+                  placeholder="MAIN"
+                  value={draft.code ?? ""}
+                />
+              </label>
+            </>
+          ) : null}
+
+          {["branch", "campus", "department"].includes(kind) &&
+          businessUnitOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Business Unit</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    businessUnitId: event.target.value || undefined,
+                  })
+                }
+                value={draft.businessUnitId ?? ""}
+              >
+                <option value="">None</option>
+                {businessUnitOptions.map((unit) => (
+                  <option key={unit.value} value={unit.value}>
+                    {unit.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          {["campus", "department"].includes(kind) && branchOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Branch</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    branchId: event.target.value || undefined,
+                  })
+                }
+                value={draft.branchId ?? ""}
+              >
+                <option value="">None</option>
+                {branchOptions.map((branch) => (
+                  <option key={branch.value} value={branch.value}>
+                    {branch.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          {kind === "team" && departmentOptions.length > 0 ? (
+            <label className="formrow">
+              <span className="label">Department</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    departmentId: event.target.value || undefined,
+                  })
+                }
+                value={draft.departmentId ?? ""}
+              >
+                <option value="">None</option>
+                {departmentOptions.map((department) => (
+                  <option key={department.value} value={department.value}>
+                    {department.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          {kind === "branch" ? (
+            <>
+              <label className="formrow">
+                <span className="label">City</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, city: event.target.value })
+                  }
+                  value={draft.city ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">State</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, state: event.target.value })
+                  }
+                  value={draft.state ?? ""}
+                />
+              </label>
+            </>
+          ) : null}
+
+          {kind === "campus" ? (
+            <label className="formrow wide">
+              <span className="label">Address</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({ ...draft, address: event.target.value })
+                }
+                value={draft.address ?? ""}
+              />
+            </label>
+          ) : null}
+
+          {kind === "department" ? (
+            <label className="formrow">
+              <span className="label">Function</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({ ...draft, function: event.target.value })
+                }
+                value={draft.function ?? ""}
+              >
+                <option value="">Select function</option>
+                <option value="admissions">Admissions</option>
+                <option value="sales">Sales</option>
+                <option value="marketing">Marketing</option>
+                <option value="finance">Finance</option>
+                <option value="academics">Academics</option>
+                <option value="ops">Operations</option>
+              </select>
+            </label>
+          ) : null}
+
+          {kind === "branding" ? (
+            <>
+              <label className="formrow wide">
+                <span className="label">Allowed Domains</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, domains: event.target.value })
+                  }
+                  placeholder="academy.mentora.test, app.mentora.test"
+                  value={draft.domains ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Sender Name</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, senderName: event.target.value })
+                  }
+                  value={draft.senderName ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Logo URL</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, logoUrl: event.target.value })
+                  }
+                  value={draft.logoUrl ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Primary Color</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, primaryColor: event.target.value })
+                  }
+                  type="color"
+                  value={draft.primaryColor ?? "#2563eb"}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Secondary Color</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, secondaryColor: event.target.value })
+                  }
+                  type="color"
+                  value={draft.secondaryColor ?? "#06b6d4"}
+                />
+              </label>
+            </>
+          ) : null}
+
+          {kind === "channel" ? (
+            <>
+              <label className="formrow">
+                <span className="label">Channel</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) =>
+                    setDraft({ ...draft, channel: event.target.value })
+                  }
+                  value={draft.channel ?? "whatsapp"}
+                >
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="sms">SMS</option>
+                  <option value="email">Email</option>
+                  <option value="call_center">Call Center</option>
+                  <option value="payment">Payment</option>
+                  <option value="calendar">Calendar</option>
+                </select>
+              </label>
+              <label className="formrow">
+                <span className="label">Status</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) =>
+                    setDraft({ ...draft, status: event.target.value })
+                  }
+                  value={draft.status ?? "sandbox"}
+                >
+                  <option value="disabled">Disabled</option>
+                  <option value="sandbox">Sandbox</option>
+                  <option value="active">Active</option>
+                </select>
+              </label>
+              <label className="formrow wide">
+                <span className="label">Provider Key</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, providerKey: event.target.value })
+                  }
+                  placeholder="sendgrid, twilio, whatsapp_business"
+                  value={draft.providerKey ?? ""}
+                />
+              </label>
+            </>
+          ) : null}
+        </div>
+        {error ? <div className="auth-error modal-error">{error}</div> : null}
+        <div className="record-modal-actions">
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={!canSubmit || isSaving}
+            onClick={() => {
+              void submit();
+            }}
+            type="button"
+          >
+            {isSaving ? "Saving" : "Save"}
           </button>
         </div>
       </section>
