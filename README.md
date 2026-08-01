@@ -57,6 +57,7 @@ Assessment
 - [Technical Plan](docs/planning/TECHNICAL-PLAN.md): Mentora architecture, module map, API surfaces, and migration strategy.
 - [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for identity, family, academic, scheduling, AI tutor, progress, payments, and safety.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, MVP, phases, and non-goals.
+- [Project Management Pack](docs/project-management/README.md): PMP-style charter, scope, requirements, WBS, schedule, cost, quality, resources, communications, risk, procurement, change, and release acceptance documents.
 - [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md): current production verdict, verified checks, module readiness interpretation, and launch gates.
 - [Student Profile Model](docs/planning/STUDENT-PROFILE-MODEL.md): complete student profile sections including personal, academic, parents, documents, payments, communications, and activity timeline.
 - [Education CRM Platform Plan](docs/planning/EDUCATION-CRM-PLATFORM-PLAN.md): multi-tenant CRM modules for leads, admissions, campaigns, payments, analytics, and learning operations.

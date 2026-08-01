@@ -4,6 +4,25 @@ This directory contains the product, architecture, delivery, operations, integra
 
 Mentora is a B2C AI tutoring and mentorship platform for students and parents. All product docs in this repository should describe Mentora behavior, data, launch needs, child/student safety, AI tutoring access, subscriptions, and parent-managed learning workflows.
 
+## Project Management
+
+- [Project Management Pack](project-management/README.md): PMP-style document register and governance baseline for the Education SaaS CRM and AI tutoring platform.
+- [Project Charter](project-management/PROJECT-CHARTER.md): objectives, scope, assumptions, constraints, milestones, and approval authority.
+- [Scope Management Plan](project-management/SCOPE-MANAGEMENT-PLAN.md): in-scope/out-of-scope work and scope control.
+- [Requirements Management Plan](project-management/REQUIREMENTS-MANAGEMENT-PLAN.md): requirement sources, lifecycle, traceability, and acceptance criteria.
+- [Work Breakdown Structure](project-management/WBS.md): project work packages and WBS dictionary.
+- [Schedule Management Plan](project-management/SCHEDULE-MANAGEMENT-PLAN.md): milestones, cadence, and schedule control.
+- [Cost Management Plan](project-management/COST-MANAGEMENT-PLAN.md): cost categories, controls, and budget risks.
+- [Quality Management Plan](project-management/QUALITY-MANAGEMENT-PLAN.md): quality gates, defect severity, and acceptance evidence.
+- [Resource Management Plan](project-management/RESOURCE-MANAGEMENT-PLAN.md): roles, RACI, staffing assumptions, and operating model.
+- [Communications Management Plan](project-management/COMMUNICATIONS-MANAGEMENT-PLAN.md): stakeholder reports, cadence, escalation, and messaging rules.
+- [Risk Management Plan](project-management/RISK-MANAGEMENT-PLAN.md): scoring model, categories, and response strategy.
+- [RAID Log](project-management/RAID-LOG.md): active risks, assumptions, issues, and dependencies.
+- [Stakeholder Engagement Plan](project-management/STAKEHOLDER-ENGAGEMENT-PLAN.md): stakeholder groups, expectations, and engagement strategy.
+- [Procurement Management Plan](project-management/PROCUREMENT-MANAGEMENT-PLAN.md): third-party provider selection, contracts, credentials, and readiness.
+- [Change Control Plan](project-management/CHANGE-CONTROL-PLAN.md): change categories, approval flow, and emergency change rules.
+- [Release And Acceptance Plan](project-management/RELEASE-AND-ACCEPTANCE-PLAN.md): release gates, UAT scenarios, go/no-go, and rollback criteria.
+
 ## Planning
 
 - [Technical Plan](planning/TECHNICAL-PLAN.md): architecture, reusable modules, new Mentora modules, API surfaces, and AI tutor access model.

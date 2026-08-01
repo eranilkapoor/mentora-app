@@ -68,3 +68,10 @@ Mentora should not be marked production-live until all P0 gates below are comple
 3. Run end-to-end CRM flows for tenants, users/RBAC, leads, applications, admissions, communications, payments, workflows, and reports.
 4. Run mobile release builds and device QA for student, parent, billing, AI tutor, schedule, progress, notification, and token-expiry flows.
 5. Complete legal/security review for children, self-managed students, AI tutoring disclosures, subscriptions, and account deletion.
+
+## Related Project Management Controls
+
+- [Project Management Pack](../project-management/README.md)
+- [RAID Log](../project-management/RAID-LOG.md)
+- [Release And Acceptance Plan](../project-management/RELEASE-AND-ACCEPTANCE-PLAN.md)
+- [Change Control Plan](../project-management/CHANGE-CONTROL-PLAN.md)
