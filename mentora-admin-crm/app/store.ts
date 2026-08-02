@@ -55,6 +55,7 @@ type CrmWorkspaceState = {
   integrationProviders: unknown[];
   loading: boolean;
   moduleRecords: Record<string, unknown[]>;
+  authOverview: unknown | null;
   securityPolicy: unknown | null;
   teams: unknown[];
   organizations: unknown[];
@@ -227,6 +228,8 @@ const allAdminModuleIds = [
   "platform-foundation",
   "authentication",
   "users",
+  "roles",
+  "permissions",
   "organizations",
   "branches",
   "departments",
@@ -568,7 +571,79 @@ export const updateOrganization = createAsyncThunk(
 export const createOrganizationUser = createAsyncThunk(
   "crmWorkspace/createOrganizationUser",
   async (draft: OrganizationUserDraft) => {
-    return sendJson(adminPath("/organization-users/create"), "POST", draft);
+    return sendJson(adminPath("/users"), "POST", draft);
+  },
+);
+
+export type RbacRecordDraft = {
+  description?: string;
+  id?: string;
+  isActive?: boolean;
+  module?: string;
+  name: string;
+  permissions?: string[];
+  type: "permission" | "role";
+};
+
+export const loadRbacRecords = createAsyncThunk(
+  "crmWorkspace/loadRbacRecords",
+  async ({ type }: { type: "permission" | "role" }) => {
+    const path =
+      type === "role"
+        ? adminPath("/rbac/roles?status=all")
+        : adminPath("/rbac/permissions?status=all");
+    return {
+      moduleKey: type === "role" ? "roles" : "permissions",
+      records: await getJson(path),
+    };
+  },
+);
+
+export const saveRbacRecord = createAsyncThunk(
+  "crmWorkspace/saveRbacRecord",
+  async (draft: RbacRecordDraft) => {
+    const collection = draft.type === "role" ? "roles" : "permissions";
+    const body =
+      draft.type === "role"
+        ? {
+            description: draft.description,
+            isActive: draft.isActive,
+            name: draft.name,
+            permissions: draft.permissions ?? [],
+          }
+        : {
+            description: draft.description,
+            isActive: draft.isActive,
+            module: draft.module || draft.name.split(":")[0] || "general",
+            name: draft.name,
+          };
+    const response = draft.id
+      ? await sendJson(
+          adminPath(`/rbac/${collection}/${draft.id}`),
+          "PATCH",
+          body,
+        )
+      : await sendJson(adminPath(`/rbac/${collection}`), "POST", body);
+    return {
+      moduleKey: draft.type === "role" ? "roles" : "permissions",
+      response,
+    };
+  },
+);
+
+export const updateAdminUser = createAsyncThunk(
+  "crmWorkspace/updateAdminUser",
+  async (
+    draft: Partial<OrganizationUserDraft> & { id: string; status?: string },
+  ) => {
+    return sendJson(adminPath(`/users/${draft.id}`), "PATCH", draft);
+  },
+);
+
+export const revokeAdminUserSessions = createAsyncThunk(
+  "crmWorkspace/revokeAdminUserSessions",
+  async ({ id }: { id: string }) => {
+    return sendJson(adminPath(`/users/${id}/revoke-sessions`), "POST", {});
   },
 );
 
@@ -1111,11 +1186,40 @@ export const updateChannelSetting = createAsyncThunk(
 
 export const loadOrganizationUsers = createAsyncThunk(
   "crmWorkspace/loadOrganizationUsers",
-  async ({ organizationId }: { organizationId: string }) => {
+  async (params: {
+    branchId?: string;
+    limit?: number;
+    organizationId?: string;
+    page?: number;
+    role?: string;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+    status?: string;
+  }) => {
+    const query = new URLSearchParams({
+      limit: String(params.limit ?? 10),
+      page: String(params.page ?? 1),
+    });
+    if (params.organizationId)
+      query.set("organizationId", params.organizationId);
+    if (params.branchId) query.set("branchId", params.branchId);
+    if (params.role) query.set("role", params.role);
+    if (params.search) query.set("search", params.search);
+    if (params.sortBy) query.set("sortBy", params.sortBy);
+    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+    if (params.status) query.set("status", params.status);
+    return getJson(adminPath(`/users?${query.toString()}`));
+  },
+);
+
+export const loadAuthOverview = createAsyncThunk(
+  "crmWorkspace/loadAuthOverview",
+  async ({ organizationId }: { organizationId?: string }) => {
+    const query = new URLSearchParams();
+    if (organizationId) query.set("organizationId", organizationId);
     return getJson(
-      adminPath(
-        `/organization-users?organizationId=${encodeURIComponent(organizationId)}`,
-      ),
+      adminPath(`/auth/overview${query.size ? `?${query.toString()}` : ""}`),
     );
   },
 );
@@ -1234,6 +1338,7 @@ const initialWorkspaceState: CrmWorkspaceState = {
   integrationProviders: [],
   loading: false,
   moduleRecords: {},
+  authOverview: null,
   securityPolicy: null,
   teams: [],
   organizations: [],
@@ -1515,9 +1620,10 @@ const crmWorkspaceSlice = createSlice({
       })
       .addCase(createOrganizationUser.fulfilled, (state, action) => {
         const data = normalizeApiObject(action.payload) as {
+          user?: unknown;
           membership?: unknown;
         };
-        const membership = data.membership ?? data;
+        const membership = data.user ?? data.membership ?? data;
         const records = state.moduleRecords.users ?? [];
         records.unshift(membership);
         state.moduleRecords.users = records;
@@ -1696,6 +1802,46 @@ const crmWorkspaceSlice = createSlice({
       })
       .addCase(loadOrganizationUsers.fulfilled, (state, action) => {
         state.moduleRecords.users = normalizeApiData(action.payload);
+        state.error = null;
+      })
+      .addCase(loadRbacRecords.fulfilled, (state, action) => {
+        state.moduleRecords[action.payload.moduleKey] = normalizeApiData(
+          action.payload.records,
+        );
+        state.error = null;
+      })
+      .addCase(saveRbacRecord.fulfilled, (state, action) => {
+        const record = normalizeApiObject(action.payload.response);
+        const id = getRecordId(record);
+        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+        const index = records.findIndex((item) => getRecordId(item) === id);
+        if (index >= 0) {
+          records[index] = record;
+        } else {
+          records.unshift(record);
+        }
+        state.moduleRecords[action.payload.moduleKey] = records;
+        state.error = null;
+      })
+      .addCase(updateAdminUser.fulfilled, (state, action) => {
+        const user = normalizeApiObject(action.payload);
+        const id = getRecordId(user);
+        state.moduleRecords.users = (state.moduleRecords.users ?? []).map(
+          (record) => (getRecordId(record) === id ? user : record),
+        );
+        state.error = null;
+      })
+      .addCase(revokeAdminUserSessions.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadAuthOverview.fulfilled, (state, action) => {
+        const overview = normalizeApiObject(action.payload) as {
+          controls?: unknown;
+        };
+        state.authOverview = overview;
+        state.moduleRecords.authentication = normalizeApiData(
+          overview.controls,
+        );
         state.error = null;
       })
       .addCase(loadIntegrationProviders.fulfilled, (state, action) => {

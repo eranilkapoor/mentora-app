@@ -42,9 +42,11 @@ import {
   findLeadDuplicates,
   importSampleLeads,
   loadBranches,
+  loadAuthOverview,
   loadDocuments,
   loadIdentityHierarchy,
   loadIntegrationProviders,
+  loadRbacRecords,
   loadOrganizations,
   loadSecurityPolicy,
   loadOrganizationUsers,
@@ -56,6 +58,7 @@ import {
   restoreDedicatedCrmRecord,
   restoreModuleRecord,
   saveModuleRecord,
+  saveRbacRecord,
   saveDedicatedCrmRecord,
   runCrmRecordAction,
   scoreLead,
@@ -65,6 +68,8 @@ import {
   updateOrganizationBranding,
   updateSecurityPolicy,
   updateOrganization,
+  updateAdminUser,
+  revokeAdminUserSessions,
   upsertIntegrationProvider,
   testIntegrationProvider,
   type DemoContext,
@@ -165,6 +170,9 @@ export default function AdminDashboardPage() {
   const [archiveConfirmRow, setArchiveConfirmRow] = useState<string[] | null>(
     null,
   );
+  const [restoreConfirmRow, setRestoreConfirmRow] = useState<string[] | null>(
+    null,
+  );
   const [organizationFormOpen, setOrganizationFormOpen] = useState(false);
   const [organizationEditRow, setOrganizationEditRow] = useState<
     string[] | null
@@ -249,9 +257,50 @@ export default function AdminDashboardPage() {
       !loggedInUser ||
       !activeContext ||
       !apiSyncEnabled ||
-      !activeOrganizationId ||
       activeId === "dashboard"
     ) {
+      return;
+    }
+    if (activeId === "users") {
+      void dispatch(
+        loadOrganizationUsers({
+          branchId: workspace.activeBranchId || undefined,
+          limit: pageSize,
+          organizationId: activeOrganizationId || undefined,
+          page: currentPage,
+          search: query.trim() || undefined,
+          sortBy: toServerSortKey(moduleMap[activeId]?.columns[sort.column]),
+          sortOrder: sort.direction,
+          status: getServerFilterValue(filterValues, [
+            "active",
+            "pending",
+            "suspended",
+            "blocked",
+          ]),
+        }),
+      );
+      return;
+    }
+    if (activeId === "authentication") {
+      void dispatch(
+        loadAuthOverview({
+          organizationId: activeOrganizationId || undefined,
+        }),
+      );
+      return;
+    }
+    if (activeId === "roles" || activeId === "permissions") {
+      void dispatch(
+        loadRbacRecords({
+          type: activeId === "roles" ? "role" : "permission",
+        }),
+      );
+      if (activeId === "roles") {
+        void dispatch(loadRbacRecords({ type: "permission" }));
+      }
+      return;
+    }
+    if (!activeOrganizationId) {
       return;
     }
     if (dedicatedAdminModuleIds.has(activeId)) {
@@ -325,6 +374,7 @@ export default function AdminDashboardPage() {
     pageSize,
     query,
     sort,
+    workspace.activeBranchId,
   ]);
 
   const activeModule = moduleMap[activeId];
@@ -772,10 +822,10 @@ export default function AdminDashboardPage() {
     }
 
     if (activeId === "users") {
-      if (!apiSyncEnabled || !activeOrganizationId) {
+      if (!apiSyncEnabled) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and organization context before managing CRM users",
+            "Enable API sync before managing CRM users",
           ),
         );
         return;
@@ -794,23 +844,46 @@ export default function AdminDashboardPage() {
           normalized.includes("access")
         ) {
           const result = await dispatch(
-            exportModuleRecords({
-              moduleKey: activeId,
-              organizationId: activeOrganizationId,
+            loadOrganizationUsers({
+              branchId: workspace.activeBranchId || undefined,
+              limit: pageSize,
+              organizationId: activeOrganizationId || undefined,
+              page: currentPage,
+              search: query.trim() || undefined,
             }),
           ).unwrap();
-          const data = normalizeResponseObject(result);
-          const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+          const users = normalizeResponseArray(result);
           dispatch(
             crmSessionActions.setToast(
-              `${rowCount} user rows prepared for access review`,
+              `${users.length} live users loaded for access review`,
             ),
           );
           return;
         }
 
+        if (normalized.includes("revoke") && firstServerRecordId) {
+          await dispatch(
+            revokeAdminUserSessions({ id: firstServerRecordId }),
+          ).unwrap();
+          await dispatch(
+            loadOrganizationUsers({
+              limit: pageSize,
+              organizationId: activeOrganizationId || undefined,
+              page: currentPage,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Active sessions revoked"));
+          return;
+        }
+
         const result = await dispatch(
-          loadOrganizationUsers({ organizationId: activeOrganizationId }),
+          loadOrganizationUsers({
+            branchId: workspace.activeBranchId || undefined,
+            limit: pageSize,
+            organizationId: activeOrganizationId || undefined,
+            page: currentPage,
+            search: query.trim() || undefined,
+          }),
         ).unwrap();
         const users = normalizeResponseArray(result);
         dispatch(
@@ -832,10 +905,10 @@ export default function AdminDashboardPage() {
     }
 
     if (activeId === "authentication") {
-      if (!apiSyncEnabled || !activeOrganizationId) {
+      if (!apiSyncEnabled) {
         dispatch(
           crmSessionActions.setToast(
-            "Enable API sync and organization context before managing authentication",
+            "Enable API sync before managing authentication",
           ),
         );
         return;
@@ -884,25 +957,27 @@ export default function AdminDashboardPage() {
           normalized.includes("device")
         ) {
           const result = await dispatch(
-            exportModuleRecords({
-              moduleKey: activeId,
-              organizationId: activeOrganizationId,
+            loadAuthOverview({
+              organizationId: activeOrganizationId || undefined,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
-          const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+          const rowCount =
+            typeof data.activeSessions === "number" ? data.activeSessions : 0;
           dispatch(
             crmSessionActions.setToast(
-              `${rowCount} authentication records prepared for review`,
+              `${rowCount} active sessions visible for review`,
             ),
           );
           return;
         }
 
         await dispatch(
-          loadSecurityPolicy({ organizationId: activeOrganizationId }),
+          loadAuthOverview({
+            organizationId: activeOrganizationId || undefined,
+          }),
         ).unwrap();
-        dispatch(crmSessionActions.setToast("Authentication policy loaded"));
+        dispatch(crmSessionActions.setToast("Authentication overview loaded"));
         return;
       } catch (error) {
         dispatch(
@@ -910,6 +985,63 @@ export default function AdminDashboardPage() {
             error instanceof Error
               ? error.message
               : "Authentication action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "roles" || activeId === "permissions") {
+      if (!apiSyncEnabled) {
+        dispatch(
+          crmSessionActions.setToast("Enable API sync before managing RBAC"),
+        );
+        return;
+      }
+
+      try {
+        const type = activeId === "roles" ? "role" : "permission";
+        if (normalized.includes("create")) {
+          setRecordForm({ mode: "create" });
+          return;
+        }
+        if (
+          normalized.includes("activate") ||
+          normalized.includes("inactive")
+        ) {
+          const currentRow = visibleRows[0];
+          const recordId = currentRow
+            ? findModuleRecordIdForRow(getActiveModuleApiRecords(), currentRow)
+            : "";
+          if (!recordId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Select or load a RBAC record before changing status",
+              ),
+            );
+            return;
+          }
+          await dispatch(
+            saveRbacRecord({
+              id: recordId,
+              isActive: !normalized.includes("inactive"),
+              name: currentRow[0],
+              type,
+            }),
+          ).unwrap();
+        }
+        await dispatch(loadRbacRecords({ type })).unwrap();
+        if (type === "role") {
+          await dispatch(loadRbacRecords({ type: "permission" })).unwrap();
+        }
+        dispatch(crmSessionActions.setToast(`${activeModule.title} refreshed`));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "RBAC action failed. Check API auth and permissions.",
           ),
         );
         return;
@@ -1936,6 +2068,23 @@ export default function AdminDashboardPage() {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
+    if (activeModule.id === "roles" || activeModule.id === "permissions") {
+      await dispatch(
+        saveRbacRecord({
+          id: recordId,
+          isActive: false,
+          name: row[0],
+          type: activeModule.id === "roles" ? "role" : "permission",
+        }),
+      ).unwrap();
+      await dispatch(
+        loadRbacRecords({
+          type: activeModule.id === "roles" ? "role" : "permission",
+        }),
+      ).unwrap();
+      dispatch(crmSessionActions.setToast(`${activeModule.title} inactivated`));
+      return;
+    }
     if (
       dedicatedAdminModuleIds.has(activeModule.id) ||
       organizationStructureModuleIds.has(activeModule.id)
@@ -1975,6 +2124,23 @@ export default function AdminDashboardPage() {
     const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
+      return;
+    }
+    if (activeModule.id === "roles" || activeModule.id === "permissions") {
+      await dispatch(
+        saveRbacRecord({
+          id: recordId,
+          isActive: true,
+          name: row[0],
+          type: activeModule.id === "roles" ? "role" : "permission",
+        }),
+      ).unwrap();
+      await dispatch(
+        loadRbacRecords({
+          type: activeModule.id === "roles" ? "role" : "permission",
+        }),
+      ).unwrap();
+      dispatch(crmSessionActions.setToast(`${activeModule.title} activated`));
       return;
     }
     if (
@@ -2256,16 +2422,19 @@ export default function AdminDashboardPage() {
             }}
             bulkStatusEnabled={
               activeModule.id !== "organizations" &&
+              !["roles", "permissions"].includes(activeModule.id) &&
               !organizationStructureModuleIds.has(activeModule.id)
             }
             bulkUpdateSelectedStatus={bulkUpdateSelectedStatus}
             runAction={runAction}
             restoreRow={restoreRow}
+            requestRestoreRow={(row) => setRestoreConfirmRow(row)}
           />
         )}
 
         {recordForm && activeModule ? (
           <RecordFormModal
+            availablePermissions={workspace.moduleRecords.permissions ?? []}
             module={activeModule}
             onClose={() => setRecordForm(null)}
             onSubmit={async (draft) => {
@@ -2274,7 +2443,12 @@ export default function AdminDashboardPage() {
                 moduleKey: activeModule.id,
                 organizationId: activeOrganizationId,
               };
-              if (!apiSyncEnabled || !activeOrganizationId || workspace.error) {
+              if (
+                !apiSyncEnabled ||
+                (!activeOrganizationId &&
+                  !["roles", "permissions"].includes(activeModule.id)) ||
+                workspace.error
+              ) {
                 dispatch(
                   crmSessionActions.setToast(
                     "API sync and organization context are required before saving",
@@ -2312,6 +2486,70 @@ export default function AdminDashboardPage() {
                   setRecordForm(null);
                   return;
                 }
+                if (
+                  activeModule.id === "roles" ||
+                  activeModule.id === "permissions"
+                ) {
+                  const recordId = recordForm.row
+                    ? findModuleRecordIdForRow(
+                        getActiveModuleApiRecords(),
+                        recordForm.row,
+                      )
+                    : undefined;
+                  const permissionIds =
+                    activeModule.id === "roles"
+                      ? String(finalDraft.payload.permissions ?? "")
+                          .split(",")
+                          .map((item) => item.trim())
+                          .filter(Boolean)
+                          .map((nameOrId) => {
+                            const permission = (
+                              workspace.moduleRecords.permissions ?? []
+                            ).find((item) => {
+                              const object =
+                                item && typeof item === "object"
+                                  ? (item as Record<string, unknown>)
+                                  : {};
+                              return (
+                                object._id === nameOrId ||
+                                object.id === nameOrId ||
+                                object.name === nameOrId
+                              );
+                            });
+                            return getUnknownRecordId(permission) || nameOrId;
+                          })
+                      : undefined;
+                  await dispatch(
+                    saveRbacRecord({
+                      description:
+                        finalDraft.description ||
+                        finalDraft.payload.description ||
+                        undefined,
+                      id: recordId,
+                      isActive: finalDraft.status !== "inactive",
+                      module:
+                        finalDraft.payload.module ||
+                        finalDraft.title.split(":")[0] ||
+                        "general",
+                      name: finalDraft.title,
+                      permissions: permissionIds,
+                      type: activeModule.id === "roles" ? "role" : "permission",
+                    }),
+                  ).unwrap();
+                  await dispatch(
+                    loadRbacRecords({
+                      type: activeModule.id === "roles" ? "role" : "permission",
+                    }),
+                  ).unwrap();
+                  if (activeModule.id === "roles") {
+                    await dispatch(
+                      loadRbacRecords({ type: "permission" }),
+                    ).unwrap();
+                  }
+                  dispatch(crmSessionActions.setToast("RBAC record saved"));
+                  setRecordForm(null);
+                  return;
+                }
                 if (dedicatedAdminModuleIds.has(activeModule.id)) {
                   await dispatch(saveDedicatedCrmRecord(finalDraft)).unwrap();
                 } else {
@@ -2329,6 +2567,14 @@ export default function AdminDashboardPage() {
               setRecordForm(null);
             }}
             row={recordForm.row}
+            sourceRecord={
+              recordForm.row
+                ? findModuleRecordForRow(
+                    getActiveModuleApiRecords(),
+                    recordForm.row,
+                  )
+                : undefined
+            }
           />
         ) : null}
 
@@ -2442,6 +2688,7 @@ export default function AdminDashboardPage() {
 
         {detail && activeModule ? (
           <RecordDetailModal
+            availablePermissions={workspace.moduleRecords.permissions ?? []}
             module={activeModule}
             onArchive={(row) => setArchiveConfirmRow(row)}
             onClose={() => setDetail(null)}
@@ -2457,6 +2704,10 @@ export default function AdminDashboardPage() {
               void runAction("Follow-up");
             }}
             row={detail}
+            sourceRecord={findModuleRecordForRow(
+              getActiveModuleApiRecords(),
+              detail,
+            )}
             stats={
               activeModule.id === "organizations"
                 ? organizationDetailStats
@@ -2478,6 +2729,19 @@ export default function AdminDashboardPage() {
               }
             }}
             row={archiveConfirmRow}
+          />
+        ) : null}
+
+        {restoreConfirmRow && activeModule ? (
+          <RestoreConfirmModal
+            module={activeModule}
+            onClose={() => setRestoreConfirmRow(null)}
+            onConfirm={async () => {
+              const row = restoreConfirmRow;
+              setRestoreConfirmRow(null);
+              await restoreRow(row);
+            }}
+            row={restoreConfirmRow}
           />
         ) : null}
 
@@ -2521,12 +2785,17 @@ function ModulePanel(props: {
   bulkUpdateSelectedStatus: (status: string) => Promise<void>;
   runAction: (label: string) => Promise<void>;
   restoreRow: (row: string[]) => Promise<void>;
+  requestRestoreRow: (row: string[]) => void;
 }) {
   const module = props.module;
+  const isRbacModule = module.id === "roles" || module.id === "permissions";
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const readinessLabel = props.coverage
     ? formatReadiness(props.coverage)
     : module.status;
-  const allVisibleIds = props.rows.map((row) => row.join("|"));
+  const getVisibleRowId = (row: string[], index: number) =>
+    `${props.pageStart + index + 1}:${row.join("|")}`;
+  const allVisibleIds = props.rows.map(getVisibleRowId);
   const allSelected =
     allVisibleIds.length > 0 &&
     allVisibleIds.every((id) => props.selected.includes(id));
@@ -2603,9 +2872,21 @@ function ModulePanel(props: {
         <SecurityControlCenter runAction={props.runAction} />
       ) : null}
 
+      {module.id === "authentication" ? (
+        <AuthenticationCommandCenter runAction={props.runAction} />
+      ) : null}
+
+      {module.id === "users" ? (
+        <UsersCommandCenter runAction={props.runAction} total={props.total} />
+      ) : null}
+
       <div className="navigationlist">
         <div className="action-row">
-          {module.id !== "organizations" ? (
+          {module.id !== "organizations" &&
+          !isRbacModule &&
+          !module.actions?.some((action) =>
+            action.toLowerCase().startsWith("create "),
+          ) ? (
             <button
               className="btn btn-primary"
               onClick={() => {
@@ -2658,15 +2939,26 @@ function ModulePanel(props: {
           ))}
           <button
             className="btn btn-light secondary"
+            onClick={() => setIsSearchVisible((current) => !current)}
+            type="button"
+          >
+            <Icon name="report" />
+            Search
+          </button>
+          <button
+            className="btn btn-light secondary"
             onClick={() => {
               props.setQuery("");
               props.setFilterValues({});
+              if (isRbacModule) {
+                void props.runAction(`Refresh ${module.title}`);
+              }
             }}
             type="button"
           >
-            Reset Search
+            Reset
           </button>
-          {props.bulkStatusEnabled ? (
+          {props.bulkStatusEnabled && !isRbacModule ? (
             <select
               aria-label="Bulk update selected status"
               className="form-select form-select-sm bulk-status-select"
@@ -2684,63 +2976,64 @@ function ModulePanel(props: {
               <option value="archived">Archived</option>
             </select>
           ) : null}
-          <span>{props.selectedCount} selected</span>
-        </div>
-        <div className="view-toolbar">
-          <span>View mode</span>
-          <div className="btn-group btn-group-sm" role="group">
-            <button
-              className={`btn ${
-                props.view === "list" ? "btn-primary" : "btn-outline-primary"
-              }`}
-              onClick={() => props.setView("list")}
-              type="button"
-            >
-              <FontAwesomeIcon icon={faTableList} />
-              List
-            </button>
-            <button
-              className={`btn ${
-                props.view === "grid" ? "btn-primary" : "btn-outline-primary"
-              }`}
-              onClick={() => props.setView("grid")}
-              type="button"
-            >
-              <FontAwesomeIcon icon={faGrip} />
-              Grid
-            </button>
+          <div className="view-toolbar">
+            <span>View mode</span>
+            <div className="btn-group btn-group-sm" role="group">
+              <button
+                className={`btn ${
+                  props.view === "list" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => props.setView("list")}
+                type="button"
+              >
+                <FontAwesomeIcon icon={faTableList} />
+                List
+              </button>
+              <button
+                className={`btn ${
+                  props.view === "grid" ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => props.setView("grid")}
+                type="button"
+              >
+                <FontAwesomeIcon icon={faGrip} />
+                Grid
+              </button>
+            </div>
           </div>
         </div>
-        <div className="filter-block">
-          <div className="head">Search</div>
-          <div className="formblock">
-            <label className="formrow wide">
-              <span className="label">Global Search</span>
-              <input
-                className="input form-control"
-                onChange={(event) => props.setQuery(event.target.value)}
-                placeholder="Search any visible field"
-                value={props.query}
-              />
-            </label>
-            {module.filters.map((filter) => (
-              <label className="formrow" key={filter}>
-                <span className="label">{filter}</span>
+        {isSearchVisible ? (
+          <div className="filter-block">
+            <div className="head">Search</div>
+            <div className="formblock">
+              <label className="formrow wide">
+                <span className="label">Global Search</span>
                 <input
                   className="input form-control"
-                  onChange={(event) =>
-                    props.setFilterValues({
-                      ...props.filterValues,
-                      [filter]: event.target.value,
-                    })
-                  }
-                  placeholder={filter}
-                  value={props.filterValues[filter] ?? ""}
+                  onChange={(event) => props.setQuery(event.target.value)}
+                  placeholder="Search any visible field"
+                  value={props.query}
                 />
               </label>
-            ))}
+              {module.filters.map((filter) => (
+                <label className="formrow" key={filter}>
+                  <span className="label">{filter}</span>
+                  <input
+                    className="input form-control"
+                    onChange={(event) =>
+                      props.setFilterValues({
+                        ...props.filterValues,
+                        [filter]: event.target.value,
+                      })
+                    }
+                    placeholder={filter}
+                    value={props.filterValues[filter] ?? ""}
+                  />
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className="listmanager">
@@ -2825,16 +3118,20 @@ function ModulePanel(props: {
                           }
                           type="button"
                         >
-                          Create record
+                          {isRbacModule
+                            ? `Create ${module.title.slice(0, -1)}`
+                            : "Create record"}
                         </button>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   props.rows.map((row, rowIndex) => {
-                    const id = row.join("|");
-                    const isArchived = row.some(
-                      (value) => value.toLowerCase() === "archived",
+                    const id = getVisibleRowId(row, rowIndex);
+                    const isArchived = row.some((value) =>
+                      isRbacModule
+                        ? value.toLowerCase() === "inactive"
+                        : value.toLowerCase() === "archived",
                     );
                     return (
                       <tr
@@ -2852,7 +3149,9 @@ function ModulePanel(props: {
                         </td>
                         <td>{props.pageStart + rowIndex + 1}</td>
                         {row.map((value, index) => (
-                          <td key={`${id}-${index}`}>{renderCell(value)}</td>
+                          <td key={`${id}:cell:${index}`}>
+                            {renderCell(value)}
+                          </td>
                         ))}
                         <td className="row-actions">
                           <button
@@ -2873,23 +3172,29 @@ function ModulePanel(props: {
                           </button>
                           {isArchived ? (
                             <button
+                              className={
+                                isRbacModule ? "row-action-active" : undefined
+                              }
                               onClick={() => {
-                                void props.restoreRow(row);
+                                props.requestRestoreRow(row);
                               }}
                               type="button"
                             >
                               <Icon name="check" />
-                              Restore
+                              {isRbacModule ? "Activate" : "Restore"}
                             </button>
                           ) : (
                             <button
+                              className={
+                                isRbacModule ? "row-action-inactive" : undefined
+                              }
                               onClick={() => {
                                 void props.archiveRow(row);
                               }}
                               type="button"
                             >
                               <Icon name="shield" />
-                              Archive
+                              {isRbacModule ? "Inactivate" : "Archive"}
                             </button>
                           )}
                         </td>
@@ -2919,10 +3224,12 @@ function ModulePanel(props: {
                 </button>
               </div>
             ) : (
-              props.rows.map((row) => {
-                const id = row.join("|");
-                const isArchived = row.some(
-                  (value) => value.toLowerCase() === "archived",
+              props.rows.map((row, rowIndex) => {
+                const id = getVisibleRowId(row, rowIndex);
+                const isArchived = row.some((value) =>
+                  isRbacModule
+                    ? value.toLowerCase() === "inactive"
+                    : value.toLowerCase() === "archived",
                 );
                 return (
                   <article
@@ -2966,23 +3273,29 @@ function ModulePanel(props: {
                       </button>
                       {isArchived ? (
                         <button
-                          className="btn btn-light btn-sm"
+                          className={`btn btn-sm ${
+                            isRbacModule ? "row-action-active" : "btn-light"
+                          }`}
                           onClick={() => {
-                            void props.restoreRow(row);
+                            props.requestRestoreRow(row);
                           }}
                           type="button"
                         >
-                          Restore
+                          <Icon name="check" />
+                          {isRbacModule ? "Activate" : "Restore"}
                         </button>
                       ) : (
                         <button
-                          className="btn btn-light btn-sm"
+                          className={`btn btn-sm ${
+                            isRbacModule ? "row-action-inactive" : "btn-light"
+                          }`}
                           onClick={() => {
                             void props.archiveRow(row);
                           }}
                           type="button"
                         >
-                          Archive
+                          <Icon name="shield" />
+                          {isRbacModule ? "Inactivate" : "Archive"}
                         </button>
                       )}
                     </div>
@@ -3088,33 +3401,154 @@ function getRecordStatus(row: string[]) {
         "under review",
         "completed",
         "archived",
+        "inactive",
         "blocked",
       ].includes(value.toLowerCase()),
     ) ?? "Active"
   );
 }
 
+function AuthenticationCommandCenter(props: {
+  runAction: (label: string) => Promise<void>;
+}) {
+  const workspace = useAppSelector((state) => state.crmWorkspace);
+  const overview = normalizeResponseObject(workspace.authOverview);
+  const metrics: Array<[string, unknown]> = [
+    ["Total users", overview.totalUsers],
+    ["Active users", overview.activeUsers],
+    ["Suspended", overview.suspendedUsers],
+    ["Active sessions", overview.activeSessions],
+  ];
+
+  return (
+    <section
+      aria-label="Authentication command center"
+      className="iam-command-center"
+    >
+      <div>
+        <span className="eyebrow">Authentication owns</span>
+        <h3>
+          Login, sessions, MFA readiness, SSO configuration, and device control
+        </h3>
+        <p>
+          This module validates credentials, issues sessions, tracks devices,
+          applies security policy, and lets admins revoke access when risk is
+          detected.
+        </p>
+      </div>
+      <div className="iam-metric-grid">
+        {metrics.map(([label, value]) => (
+          <article className="iam-metric-card" key={String(label)}>
+            <span>{label}</span>
+            <strong>
+              {typeof value === "number" ? value.toLocaleString() : "0"}
+            </strong>
+          </article>
+        ))}
+      </div>
+      <div className="iam-action-strip">
+        {["Review sessions", "Configure MFA policy", "Configure SSO"].map(
+          (label) => (
+            <button
+              className="btn btn-light secondary"
+              key={label}
+              onClick={() => void props.runAction(label)}
+              type="button"
+            >
+              <Icon name={label.includes("SSO") ? "lock" : "shield"} />
+              {label}
+            </button>
+          ),
+        )}
+      </div>
+    </section>
+  );
+}
+
+function UsersCommandCenter(props: {
+  runAction: (label: string) => Promise<void>;
+  total: number;
+}) {
+  const userScopes = [
+    "Super admins operate the full platform.",
+    "Organization admins manage one organization.",
+    "Branch admins and agents operate assigned branches.",
+    "Students and parents use customer-facing access.",
+  ];
+
+  return (
+    <section aria-label="Users command center" className="iam-command-center">
+      <div>
+        <span className="eyebrow">Users owns</span>
+        <h3>People, roles, memberships, hierarchy, and access lifecycle</h3>
+        <p>
+          Create users from CRM credentials, attach them to organizations and
+          branches, manage role membership, suspend risky accounts, and revoke
+          active sessions.
+        </p>
+      </div>
+      <div className="iam-role-list">
+        {userScopes.map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </div>
+      <div className="iam-action-strip">
+        <strong>{props.total.toLocaleString()} live users</strong>
+        {["Create User", "Access review", "Revoke sessions"].map((label) => (
+          <button
+            className={
+              label === "Create User"
+                ? "btn btn-primary"
+                : "btn btn-light secondary"
+            }
+            key={label}
+            onClick={() => void props.runAction(label)}
+            type="button"
+          >
+            <Icon name={label.includes("User") ? "user" : "shield"} />
+            {label}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RecordDetailModal({
+  availablePermissions,
   module,
   onArchive,
   onClose,
   onEdit,
   onFollowUp,
   row,
+  sourceRecord,
   stats,
 }: {
+  availablePermissions?: unknown[];
   module: AdminModule;
   onArchive: (row: string[]) => void;
   onClose: () => void;
   onEdit: (row: string[]) => void;
   onFollowUp: () => void;
   row: string[];
+  sourceRecord?: unknown;
   stats?: Array<{ label: string; value: number | string }>;
 }) {
   const status = getRecordStatus(row);
-  const isArchived = row.some((value) => value.toLowerCase() === "archived");
-  const primaryFields = module.columns.slice(0, 3);
-  const remainingFields = module.columns.slice(3);
+  const isRbacModule = module.id === "roles" || module.id === "permissions";
+  const isArchived = row.some((value) =>
+    isRbacModule
+      ? value.toLowerCase() === "inactive"
+      : value.toLowerCase() === "archived",
+  );
+  const visibleColumns = module.columns.filter(
+    (column) =>
+      column.toLowerCase() !== "status" &&
+      !(module.id === "roles" && column.toLowerCase() === "permissions"),
+  );
+  const primaryFields = visibleColumns.slice(0, 3);
+  const remainingFields = visibleColumns.slice(3);
   const canCreateFollowUp = new Set([
     "leads",
     "follow-ups",
@@ -3123,6 +3557,7 @@ function RecordDetailModal({
     "admissions",
     "call-center",
   ]).has(module.id);
+  const rolePermissionNames = getRolePermissionNames(sourceRecord);
 
   return (
     <div className="modal-backdrop-layer" role="presentation">
@@ -3145,7 +3580,9 @@ function RecordDetailModal({
               <p>
                 {module.id === "organizations"
                   ? "Organization registry, lifecycle, and hierarchy overview."
-                  : `${module.title} record overview and operational context.`}
+                  : isRbacModule
+                    ? "RBAC catalogue record, access lifecycle, and guard usage context."
+                    : `${module.title} record overview and operational context.`}
               </p>
             </div>
           </div>
@@ -3177,7 +3614,9 @@ function RecordDetailModal({
           {primaryFields.map((column, index) => (
             <div className="record-detail-card" key={column}>
               <span>{column}</span>
-              <strong>{renderCell(row[index] ?? "-")}</strong>
+              <strong>
+                {renderCell(row[module.columns.indexOf(column)] ?? "-")}
+              </strong>
             </div>
           ))}
         </div>
@@ -3189,7 +3628,7 @@ function RecordDetailModal({
           </div>
           <dl className="detail-definition-list">
             {remainingFields.map((column, offset) => {
-              const index = offset + 3;
+              const index = module.columns.indexOf(column);
               return (
                 <div key={column}>
                   <dt>{column}</dt>
@@ -3199,6 +3638,14 @@ function RecordDetailModal({
             })}
           </dl>
         </div>
+
+        {module.id === "roles" ? (
+          <PermissionMappingSection
+            assignedPermissionNames={rolePermissionNames}
+            availablePermissions={availablePermissions ?? []}
+            readonly
+          />
+        ) : null}
 
         <div className="record-modal-actions">
           {canCreateFollowUp ? (
@@ -3211,22 +3658,24 @@ function RecordDetailModal({
               Create Follow-up
             </button>
           ) : null}
-          <button
-            className="btn btn-light"
-            onClick={() => onEdit(row)}
-            type="button"
-          >
-            <Icon name="settings" />
-            Edit
-          </button>
-          {!isArchived ? (
+          {!isRbacModule ? (
+            <button
+              className="btn btn-light"
+              onClick={() => onEdit(row)}
+              type="button"
+            >
+              <Icon name="settings" />
+              Edit
+            </button>
+          ) : null}
+          {!isArchived && !isRbacModule ? (
             <button
               className="btn btn-danger-soft"
               onClick={() => onArchive(row)}
               type="button"
             >
               <Icon name="shield" />
-              Archive
+              {isRbacModule ? "Delete" : "Archive"}
             </button>
           ) : null}
         </div>
@@ -3247,6 +3696,7 @@ function ArchiveConfirmModal({
   row: string[];
 }) {
   const [isArchiving, setIsArchiving] = useState(false);
+  const isRbacModule = module.id === "roles" || module.id === "permissions";
 
   async function confirmArchive() {
     setIsArchiving(true);
@@ -3268,13 +3718,18 @@ function ArchiveConfirmModal({
               <Icon name="shield" />
             </div>
             <div>
-              <span className="eyebrow">Archive Confirmation</span>
+              <span className="eyebrow">
+                {isRbacModule
+                  ? "Inactivate Confirmation"
+                  : "Archive Confirmation"}
+              </span>
               <h3 id="archive-confirm-title">
-                Archive this {module.title} record?
+                {isRbacModule ? "Inactivate" : "Archive"} this {module.title}{" "}
+                record?
               </h3>
               <p>
-                This keeps the record in history but removes it from active
-                workflows.
+                This keeps the record in history and marks it inactive. It does
+                not permanently delete database history.
               </p>
             </div>
           </div>
@@ -3310,7 +3765,13 @@ function ArchiveConfirmModal({
             }}
             type="button"
           >
-            {isArchiving ? "Archiving..." : "Archive Record"}
+            {isArchiving
+              ? isRbacModule
+                ? "Inactivating..."
+                : "Archiving..."
+              : isRbacModule
+                ? "Inactivate Record"
+                : "Archive Record"}
           </button>
         </div>
       </section>
@@ -3318,21 +3779,199 @@ function ArchiveConfirmModal({
   );
 }
 
-function RecordFormModal({
+function RestoreConfirmModal({
   module,
   onClose,
-  onSubmit,
+  onConfirm,
   row,
 }: {
   module: AdminModule;
   onClose: () => void;
+  onConfirm: () => Promise<void>;
+  row: string[];
+}) {
+  const [isRestoring, setIsRestoring] = useState(false);
+  const isRbacModule = module.id === "roles" || module.id === "permissions";
+  const actionLabel = isRbacModule ? "Activate" : "Restore";
+
+  async function confirmRestore() {
+    setIsRestoring(true);
+    await onConfirm();
+    setIsRestoring(false);
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section
+        aria-labelledby="restore-confirm-title"
+        aria-modal="true"
+        className="record-modal archive-confirm-modal"
+        role="dialog"
+      >
+        <div className="record-modal-head enterprise-modal-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell success">
+              <Icon name="check" />
+            </div>
+            <div>
+              <span className="eyebrow">{actionLabel} Confirmation</span>
+              <h3 id="restore-confirm-title">
+                {actionLabel} this {module.title} record?
+              </h3>
+              <p>
+                This will move the record back into the active RBAC catalogue
+                and make it available for access configuration.
+              </p>
+            </div>
+          </div>
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="archive-record-preview">
+          <span>Selected record</span>
+          <strong>{row[0] || `${module.title} Record`}</strong>
+          <p>{row.slice(1, 4).filter(Boolean).join(" / ")}</p>
+        </div>
+
+        <div className="record-modal-actions">
+          <button
+            className="btn btn-light"
+            disabled={isRestoring}
+            onClick={onClose}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={isRestoring}
+            onClick={() => {
+              void confirmRestore();
+            }}
+            type="button"
+          >
+            {isRestoring ? `${actionLabel}...` : `${actionLabel} Record`}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function PermissionMappingSection({
+  assignedPermissionIds,
+  assignedPermissionNames,
+  availablePermissions,
+  onToggle,
+  readonly = false,
+}: {
+  assignedPermissionIds?: string[];
+  assignedPermissionNames?: string[];
+  availablePermissions: unknown[];
+  onToggle?: (permissionId: string) => void;
+  readonly?: boolean;
+}) {
+  const assignedIds = new Set(assignedPermissionIds ?? []);
+  const assignedNames = new Set(assignedPermissionNames ?? []);
+  const groupedPermissions = availablePermissions.reduce<
+    Record<string, Array<{ id: string; module: string; name: string }>>
+  >((groups, item) => {
+    const object =
+      item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+    const id = getUnknownRecordId(object);
+    const name = typeof object.name === "string" ? object.name : "";
+    const module =
+      typeof object.module === "string"
+        ? object.module
+        : name.split(":")[0] || "general";
+    if (!id || !name) return groups;
+    groups[module] = [...(groups[module] ?? []), { id, module, name }];
+    return groups;
+  }, {});
+  const modules = Object.keys(groupedPermissions).sort();
+
+  return (
+    <section className="permission-map-section">
+      <div className="section-title-row">
+        <h4>Permission Mapping</h4>
+        <span>
+          {readonly ? "Assigned permissions" : "Select role permissions"}
+        </span>
+      </div>
+      {modules.length === 0 ? (
+        <div className="permission-map-empty">No permissions available</div>
+      ) : (
+        <div className="permission-map-grid">
+          {modules.map((moduleName) => (
+            <article className="permission-map-group" key={moduleName}>
+              <strong>{moduleName}</strong>
+              <div>
+                {groupedPermissions[moduleName].map((permission) => {
+                  const checked =
+                    assignedIds.has(permission.id) ||
+                    assignedNames.has(permission.name);
+                  if (readonly && !checked) return null;
+                  return (
+                    <label
+                      className={`permission-map-item ${
+                        checked ? "selected" : ""
+                      }`}
+                      key={permission.id}
+                    >
+                      {readonly ? null : (
+                        <input
+                          checked={checked}
+                          onChange={() => onToggle?.(permission.id)}
+                          type="checkbox"
+                        />
+                      )}
+                      <span>{permission.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function RecordFormModal({
+  availablePermissions,
+  module,
+  onClose,
+  onSubmit,
+  row,
+  sourceRecord,
+}: {
+  availablePermissions?: unknown[];
+  module: AdminModule;
+  onClose: () => void;
   onSubmit: (draft: ModuleRecordDraft) => Promise<void>;
   row?: string[];
+  sourceRecord?: unknown;
 }) {
   const editableColumns = getEditableModuleColumns(module);
+  const isRbacModule = module.id === "roles" || module.id === "permissions";
   const [title, setTitle] = useState(row?.[0] ?? "");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("open");
+  const [description, setDescription] = useState(
+    isRbacModule ? (row?.[module.columns.indexOf("Description")] ?? "") : "",
+  );
+  const [status, setStatus] = useState(
+    isRbacModule
+      ? row?.some((value) => value.toLowerCase() === "inactive")
+        ? "inactive"
+        : "active"
+      : "open",
+  );
   const [priority, setPriority] = useState("medium");
   const [dueAt, setDueAt] = useState("");
   const [payload, setPayload] = useState<Record<string, string>>(() =>
@@ -3346,6 +3985,9 @@ function RecordFormModal({
       }),
     ),
   );
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>(() =>
+    getRolePermissionIds(sourceRecord),
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   async function submit() {
@@ -3355,7 +3997,10 @@ function RecordFormModal({
       description,
       dueAt: dueAt || undefined,
       moduleKey: module.id,
-      payload,
+      payload:
+        module.id === "roles"
+          ? { ...payload, permissions: selectedPermissions.join(",") }
+          : payload,
       priority,
       status,
       title: title.trim(),
@@ -3375,7 +4020,10 @@ function RecordFormModal({
           <div>
             <span className="eyebrow">{module.group}</span>
             <h3 id="record-form-title">
-              {row ? "Edit" : "Create"} {module.title} Record
+              {row ? "Edit" : "Create"}{" "}
+              {isRbacModule
+                ? module.title.slice(0, -1)
+                : `${module.title} Record`}
             </h3>
           </div>
           <button
@@ -3389,13 +4037,37 @@ function RecordFormModal({
 
         <div className="record-form-grid">
           <label className="formrow wide">
-            <span className="label">Title</span>
+            <span className="label">
+              {module.id === "permissions"
+                ? "Permission"
+                : module.id === "roles"
+                  ? "Role"
+                  : "Title"}
+            </span>
             <input
               className="input form-control"
               onChange={(event) => setTitle(event.target.value)}
+              placeholder={
+                module.id === "permissions" ? "module:action" : undefined
+              }
               value={title}
             />
           </label>
+          {module.id === "permissions" ? (
+            <label className="formrow">
+              <span className="label">Module</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setPayload((current) => ({
+                    ...current,
+                    module: event.target.value,
+                  }))
+                }
+                value={payload.module ?? ""}
+              />
+            </label>
+          ) : null}
           <label className="formrow wide">
             <span className="label">Description</span>
             <textarea
@@ -3404,60 +4076,102 @@ function RecordFormModal({
               value={description}
             />
           </label>
-          <label className="formrow">
-            <span className="label">Status</span>
-            <select
-              className="form-select form-select-sm"
-              onChange={(event) => setStatus(event.target.value)}
-              value={status}
-            >
-              <option value="draft">Draft</option>
-              <option value="open">Open</option>
-              <option value="in_progress">In progress</option>
-              <option value="blocked">Blocked</option>
-              <option value="completed">Completed</option>
-            </select>
-          </label>
-          <label className="formrow">
-            <span className="label">Priority</span>
-            <select
-              className="form-select form-select-sm"
-              onChange={(event) => setPriority(event.target.value)}
-              value={priority}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </label>
-          <label className="formrow">
-            <span className="label">Due Date</span>
-            <input
-              className="input form-control"
-              onChange={(event) => setDueAt(event.target.value)}
-              type="date"
-              value={dueAt}
-            />
-          </label>
-          {editableColumns.map((column) => {
-            const key = toPayloadKey(column);
-            return (
-              <label className="formrow" key={column}>
-                <span className="label">{column}</span>
+          {isRbacModule ? (
+            <div className="formrow">
+              <span className="label">Status</span>
+              <div className="radio-pill-group">
+                {["active", "inactive"].map((option) => (
+                  <label className="radio-pill" key={option}>
+                    <input
+                      checked={status === option}
+                      onChange={() => setStatus(option)}
+                      name="rbac-status"
+                      type="radio"
+                    />
+                    <span>{option}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <label className="formrow">
+                <span className="label">Status</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) => setStatus(event.target.value)}
+                  value={status}
+                >
+                  <option value="draft">Draft</option>
+                  <option value="open">Open</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="blocked">Blocked</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </label>
+              <label className="formrow">
+                <span className="label">Priority</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) => setPriority(event.target.value)}
+                  value={priority}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </label>
+              <label className="formrow">
+                <span className="label">Due Date</span>
                 <input
                   className="input form-control"
-                  onChange={(event) =>
-                    setPayload((current) => ({
-                      ...current,
-                      [key]: event.target.value,
-                    }))
-                  }
-                  value={payload[key] ?? ""}
+                  onChange={(event) => setDueAt(event.target.value)}
+                  type="date"
+                  value={dueAt}
                 />
               </label>
-            );
-          })}
+            </>
+          )}
+          {module.id === "roles" ? (
+            <PermissionMappingSection
+              assignedPermissionIds={selectedPermissions}
+              availablePermissions={availablePermissions ?? []}
+              onToggle={(permissionId) =>
+                setSelectedPermissions((current) =>
+                  current.includes(permissionId)
+                    ? current.filter((id) => id !== permissionId)
+                    : [...current, permissionId],
+                )
+              }
+            />
+          ) : null}
+          {editableColumns
+            .filter(
+              (column) =>
+                !(
+                  isRbacModule &&
+                  ["Description", "Module", "Permissions"].includes(column)
+                ),
+            )
+            .map((column) => {
+              const key = toPayloadKey(column);
+              return (
+                <label className="formrow" key={column}>
+                  <span className="label">{column}</span>
+                  <input
+                    className="input form-control"
+                    onChange={(event) =>
+                      setPayload((current) => ({
+                        ...current,
+                        [key]: event.target.value,
+                      }))
+                    }
+                    value={payload[key] ?? ""}
+                  />
+                </label>
+              );
+            })}
         </div>
 
         <div className="record-modal-actions">
@@ -4395,9 +5109,10 @@ function renderCell(value: string) {
       "accepted",
     ].includes(normalized)
   )
-    return <span className="badge good">{value}</span>;
+    return <span className="badge good">{formatBadgeLabel(value)}</span>;
   if (
     [
+      "inactive",
       "pending",
       "review",
       "draft",
@@ -4407,10 +5122,51 @@ function renderCell(value: string) {
       "documents",
     ].includes(normalized)
   )
-    return <span className="badge warn">{value}</span>;
+    return <span className="badge warn">{formatBadgeLabel(value)}</span>;
   if (["urgent", "high", "hot"].includes(normalized))
-    return <span className="badge danger">{value}</span>;
+    return <span className="badge danger">{formatBadgeLabel(value)}</span>;
   return value;
+}
+
+function formatBadgeLabel(value: string) {
+  return formatStatus(value)
+    .split(" ")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+function getRolePermissionNames(record: unknown) {
+  return getRolePermissions(record).map((permission) => permission.name);
+}
+
+function getRolePermissionIds(record: unknown) {
+  return getRolePermissions(record).map((permission) => permission.id);
+}
+
+function getRolePermissions(record: unknown) {
+  const object =
+    record && typeof record === "object"
+      ? (record as Record<string, unknown>)
+      : {};
+  const permissions = Array.isArray(object.permissions)
+    ? object.permissions
+    : [];
+  return permissions
+    .map((permission) => {
+      const permissionObject =
+        permission && typeof permission === "object"
+          ? (permission as Record<string, unknown>)
+          : {};
+      const id = getUnknownRecordId(permissionObject);
+      const name =
+        typeof permissionObject.name === "string"
+          ? permissionObject.name
+          : typeof permission === "string"
+            ? permission
+            : "";
+      return { id: id || name, name };
+    })
+    .filter((permission) => permission.name);
 }
 
 function findModuleRecordIdForRow(
@@ -4425,4 +5181,14 @@ function findModuleRecordIdForRow(
     return object.title === title || object.name === title;
   });
   return getUnknownRecordId(record);
+}
+
+function findModuleRecordForRow(records: unknown[] | undefined, row: string[]) {
+  if (!records?.length) return undefined;
+  const title = row[0];
+  return records.find((item) => {
+    if (!item || typeof item !== "object") return false;
+    const object = item as { name?: unknown; title?: unknown };
+    return object.title === title || object.name === title;
+  });
 }

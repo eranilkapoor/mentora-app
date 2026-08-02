@@ -2,9 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import {
-  Branch,
   LeadSource,
   LeadStage,
+} from '@/common/crm/schemas/crm-taxonomy.schema';
+import {
+  Branch,
   Organization,
 } from '../../organizations/schemas/organizations.schema';
 

@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -26,4 +27,14 @@ export class CreatePermissionDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+}
+
+export class ListPermissionsDto {
+  @IsOptional()
+  @IsString()
+  module?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'all'])
+  status?: 'active' | 'inactive' | 'all';
 }

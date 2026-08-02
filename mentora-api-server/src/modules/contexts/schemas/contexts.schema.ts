@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { EDUCATION_PLATFORM_USER_ROLES } from '@/common/constants/education-platform.constants';
+import { Organization } from '../../organizations/schemas/organization.schema';
 import {
   Branch,
   Department,
   Team,
-  Organization,
-} from '../../organizations/schemas/organizations.schema';
+} from '../../organizations/schemas/organization-structure.schema';
 
 export type UserMembershipDocument = HydratedDocument<UserMembership>;
 

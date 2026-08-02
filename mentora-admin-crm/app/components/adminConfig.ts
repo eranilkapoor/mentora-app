@@ -60,6 +60,8 @@ export const readonlyFormColumns = new Set([
 ]);
 
 export function getEditableModuleColumns(module: AdminModule) {
+  if (module.id === "roles") return ["Description", "Permissions"];
+  if (module.id === "permissions") return ["Module", "Description"];
   return module.columns.slice(1, 6).filter((column) => {
     const normalized = column.trim().toLowerCase().replaceAll("_", " ");
     return (
@@ -107,6 +109,7 @@ export const moduleIcons: Record<string, IconName> = {
   "lead-sources": "lead",
   "lead-stages": "lead",
   notifications: "chat",
+  permissions: "shield",
   events: "calendar",
   "field-force": "mobile",
   finance: "finance",
@@ -123,6 +126,7 @@ export const moduleIcons: Record<string, IconName> = {
   "platform-foundation": "organization",
   programs: "graduation",
   reports: "report",
+  roles: "user",
   scholarship: "graduation",
   security: "shield",
   settings: "settings",
@@ -403,6 +407,8 @@ export const moduleActions: Record<string, string[]> = {
     "Export Users",
     "Audit Access",
   ],
+  roles: ["Create Role"],
+  permissions: ["Create Permission"],
 };
 
 export const securityControlGroups = [
@@ -528,6 +534,8 @@ export const navGroups = [
     items: [
       "authentication",
       "users",
+      "roles",
+      "permissions",
       "organizations",
       "branches",
       "departments",
@@ -1045,16 +1053,42 @@ export const extraModules: AdminModule[] = [
     id: "users",
     title: "Users",
     group: "Access",
-    metric: "132 users",
+    metric: "Live users",
     description:
       "Counselors, managers, branch admins, marketing, finance, call center, field agents, students, parents, roles, teams, and hierarchy.",
     filters: ["Role", "Team", "Branch", "Status"],
-    columns: ["User", "Role", "Team", "Branch", "Status", "Last Login"],
-    rows: [
-      ["Ritika Jain", "Counselor", "Admissions", "Delhi", "Active", "Today"],
-      ["Sahil Mehta", "Marketing", "Growth", "Online", "Active", "Today"],
-      ["Dev Arora", "Finance", "Collections", "Mumbai", "Active", "Yesterday"],
+    columns: [
+      "User",
+      "Role",
+      "Organization",
+      "Branch",
+      "Status",
+      "Sessions",
+      "Last Login",
     ],
+    rows: [],
+  },
+  {
+    id: "roles",
+    title: "Roles",
+    group: "Access",
+    metric: "Live roles",
+    description:
+      "Role catalogue for super admins, organization admins, branch users, counselors, finance, marketing, parents, and students.",
+    filters: ["Status", "Permission", "Module"],
+    columns: ["Role", "Description", "Permissions", "Status", "Updated"],
+    rows: [],
+  },
+  {
+    id: "permissions",
+    title: "Permissions",
+    group: "Access",
+    metric: "Live permissions",
+    description:
+      "Permission catalogue using resource:action rules for backend guards, CRM module access, and admin operations.",
+    filters: ["Module", "Status"],
+    columns: ["Permission", "Module", "Description", "Status", "Updated"],
+    rows: [],
   },
   {
     id: "organizations",

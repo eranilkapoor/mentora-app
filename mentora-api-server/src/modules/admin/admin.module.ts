@@ -9,11 +9,13 @@ import { AdminPaymentsController } from './controllers/admin-payments.controller
 import { AdminPlansController } from './controllers/admin-plans.controller';
 import { AdminNotificationsController } from './controllers/admin-notifications.controller';
 import { AdminAnalyticsController } from './controllers/admin-analytics.controller';
+import { AdminIamController } from './controllers/admin-iam.controller';
 
 // Services
 import { AdminService } from './services/admin.service';
 import { RbacService } from './services/rbac.service';
 import { AdminAuditService } from './services/admin-audit.service';
+import { AdminIamService } from './services/admin-iam.service';
 
 // Repository
 import { AdminRepository } from './repositories/admin.repository';
@@ -26,6 +28,14 @@ import {
   AdminAuditLogSchema,
 } from './schemas/admin-audit-log.schema';
 import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
+import {
+  UserSession,
+  UserSessionSchema,
+} from '@/modules/auth/schemas/user-session.schema';
+import {
+  UserMembership,
+  UserMembershipSchema,
+} from '@/modules/contexts/schemas/contexts.schema';
 import {
   Profile,
   ProfileSchema,
@@ -64,6 +74,8 @@ import { SettingsModule } from '../settings/settings.module';
     MongooseModule.forFeature([
       // User registered once  shared by both AdminService and RbacService
       { name: User.name, schema: UserSchema },
+      { name: UserSession.name, schema: UserSessionSchema },
+      { name: UserMembership.name, schema: UserMembershipSchema },
       { name: Permission.name, schema: PermissionSchema },
       { name: Role.name, schema: RoleSchema },
       { name: AdminAuditLog.name, schema: AdminAuditLogSchema },
@@ -91,8 +103,15 @@ import { SettingsModule } from '../settings/settings.module';
     AdminPlansController,
     AdminNotificationsController,
     AdminAnalyticsController,
+    AdminIamController,
   ],
-  providers: [AdminService, RbacService, AdminRepository, AdminAuditService],
+  providers: [
+    AdminService,
+    RbacService,
+    AdminRepository,
+    AdminAuditService,
+    AdminIamService,
+  ],
   exports: [
     RbacService, // export so other modules can check permissions if needed
     AdminAuditService,

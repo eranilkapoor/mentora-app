@@ -10,21 +10,27 @@ import { OrganizationsController } from './controllers/organizations.controller'
 import {
   Branch,
   BranchSchema,
-  ChannelSetting,
-  ChannelSettingSchema,
   Department,
   DepartmentSchema,
+  Team,
+  TeamSchema,
+} from './schemas/organization-structure.schema';
+import {
+  ChannelSetting,
+  ChannelSettingSchema,
+  OrganizationBranding,
+  OrganizationBrandingSchema,
+} from './schemas/organization-settings.schema';
+import {
+  Organization,
+  OrganizationSchema,
+} from './schemas/organization.schema';
+import {
   LeadSource,
   LeadSourceSchema,
   LeadStage,
   LeadStageSchema,
-  Team,
-  TeamSchema,
-  Organization,
-  OrganizationBranding,
-  OrganizationBrandingSchema,
-  OrganizationSchema,
-} from './schemas/organizations.schema';
+} from '@/common/crm/schemas/crm-taxonomy.schema';
 import { OrganizationsService } from './services/organizations.service';
 
 @Module({

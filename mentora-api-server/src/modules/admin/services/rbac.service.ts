@@ -4,7 +4,10 @@ import { Model, Types, FlattenMaps } from 'mongoose';
 import { Permission, PermissionDocument } from '../schemas/permission.schema';
 import { Role, RoleDocument } from '../schemas/role.schema';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
-import { CreatePermissionDto } from '../dto/create-permission.dto';
+import {
+  CreatePermissionDto,
+  ListPermissionsDto,
+} from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { ErrorCode } from '@/common/constants';
@@ -54,13 +57,42 @@ export class RbacService {
     return created.toObject() as LeanPermission;
   }
 
-  getPermissions(module?: string): Promise<LeanPermission[]> {
-    const filter = module ? { module, isActive: true } : { isActive: true };
+  getPermissions(
+    query?: ListPermissionsDto | string,
+  ): Promise<LeanPermission[]> {
+    const normalizedQuery =
+      typeof query === 'string'
+        ? { module: query, status: 'active' as const }
+        : query;
+    const status = normalizedQuery?.status ?? 'all';
+    const filter = {
+      ...(normalizedQuery?.module ? { module: normalizedQuery.module } : {}),
+      ...(status === 'active'
+        ? { isActive: true }
+        : status === 'inactive'
+          ? { isActive: false }
+          : {}),
+    };
     return this.permissionModel
       .find(filter)
       .sort({ module: 1, name: 1 })
       .lean<LeanPermission[]>()
       .exec();
+  }
+
+  async updatePermission(
+    id: string,
+    dto: Partial<CreatePermissionDto>,
+  ): Promise<LeanPermission> {
+    const permission = await this.permissionModel
+      .findByIdAndUpdate(id, { $set: dto }, { new: true, runValidators: true })
+      .lean<LeanPermission>()
+      .exec();
+    if (!permission)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'permission_not_found',
+      });
+    return permission;
   }
 
   async getPermissionById(id: string): Promise<LeanPermission> {
@@ -132,9 +164,17 @@ export class RbacService {
     return populated!;
   }
 
-  getRoles(): Promise<LeanRolePopulated[]> {
+  getRoles(
+    status: 'active' | 'inactive' | 'all' = 'all',
+  ): Promise<LeanRolePopulated[]> {
     return this.roleModel
-      .find({ isActive: true })
+      .find(
+        status === 'active'
+          ? { isActive: true }
+          : status === 'inactive'
+            ? { isActive: false }
+            : {},
+      )
       .populate<{ permissions: LeanPermission[] }>('permissions')
       .sort({ name: 1 })
       .lean<LeanRolePopulated[]>()

@@ -88,15 +88,19 @@ import {
   BranchSchema,
   Department,
   DepartmentSchema,
+  Team,
+  TeamSchema,
+} from '../organizations/schemas/organization-structure.schema';
+import {
+  Organization,
+  OrganizationSchema,
+} from '../organizations/schemas/organization.schema';
+import {
   LeadSource,
   LeadSourceSchema,
   LeadStage,
   LeadStageSchema,
-  Team,
-  TeamSchema,
-  Organization,
-  OrganizationSchema,
-} from '../organizations/schemas/organizations.schema';
+} from '@/common/crm/schemas/crm-taxonomy.schema';
 import {
   UserMembership,
   UserMembershipSchema,

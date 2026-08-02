@@ -121,15 +121,19 @@ import {
   BranchDocument,
   Department,
   DepartmentDocument,
+  Team,
+  TeamDocument,
+} from '@/modules/organizations/schemas/organization-structure.schema';
+import {
+  Organization,
+  OrganizationDocument,
+} from '@/modules/organizations/schemas/organization.schema';
+import {
   LeadSource,
   LeadSourceDocument,
   LeadStage,
   LeadStageDocument,
-  Team,
-  TeamDocument,
-  Organization,
-  OrganizationDocument,
-} from '@/modules/organizations/schemas/organizations.schema';
+} from '@/common/crm/schemas/crm-taxonomy.schema';
 import {
   UserMembership,
   UserMembershipDocument,

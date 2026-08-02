@@ -37,21 +37,27 @@ import {
 import {
   Branch,
   BranchDocument,
-  ChannelSetting,
-  ChannelSettingDocument,
   Department,
   DepartmentDocument,
+  Team,
+  TeamDocument,
+} from '../schemas/organization-structure.schema';
+import {
+  ChannelSetting,
+  ChannelSettingDocument,
+  OrganizationBranding,
+  OrganizationBrandingDocument,
+} from '../schemas/organization-settings.schema';
+import {
+  Organization,
+  OrganizationDocument,
+} from '../schemas/organization.schema';
+import {
   LeadSource,
   LeadSourceDocument,
   LeadStage,
   LeadStageDocument,
-  Team,
-  TeamDocument,
-  Organization,
-  OrganizationBranding,
-  OrganizationBrandingDocument,
-  OrganizationDocument,
-} from '../schemas/organizations.schema';
+} from '@/common/crm/schemas/crm-taxonomy.schema';
 
 @Injectable()
 export class OrganizationsService {

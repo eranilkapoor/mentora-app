@@ -17,6 +17,7 @@ import { Permissions } from '@/common/decorators/permissions.decorator';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { Permission } from '@/common/enums';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
+import { ListPermissionsDto } from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { AssignRolesDto } from '../dto/assign-roles.dto';
@@ -42,10 +43,22 @@ export class RbacController {
 
   @Get('permissions')
   @Permissions(Permission.ADMIN_MANAGE)
-  async getPermissions(@Query('module') module?: string) {
+  async getPermissions(@Query() query: ListPermissionsDto | string) {
     return successResponse(
-      await this.rbacService.getPermissions(module),
+      await this.rbacService.getPermissions(query),
       SuccessCode.ADMIN_PERMISSIONS_FETCHED,
+    );
+  }
+
+  @Patch('permissions/:id')
+  @Permissions(Permission.ADMIN_MANAGE)
+  async updatePermission(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreatePermissionDto>,
+  ) {
+    return successResponse(
+      await this.rbacService.updatePermission(id, dto),
+      SuccessCode.ADMIN_PERMISSION_CREATED,
     );
   }
 
@@ -82,9 +95,9 @@ export class RbacController {
 
   @Get('roles')
   @Permissions(Permission.ADMIN_MANAGE)
-  async getRoles() {
+  async getRoles(@Query('status') status?: 'active' | 'inactive' | 'all') {
     return successResponse(
-      await this.rbacService.getRoles(),
+      await this.rbacService.getRoles(status),
       SuccessCode.ADMIN_ROLES_FETCHED,
     );
   }
