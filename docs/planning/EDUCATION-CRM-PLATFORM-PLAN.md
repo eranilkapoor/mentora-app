@@ -4,13 +4,13 @@
 
 Mentora CRM is organized into five enterprise product layers.
 
-| Layer | Purpose | Current code coverage |
-| --- | --- | --- |
-| Platform Foundation | SaaS control plane for organizations, plans, billing, flags, limits, activation, branding, domains, global settings, and audit. | `organizations`, `subscriptions`, `payments`, `feature-flags`, `settings`, `admin/audit`, `organization-branding`, `module-records/coverage`. |
-| Identity and Organization | Who can access what across organization, business unit, campus, branch, department, team, and user hierarchy. | `auth`, `admin/rbac`, `contexts`, `organization-users`, `identity/hierarchy`, `business-units`, `campuses`, `branches`, `departments`, `teams`, `security-policies`. |
-| Generic CRM | Reusable CRM foundation for leads, contacts, sources, stages, activities, notes, tasks, follow-ups, meetings, assignments, tags, custom fields, imports/exports, and timelines. | Dedicated `leads`, `tasks`, `communications`, `events`, and generic `module-records` coverage for contacts, notes, meetings, tags, custom fields, and imports/exports. |
-| Education-Specific Modules | Admissions product depth: academic sessions, programs, courses, applications, documents, interviews, offers, scholarships, enrollment, fees, and student portal. | `learning`, `students`, `applications`, `admissions`, `documents`, `interviews`, `scholarships`, `payments`, `finance-ledgers`, `classrooms`, schedules, entitlements. |
-| Growth and Automation | Campaigns, landing pages, email/SMS/WhatsApp, workflow automation, scoring, attribution, telephony, chatbots, analytics, and AI assistance. | `campaigns`, `communications`, `whatsapp`, `call-center`, `workflows`, `analytics`, `ai-features`, `integrations`, `notifications`. |
+| Layer                      | Purpose                                                                                                                                                                         | Current code coverage                                                                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform Foundation        | SaaS control plane for organizations, plans, billing, customer/runtime flags, limits, activation, branding, domains, global settings, and audit.                                | `admin/organizations`, `subscriptions`, `payments`, `feature-flags`, `settings`, `admin/audit`, `admin/organization-branding`, `admin/module-records/coverage`.                           |
+| Identity and Organization  | Who can access what across organization, branch, department, team, and user hierarchy.                                                                                          | `admin/auth`, `admin/rbac`, `admin/me/contexts`, `admin/organization-users`, `admin/identity/hierarchy`, `admin/branches`, `admin/departments`, `admin/teams`, `admin/security-policies`. |
+| Generic CRM                | Reusable CRM foundation for leads, contacts, sources, stages, activities, notes, tasks, follow-ups, meetings, assignments, tags, custom fields, imports/exports, and timelines. | Dedicated `leads`, `tasks`, `communications`, `events`, and generic `module-records` coverage for contacts, notes, meetings, tags, custom fields, and imports/exports.                    |
+| Education-Specific Modules | Admissions product depth: academic sessions, programs, courses, applications, documents, interviews, offers, scholarships, enrollment, fees, and student portal.                | `learning`, `students`, `applications`, `admissions`, `documents`, `interviews`, `scholarships`, `payments`, `finance-ledgers`, `classrooms`, schedules, entitlements.                    |
+| Growth and Automation      | Campaigns, landing pages, email/SMS/WhatsApp, workflow automation, scoring, attribution, telephony, chatbots, analytics, and AI assistance.                                     | `campaigns`, `communications`, `whatsapp`, `call-center`, `workflows`, `analytics`, `ai-features`, `integrations`, `notifications`.                                                       |
 
 The backend coverage endpoint now returns a `layer` value per module so the CRM can display readiness by product layer instead of a flat, hard-to-govern module list.
 
@@ -113,50 +113,63 @@ Initial collections:
 Initial APIs:
 
 ```text
-POST /api/v1/organizations
-GET  /api/v1/organizations
-POST /api/v1/leads
-POST /api/v1/leads/public
-GET  /api/v1/leads?organizationId=:organizationId
-GET  /api/v1/leads/:leadId?organizationId=:organizationId
-POST /api/v1/leads/:leadId/assign
-POST /api/v1/leads/:leadId/change-stage
-POST /api/v1/leads/:leadId/activities
-POST /api/v1/leads/:leadId/tags
-POST /api/v1/leads/:leadId/attachments
-POST /api/v1/leads/:leadId/score
-POST /api/v1/leads/:leadId/transfer
-GET  /api/v1/leads/:leadId/timeline?organizationId=:organizationId
-GET  /api/v1/leads/operations/export?organizationId=:organizationId
-POST /api/v1/applications
-POST /api/v1/applications/:applicationId/review
-POST /api/v1/applications/:applicationId/decision
-POST /api/v1/tasks
-GET  /api/v1/tasks/board?organizationId=:organizationId
-POST /api/v1/tasks/:taskId/workflow
-POST /api/v1/campaigns/:campaignId/metrics
-POST /api/v1/admissions/:recordId/allocate
-POST /api/v1/admissions/:recordId/handoff
-POST /api/v1/documents
-GET  /api/v1/documents?organizationId=:organizationId
-POST /api/v1/documents/:documentId/verify
-POST /api/v1/finance-ledgers/:recordId/reconcile
-POST /api/v1/finance-ledgers/operations/export
-POST /api/v1/scholarships/:recordId/evaluate
-POST /api/v1/scholarships/:recordId/decision
-GET  /api/v1/integrations/providers?organizationId=:organizationId
-PUT  /api/v1/integrations/providers/:providerKey
-GET  /api/v1/security-policies?organizationId=:organizationId
-PUT  /api/v1/security-policies
-POST /api/v1/workflows/rules
-POST /api/v1/workflows/execute
-POST /api/v1/workflows/executions/:executionId/retry
-GET  /api/v1/dashboard/bootstrap
-GET  /api/v1/dashboard?organizationId=:organizationId
-GET  /api/v1/module-records/coverage
+POST /api/v1/admin/auth/login
+POST /api/v1/admin/organizations
+GET  /api/v1/admin/organizations
+POST /api/v1/admin/branches
+GET  /api/v1/admin/branches?organizationId=:organizationId
+DELETE /api/v1/admin/branches/:id?organizationId=:organizationId
+POST /api/v1/admin/branches/:id/restore?organizationId=:organizationId
+POST /api/v1/admin/departments
+GET  /api/v1/admin/departments?organizationId=:organizationId
+DELETE /api/v1/admin/departments/:id?organizationId=:organizationId
+POST /api/v1/admin/departments/:id/restore?organizationId=:organizationId
+POST /api/v1/admin/teams
+GET  /api/v1/admin/teams?organizationId=:organizationId
+DELETE /api/v1/admin/teams/:id?organizationId=:organizationId
+POST /api/v1/admin/teams/:id/restore?organizationId=:organizationId
+POST /api/v1/leads/capture
+POST /api/v1/admin/leads
+GET  /api/v1/admin/leads?organizationId=:organizationId
+GET  /api/v1/admin/leads/:leadId?organizationId=:organizationId
+POST /api/v1/admin/leads/:leadId/assign
+POST /api/v1/admin/leads/:leadId/change-stage
+POST /api/v1/admin/leads/:leadId/activities
+POST /api/v1/admin/leads/:leadId/tags
+POST /api/v1/admin/leads/:leadId/attachments
+POST /api/v1/admin/leads/:leadId/score
+POST /api/v1/admin/leads/:leadId/transfer
+GET  /api/v1/admin/leads/:leadId/timeline?organizationId=:organizationId
+GET  /api/v1/admin/leads/operations/export?organizationId=:organizationId
+POST /api/v1/admin/applications
+POST /api/v1/admin/applications/:applicationId/review
+POST /api/v1/admin/applications/:applicationId/decision
+POST /api/v1/admin/tasks
+GET  /api/v1/admin/tasks/board?organizationId=:organizationId
+POST /api/v1/admin/tasks/:taskId/workflow
+POST /api/v1/admin/campaigns/:campaignId/metrics
+POST /api/v1/admin/admissions/:recordId/allocate
+POST /api/v1/admin/admissions/:recordId/handoff
+POST /api/v1/admin/documents
+GET  /api/v1/admin/documents?organizationId=:organizationId
+POST /api/v1/admin/documents/:documentId/verify
+POST /api/v1/admin/finance-ledgers/:recordId/reconcile
+POST /api/v1/admin/finance-ledgers/operations/export
+POST /api/v1/admin/scholarships/:recordId/evaluate
+POST /api/v1/admin/scholarships/:recordId/decision
+GET  /api/v1/admin/integrations/providers?organizationId=:organizationId
+PUT  /api/v1/admin/integrations/providers/:providerKey
+GET  /api/v1/admin/security-policies?organizationId=:organizationId
+PUT  /api/v1/admin/security-policies
+POST /api/v1/admin/workflows/rules
+POST /api/v1/admin/workflows/execute
+POST /api/v1/admin/workflows/executions/:executionId/retry
+GET  /api/v1/admin/dashboard/bootstrap
+GET  /api/v1/admin/dashboard?organizationId=:organizationId
+GET  /api/v1/admin/module-records/coverage
 ```
 
-`POST /api/v1/leads/public` is implemented in the `leads` module as a public lead-capture controller because it creates the same `Lead` domain object. There is no separate `public-leads` module.
+`POST /api/v1/leads/capture` is implemented in the `leads` module as the public lead-capture controller because it creates the same `Lead` domain object. There is no separate public-leads module.
 
 The public website posts demo requests to its same-origin Next.js route:
 
@@ -164,7 +177,7 @@ The public website posts demo requests to its same-origin Next.js route:
 POST /api/demo-request
 ```
 
-That route validates the minimum lead payload and forwards to `POST /api/v1/leads/public` when `NEXT_PUBLIC_API_BASE_URL` is configured. Without the API URL, it returns an accepted local/demo response so public demos do not break on CORS or missing local backend setup.
+That route validates the minimum lead payload and forwards to `POST /api/v1/leads/capture` when `NEXT_PUBLIC_API_BASE_URL` is configured. Without the API URL, it returns an accepted local/demo response so public demos do not break on CORS or missing local backend setup.
 
 ## MVP Build Order
 
@@ -249,15 +262,15 @@ Current CRM sections:
 
 Backend status: the high-traffic CRM areas are now top-level reusable NestJS modules. Organizations, users, leads, applications, admissions, campaigns, tasks, documents, workflows, finance ledgers, scholarships, reports, integrations, security policies, WhatsApp, call center, events, interviews, and field force have dedicated API surfaces where their workflows need separate business rules. The backend still uses `organizations` as the SaaS collection/API name for organizations. `module_records` remains useful as a generic fallback for lower-depth modules and shared MVP records.
 
-Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, organizations, active organization scope, dashboard metrics, and module coverage in one payload. Dedicated CRM modules load from their own APIs where available, while lower-depth modules can still load from `/api/v1/module-records?organizationId=:organizationId&moduleKey=:moduleKey`. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
+Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/admin/dashboard/bootstrap`, which returns contexts, organizations, active organization scope, dashboard metrics, and module coverage in one payload. Dedicated CRM modules load from their own APIs where available, while lower-depth modules can still load from `/api/v1/admin/module-records?organizationId=:organizationId&moduleKey=:moduleKey`. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
 
 Access and security status: Authentication, User Management, and Security are product-ready from the Mentora codebase side. CRM login uses real API credentials, organization context is enforced before protected writes, organization users can be created and refreshed from the CRM, RBAC/audit/security-policy APIs are available, and the CRM action bar now supports session/device review exports, access review exports, MFA/SSO sandbox provider configuration, organization security policy load/update, and security report setup. Remaining work in these three areas is external only: production SSO/MFA app credentials/callbacks, email invite delivery, optional external identity-directory sync, and backup evidence automation against the selected storage/provider.
 
-Core CRM module status: Organization Management, Lead Management, Applications, Admissions, Scholarship, and Interview are product-ready from the Mentora codebase side. Organization setup covers universities, colleges, institutes, schools, coaching brands, franchises, branches, departments, domains, branding, and channel settings. Lead Management covers website/API/import capture, dedupe, scoring, assignment, nurture actions, tags, attachments, exports, and activity tracking. Applications cover form lifecycle, documents, reviewer notes, stage movement, interviews, offers, and admission confirmation actions. Admissions cover offer-to-enrollment actions, fee metadata, batch allocation, onboarding handoff, and learning-plan provisioning metadata. Scholarship covers eligibility criteria, verification metadata, approval/rejection, awards, payment-plan impact metadata, and audit trail. Interview covers scheduling metadata, interviewer/panel, result, remarks, score, offer recommendation, and admission handoff. Remaining work in these areas is external only: DNS/payment validation, ad/WhatsApp callbacks, voice-note storage, optional external form embed providers, ERP/LMS/payment callbacks, finance discount sync, and calendar sync.
+Core CRM module status: Organization Management, Branches, Departments, Teams, Lead Management, Applications, Admissions, Scholarship, and Interview are product-ready from the Mentora codebase side. Organization setup now has one Organizations page plus separate hierarchy pages for Branches, Departments, and Teams, each with API-backed listing, create, archive, restore, and hierarchy refresh behavior. Lead Management covers website/API/import capture, dedupe, scoring, assignment, nurture actions, tags, attachments, exports, and activity tracking. Applications cover form lifecycle, documents, reviewer notes, stage movement, interviews, offers, and admission confirmation actions. Admissions cover offer-to-enrollment actions, fee metadata, batch allocation, onboarding handoff, and learning-plan provisioning metadata. Scholarship covers eligibility criteria, verification metadata, approval/rejection, awards, payment-plan impact metadata, and audit trail. Interview covers scheduling metadata, interviewer/panel, result, remarks, score, offer recommendation, and admission handoff. Remaining work in these areas is external only: DNS/payment validation, ad/WhatsApp callbacks, voice-note storage, optional external form embed providers, ERP/LMS/payment callbacks, finance discount sync, and calendar sync.
 
 Engagement and automation status: Campaigns, Communications, Call Center, WhatsApp CRM, Email CRM, SMS, and Automation are product-ready from the Mentora codebase side. Campaigns cover inventory, UTMs, landing-page metadata, lead ads, remarketing audiences, drip journeys, source ROI, and conversion tags. Communications centralizes email, SMS, WhatsApp, call, push, and in-app history with templates, delivery status metadata, and opt-in controls. Call Center covers incoming/outgoing call records, dialer queue metadata, recording references, dispositions, notes, follow-ups, and analytics provider hooks. WhatsApp CRM covers templates, media metadata, buttons, flows, bulk-send metadata, automation hooks, delivery reports, and conversation history. Email CRM covers templates, bulk mail metadata, drip campaigns, open/click tracking metadata, bounces, unsubscribe, and approval actions. SMS covers OTP, transactional, promotional, bulk SMS, templates, callback metadata, delivery reports, and compliance status. Automation covers no-code assignment, reminder, drip, escalation, score update, stale-lead recycling, and webhook rules. Remaining work in these areas is external only: ad callbacks, landing hosting, live email/SMS/WhatsApp/dialer credentials, provider approvals, delivery callbacks, recording storage, DLT/template approvals, and live webhook/provider execution.
 
-Operations and business status: Mobile CRM, Calendar, Tasks, Documents, Payments, Finance, Events, Field Force, Reports, Dashboard, Analytics, AI Features, and Integrations are product-ready from the Mentora codebase side. Mobile CRM covers counselor dashboard, lead updates, voice-note metadata, geo check-ins, tasks, calls, WhatsApp, payments, reports, and offline-sync metadata. Calendar covers counseling/interview/event calendars, reminders, recurring schedules, and sync provider hooks. Tasks cover board view, SLA, reminders, comments, escalations, reassignment, and completion. Documents cover entity-linked documents, categories, statuses, versions, OCR/verification metadata, and verify actions. Payments and Finance cover application/admission fees, installments, links, receipts, refunds, tax ledger metadata, collections, reconciliation, and reports. Events cover registration, attendance, QR metadata, webinar/campus visit metadata, and event lead capture. Field Force covers geo tracking metadata, routes, attendance, mileage, check-in/out, and visit history. Reports, Dashboard, and Analytics cover saved/scheduled/role reports, scoped KPIs, funnels, revenue, ROI, productivity, and forecasting metadata. AI Features cover CRM lead scoring, prediction, chatbot, summaries, auto replies, and follow-up suggestions. Integrations cover provider catalogue, configuration, webhook/callback/health-check metadata, and audit writes. Remaining work is external only: offline sync production tuning, app store release, live calendar/OCR/payment/tax/accounting/webinar/QR/geo/map/file-generation/predictive-model/AI-metering providers, vendor approvals, and callback verification.
+Operations and business status: Mobile CRM, Calendar, Tasks, Documents, Payments, Finance, Events, Field Force, Reports, Dashboard, Analytics, AI Features, and Integrations are product-ready from the Mentora codebase side. Mobile CRM covers counselor dashboard, lead updates, voice-note metadata, geo check-ins, tasks, calls, WhatsApp, payments, reports, and offline-sync metadata. Calendar covers counseling/interview/event calendars, reminders, recurring schedules, and sync provider hooks. Tasks cover board view, SLA, reminders, comments, escalations, reassignment, and completion. Documents cover entity-linked documents, categories, statuses, versions, OCR/verification metadata, and verify actions. Payments and Finance cover application/admission fees, installments, links, receipts, refunds, tax ledger metadata, collections, reconciliation, and reports. Events cover registration, attendance, QR metadata, webinar/branch visit metadata, and event lead capture. Field Force covers geo tracking metadata, routes, attendance, mileage, check-in/out, and visit history. Reports, Dashboard, and Analytics cover saved/scheduled/role reports, scoped KPIs, funnels, revenue, ROI, productivity, and forecasting metadata. AI Features cover CRM lead scoring, prediction, chatbot, summaries, auto replies, and follow-up suggestions. Integrations cover provider catalogue, configuration, webhook/callback/health-check metadata, and audit writes. Remaining work is external only: offline sync production tuning, app store release, live calendar/OCR/payment/tax/accounting/webinar/QR/geo/map/file-generation/predictive-model/AI-metering providers, vendor approvals, and callback verification.
 
 Responsive target: the CRM is desktop/tablet-first. It should be fully usable on desktop and tablet widths, with dense navigation, tables, filters, side panels, and grid cards. Phone-size screens may show a compact advisory and horizontal workspace access, but the product is not optimized as a mobile CRM.
 

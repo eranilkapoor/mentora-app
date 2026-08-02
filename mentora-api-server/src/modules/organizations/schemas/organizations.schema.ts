@@ -3,11 +3,9 @@ import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 
 export type OrganizationDocument = HydratedDocument<Organization>;
-export type BusinessUnitDocument = HydratedDocument<BusinessUnit>;
 export type BranchDocument = HydratedDocument<Branch>;
 export type DepartmentDocument = HydratedDocument<Department>;
 export type TeamDocument = HydratedDocument<Team>;
-export type CampusDocument = HydratedDocument<Campus>;
 export type OrganizationBrandingDocument =
   HydratedDocument<OrganizationBranding>;
 export type ChannelSettingDocument = HydratedDocument<ChannelSetting>;
@@ -63,51 +61,6 @@ export const OrganizationSchema = SchemaFactory.createForClass(Organization);
 OrganizationSchema.index({ status: 1, name: 1 });
 
 @Schema({
-  collection: COLLECTION_NAMES.BUSINESS_UNIT,
-  timestamps: true,
-})
-export class BusinessUnit {
-  @Prop({
-    type: Types.ObjectId,
-    ref: Organization.name,
-    required: true,
-    index: true,
-  })
-  organizationId!: Types.ObjectId;
-
-  @Prop({ required: true, trim: true })
-  name!: string;
-
-  @Prop({ required: true, uppercase: true, trim: true })
-  code!: string;
-
-  @Prop({
-    enum: [
-      'admissions',
-      'academics',
-      'marketing',
-      'sales',
-      'finance',
-      'operations',
-      'support',
-      'technology',
-    ],
-    default: 'operations',
-  })
-  category!: string;
-
-  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
-  ownerId?: Types.ObjectId;
-
-  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
-  status!: string;
-}
-
-export const BusinessUnitSchema = SchemaFactory.createForClass(BusinessUnit);
-BusinessUnitSchema.index({ organizationId: 1, code: 1 }, { unique: true });
-BusinessUnitSchema.index({ organizationId: 1, status: 1, name: 1 });
-
-@Schema({
   collection: COLLECTION_NAMES.BRANCH,
   timestamps: true,
 })
@@ -119,9 +72,6 @@ export class Branch {
     index: true,
   })
   organizationId!: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: BusinessUnit.name, index: true })
-  businessUnitId?: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   name!: string;
@@ -142,13 +92,6 @@ export class Branch {
 export const BranchSchema = SchemaFactory.createForClass(Branch);
 BranchSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 BranchSchema.index({ organizationId: 1, status: 1, name: 1 });
-BranchSchema.index({
-  organizationId: 1,
-  businessUnitId: 1,
-  status: 1,
-  name: 1,
-});
-
 @Schema({
   collection: COLLECTION_NAMES.DEPARTMENT,
   timestamps: true,
@@ -162,9 +105,6 @@ export class Department {
   })
   organizationId!: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: BusinessUnit.name, index: true })
-  businessUnitId?: Types.ObjectId;
-
   @Prop({ required: true, trim: true })
   name!: string;
 
@@ -175,7 +115,14 @@ export class Department {
   branchId?: Types.ObjectId;
 
   @Prop({
-    enum: ['admissions', 'sales', 'marketing', 'finance', 'academics', 'ops'],
+    enum: [
+      'admissions',
+      'sales',
+      'marketing',
+      'finance',
+      'academics',
+      'operations',
+    ],
     default: 'admissions',
   })
   function!: string;
@@ -188,13 +135,6 @@ export const DepartmentSchema = SchemaFactory.createForClass(Department);
 DepartmentSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 DepartmentSchema.index({ organizationId: 1, status: 1, name: 1 });
 DepartmentSchema.index({ organizationId: 1, branchId: 1, status: 1, name: 1 });
-DepartmentSchema.index({
-  organizationId: 1,
-  businessUnitId: 1,
-  status: 1,
-  name: 1,
-});
-
 @Schema({
   collection: COLLECTION_NAMES.TEAM,
   timestamps: true,
@@ -207,9 +147,6 @@ export class Team {
     index: true,
   })
   organizationId!: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: BusinessUnit.name, index: true })
-  businessUnitId?: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   name!: string;
@@ -237,57 +174,6 @@ export const TeamSchema = SchemaFactory.createForClass(Team);
 TeamSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 TeamSchema.index({ organizationId: 1, departmentId: 1, status: 1 });
 TeamSchema.index({ organizationId: 1, status: 1, name: 1 });
-TeamSchema.index({ organizationId: 1, businessUnitId: 1, status: 1, name: 1 });
-
-@Schema({
-  collection: COLLECTION_NAMES.CAMPUS,
-  timestamps: true,
-})
-export class Campus {
-  @Prop({
-    type: Types.ObjectId,
-    ref: Organization.name,
-    required: true,
-    index: true,
-  })
-  organizationId!: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: BusinessUnit.name, index: true })
-  businessUnitId?: Types.ObjectId;
-
-  @Prop({ required: true, trim: true })
-  name!: string;
-
-  @Prop({ required: true, uppercase: true, trim: true })
-  code!: string;
-
-  @Prop({ type: Types.ObjectId, ref: Branch.name, index: true })
-  branchId?: Types.ObjectId;
-
-  @Prop({ trim: true })
-  address?: string;
-
-  @Prop({ type: Object, default: {} })
-  operatingHours!: Record<string, unknown>;
-
-  @Prop({ type: [String], default: [] })
-  holidays!: string[];
-
-  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
-  status!: string;
-}
-
-export const CampusSchema = SchemaFactory.createForClass(Campus);
-CampusSchema.index({ organizationId: 1, code: 1 }, { unique: true });
-CampusSchema.index({ organizationId: 1, status: 1, name: 1 });
-CampusSchema.index({ organizationId: 1, branchId: 1, status: 1, name: 1 });
-CampusSchema.index({
-  organizationId: 1,
-  businessUnitId: 1,
-  status: 1,
-  name: 1,
-});
-
 @Schema({
   collection: COLLECTION_NAMES.ORGANIZATION_BRANDING,
   timestamps: true,

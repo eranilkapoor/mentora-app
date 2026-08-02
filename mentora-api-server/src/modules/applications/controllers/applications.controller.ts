@@ -26,7 +26,7 @@ import {
 import { ApplicationsService } from '../services/applications.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('applications')
+@Controller('admin/applications')
 export class ApplicationsController {
   constructor(private readonly service: ApplicationsService) {}
 

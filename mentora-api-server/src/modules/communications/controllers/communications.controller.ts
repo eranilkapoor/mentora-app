@@ -24,7 +24,7 @@ import {
 import { CommunicationsService } from '../services/communications.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('communications')
+@Controller('admin/communications')
 export class CommunicationsController {
   constructor(private readonly service: CommunicationsService) {}
 

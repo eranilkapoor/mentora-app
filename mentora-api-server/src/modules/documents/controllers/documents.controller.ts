@@ -27,7 +27,7 @@ import {
 import { DocumentsService } from '../services/documents.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('documents')
+@Controller('admin/documents')
 export class DocumentsController {
   constructor(private readonly service: DocumentsService) {}
 

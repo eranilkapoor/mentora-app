@@ -113,7 +113,9 @@ export function getModuleCardMetric(
   return "API backed";
 }
 
-export function normalizeResponseObject(value: unknown): Record<string, unknown> {
+export function normalizeResponseObject(
+  value: unknown,
+): Record<string, unknown> {
   if (!value || typeof value !== "object") return {};
   if ("data" in value) {
     const data = (value as { data?: unknown }).data;
@@ -140,18 +142,36 @@ export function normalizeResponseArray(value: unknown): unknown[] {
 export function getServerRowsForModule(
   module: AdminModule,
   workspace: {
+    branches?: unknown[];
+    departments?: unknown[];
     moduleRecords: Record<string, unknown[]>;
     organizations: unknown[];
+    teams?: unknown[];
   },
 ) {
   if (module.id === "organizations") {
     return organizationRecordsToRows(workspace.organizations, module);
   }
 
+  if (module.id === "branches") {
+    return recordsToRows(workspace.branches, module);
+  }
+
+  if (module.id === "departments") {
+    return recordsToRows(workspace.departments, module);
+  }
+
+  if (module.id === "teams") {
+    return recordsToRows(workspace.teams, module);
+  }
+
   return recordsToRows(workspace.moduleRecords[module.id], module);
 }
 
-export function recordsToRows(records: unknown[] | undefined, module: AdminModule) {
+export function recordsToRows(
+  records: unknown[] | undefined,
+  module: AdminModule,
+) {
   if (!records?.length) return [];
 
   return records.map((record) => {
@@ -171,7 +191,12 @@ export function recordsToRows(records: unknown[] | undefined, module: AdminModul
         payload[column] ??
         object[key] ??
         object[column] ??
+        (key === "department" ? object.departmentId : undefined) ??
+        (key === "branch" ? object.branchId : undefined) ??
+        (key === "created" ? object.createdAt : undefined) ??
+        (key === "updated" ? object.updatedAt : undefined) ??
         (index === 0 ? object.title : undefined) ??
+        (index === 0 ? object.name : undefined) ??
         (index === module.columns.length - 1 ? object.status : undefined);
 
       return stringifyCell(value);
@@ -214,7 +239,10 @@ export function getServerFilterValue(
     .find((value) => normalized.has(value));
 }
 
-function organizationRecordsToRows(records: unknown[] | undefined, module: AdminModule) {
+function organizationRecordsToRows(
+  records: unknown[] | undefined,
+  module: AdminModule,
+) {
   if (!records?.length) return [];
 
   return records.map((record) => {
@@ -222,19 +250,11 @@ function organizationRecordsToRows(records: unknown[] | undefined, module: Admin
       record && typeof record === "object"
         ? (record as Record<string, unknown>)
         : {};
-    const branchCount = Array.isArray(object.branches)
-      ? object.branches.length
-      : object.branchCount;
-    const userCount =
-      object.userCount ?? object.membershipCount ?? object.users ?? "-";
-
     const values: Record<string, unknown> = {
-      Branches: branchCount,
       Plan: object.plan ?? object.planCode ?? object.subscriptionPlan,
       Status: object.status,
       Organization: object.name ?? object.title,
       Type: object.type,
-      Users: userCount,
     };
 
     return module.columns.map((column) => stringifyCell(values[column]));

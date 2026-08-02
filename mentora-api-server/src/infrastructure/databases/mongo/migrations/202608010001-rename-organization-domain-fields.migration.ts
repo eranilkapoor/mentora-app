@@ -11,11 +11,9 @@ const collectionRenames = [
 ] as const;
 
 const scopedCollections = [
-  'business_units',
   'branches',
   'departments',
   'teams',
-  'campuses',
   'channel_settings',
   'lead_sources',
   'lead_stages',

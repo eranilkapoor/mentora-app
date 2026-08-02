@@ -25,7 +25,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { InterviewsService } from '../services/interviews.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('interviews')
+@Controller('admin/interviews')
 export class InterviewsController {
   constructor(private readonly service: InterviewsService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(

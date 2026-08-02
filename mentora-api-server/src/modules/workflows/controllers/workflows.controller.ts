@@ -28,7 +28,7 @@ import {
 import { WorkflowsService } from '../services/workflows.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('workflows')
+@Controller('admin/workflows')
 export class WorkflowsController {
   constructor(private readonly service: WorkflowsService) {}
 

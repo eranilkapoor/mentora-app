@@ -18,16 +18,6 @@ export class UpsertUserMembershipDto {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
-  businessUnitIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  campusIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
   branchIds?: string[];
 
   @IsOptional()
@@ -63,14 +53,6 @@ export class SelectContextDto {
 
   @IsIn(EDUCATION_PLATFORM_USER_ROLES)
   role!: string;
-
-  @IsOptional()
-  @IsMongoId()
-  businessUnitId?: string;
-
-  @IsOptional()
-  @IsMongoId()
-  campusId?: string;
 
   @IsOptional()
   @IsMongoId()

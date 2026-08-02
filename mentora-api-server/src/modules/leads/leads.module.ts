@@ -3,8 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AdminModule } from '../admin/admin.module';
 import { ContextsModule } from '../contexts/contexts.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
+import { LeadCaptureController } from './controllers/lead-capture.controller';
 import { LeadsController } from './controllers/leads.controller';
-import { PublicLeadsController } from './controllers/public-leads.controller';
 import {
   Lead,
   LeadActivity,
@@ -14,7 +14,7 @@ import {
   LeadSchema,
 } from './schemas/leads.schema';
 import { LeadsService } from './services/leads.service';
-import { PublicLeadsService } from './services/public-leads.service';
+import { LeadCaptureService } from './services/lead-capture.service';
 
 @Module({
   imports: [
@@ -27,8 +27,8 @@ import { PublicLeadsService } from './services/public-leads.service';
       { name: LeadAssignment.name, schema: LeadAssignmentSchema },
     ]),
   ],
-  controllers: [LeadsController, PublicLeadsController],
-  providers: [LeadsService, PublicLeadsService],
+  controllers: [LeadsController, LeadCaptureController],
+  providers: [LeadsService, LeadCaptureService],
   exports: [LeadsService],
 })
 export class LeadsModule {}

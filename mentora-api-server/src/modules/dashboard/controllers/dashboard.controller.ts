@@ -9,7 +9,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { DashboardService } from '../services/dashboard.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('dashboard')
+@Controller('admin/dashboard')
 export class DashboardController {
   constructor(private readonly service: DashboardService) {}
 

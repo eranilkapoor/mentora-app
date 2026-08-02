@@ -27,7 +27,6 @@ import {
   bulkUpdateDedicatedCrmRecordStatus,
   bulkUpdateModuleRecordStatus,
   createBranch,
-  createCampus,
   createDepartment,
   createOrganization,
   createOrganizationUser,
@@ -77,7 +76,12 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../store";
-import type { AdminModule, IconName, ModuleCoverage, ModuleStatus } from "./adminTypes";
+import type {
+  AdminModule,
+  IconName,
+  ModuleCoverage,
+  ModuleStatus,
+} from "./adminTypes";
 import {
   allModules,
   defaultCrmUsers,
@@ -87,6 +91,7 @@ import {
   moduleActions,
   moduleMap,
   navGroups,
+  organizationStructureModuleIds,
   readonlyFormColumns,
   resolveRouteModuleId,
   securityControlGroups,
@@ -157,12 +162,19 @@ export default function AdminDashboardPage() {
     mode: "create" | "edit";
     row?: string[];
   } | null>(null);
+  const [archiveConfirmRow, setArchiveConfirmRow] = useState<string[] | null>(
+    null,
+  );
   const [organizationFormOpen, setOrganizationFormOpen] = useState(false);
+  const [organizationEditRow, setOrganizationEditRow] = useState<
+    string[] | null
+  >(null);
   const [organizationSetupForm, setOrganizationSetupForm] = useState<{
     kind: OrganizationSetupKind;
     title: string;
   } | null>(null);
-  const [organizationUserFormOpen, setOrganizationUserFormOpen] = useState(false);
+  const [organizationUserFormOpen, setOrganizationUserFormOpen] =
+    useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
   const mainMenuRef = useRef<HTMLElement | null>(null);
   const workspaceSyncKeyRef = useRef("");
@@ -200,14 +212,36 @@ export default function AdminDashboardPage() {
   }, [accessToken, activeContext, dispatch, loggedInUser]);
 
   const activeOrganizationId = useMemo(
-    () => workspace.activeOrganizationId || extractFirstId(workspace.organizations),
+    () =>
+      workspace.activeOrganizationId || extractFirstId(workspace.organizations),
     [workspace.activeOrganizationId, workspace.organizations],
   );
+  const organizationDetailStats = useMemo(
+    () => [
+      { label: "Branches", value: workspace.branches.length },
+      { label: "Departments", value: workspace.departments.length },
+      { label: "Teams", value: workspace.teams.length },
+    ],
+    [
+      workspace.branches.length,
+      workspace.departments.length,
+      workspace.teams.length,
+    ],
+  );
+
+  function getActiveModuleApiRecords() {
+    if (activeModule?.id === "branches") return workspace.branches;
+    if (activeModule?.id === "departments") return workspace.departments;
+    if (activeModule?.id === "teams") return workspace.teams;
+    return workspace.moduleRecords[activeModule?.id ?? ""];
+  }
 
   useEffect(() => {
     if (!apiSyncEnabled || !activeOrganizationId) return;
     void dispatch(loadBranches({ organizationId: activeOrganizationId }));
-    void dispatch(loadIdentityHierarchy({ organizationId: activeOrganizationId }));
+    void dispatch(
+      loadIdentityHierarchy({ organizationId: activeOrganizationId }),
+    );
   }, [activeOrganizationId, apiSyncEnabled, dispatch]);
 
   useEffect(() => {
@@ -306,9 +340,7 @@ export default function AdminDashboardPage() {
     () => getUnknownRecordId(workspace.moduleRecords[activeId]?.[0]),
     [activeId, workspace.moduleRecords],
   );
-  const activeRows = apiSyncEnabled
-    ? serverRows
-    : (activeModule?.rows ?? []);
+  const activeRows = apiSyncEnabled ? serverRows : (activeModule?.rows ?? []);
   const filteredRows = useMemo(() => {
     if (!activeModule) return [];
     const text = query.trim().toLowerCase();
@@ -358,7 +390,9 @@ export default function AdminDashboardPage() {
   }, [activeId, filterValues, pageSize, query, sort]);
 
   useEffect(() => {
-    const activeGroup = navGroups.find((group) => group.items.includes(activeId));
+    const activeGroup = navGroups.find((group) =>
+      group.items.includes(activeId),
+    );
     if (activeGroup && collapsedGroups[activeGroup.title]) {
       setCollapsedGroups((current) => ({
         ...current,
@@ -454,7 +488,9 @@ export default function AdminDashboardPage() {
         <section className="auth-card card shadow-lg">
           <span className="brand-mark">M</span>
           <h1>No CRM Access</h1>
-          <p>This user does not have an active organization or branch context.</p>
+          <p>
+            This user does not have an active organization or branch context.
+          </p>
           <button
             className="btn btn-primary"
             onClick={() => dispatch(crmSessionActions.logout())}
@@ -645,7 +681,10 @@ export default function AdminDashboardPage() {
       }
     }
 
-    if (activeId === "organizations") {
+    if (
+      activeId === "organizations" ||
+      organizationStructureModuleIds.has(activeId)
+    ) {
       if (normalized === "create organization") {
         if (!accessToken) {
           dispatch(
@@ -689,11 +728,6 @@ export default function AdminDashboardPage() {
 
         if (normalized.includes("branch")) {
           setOrganizationSetupForm({ kind: "branch", title: "Create Branch" });
-          return;
-        }
-
-        if (normalized.includes("campus")) {
-          setOrganizationSetupForm({ kind: "campus", title: "Create Campus" });
           return;
         }
 
@@ -780,7 +814,9 @@ export default function AdminDashboardPage() {
         ).unwrap();
         const users = normalizeResponseArray(result);
         dispatch(
-          crmSessionActions.setToast(`${users.length} organization users loaded`),
+          crmSessionActions.setToast(
+            `${users.length} organization users loaded`,
+          ),
         );
         return;
       } catch (error) {
@@ -1201,8 +1237,7 @@ export default function AdminDashboardPage() {
                 status: "open",
                 payload: {
                   bulkSend: normalized.includes("bulk"),
-                  channel:
-                    activeId === "call-center" ? "call" : "whatsapp",
+                  channel: activeId === "call-center" ? "call" : "whatsapp",
                   direction: normalized.includes("incoming")
                     ? "inbound"
                     : "outbound",
@@ -1344,10 +1379,9 @@ export default function AdminDashboardPage() {
                         normalized.includes("provision")
                           ? { status: "verified", amount: 25000 }
                           : undefined,
-                      learningPlan:
-                        normalized.includes("provision")
-                          ? { planCode: "JEE-FOUNDATION", status: "queued" }
-                          : undefined,
+                      learningPlan: normalized.includes("provision")
+                        ? { planCode: "JEE-FOUNDATION", status: "queued" }
+                        : undefined,
                     },
                     batchId: "BATCH-JEE-2027-A",
                     cohortName: "JEE 2027 Alpha",
@@ -1432,7 +1466,7 @@ export default function AdminDashboardPage() {
                     organizationId: activeOrganizationId,
                     payload: {
                       attendance: normalized.includes("attendance"),
-                      campusVisit: normalized.includes("campus"),
+                      branchVisit: normalized.includes("branch"),
                       eventLeadCapture: normalized.includes("lead"),
                       qrCheckIn: normalized.includes("qr"),
                       registrationForm: normalized.includes("registration"),
@@ -1584,7 +1618,9 @@ export default function AdminDashboardPage() {
       ].includes(activeId)
     ) {
       if (!apiSyncEnabled || !activeOrganizationId) {
-        requestApiContext("Syncing CRM workspace before running this operation");
+        requestApiContext(
+          "Syncing CRM workspace before running this operation",
+        );
         return;
       }
 
@@ -1653,9 +1689,9 @@ export default function AdminDashboardPage() {
                   ? "finance"
                   : normalized.includes("marketing")
                     ? "marketing"
-                : normalized.includes("counselor")
-                  ? "counselor"
-                  : "none",
+                    : normalized.includes("counselor")
+                      ? "counselor"
+                      : "none",
               forecasting: String(normalized.includes("forecast")),
               offlineSync: String(normalized.includes("offline")),
               paymentOperation: String(activeId === "payments"),
@@ -1769,7 +1805,9 @@ export default function AdminDashboardPage() {
         await dispatch(
           loadSecurityPolicy({ organizationId: activeOrganizationId }),
         ).unwrap();
-        dispatch(crmSessionActions.setToast("Organization security policy loaded"));
+        dispatch(
+          crmSessionActions.setToast("Organization security policy loaded"),
+        );
         return;
       } catch (error) {
         dispatch(
@@ -1861,7 +1899,10 @@ export default function AdminDashboardPage() {
         }
 
         await dispatch(
-          executeWorkflow({ moduleKey: activeId, organizationId: activeOrganizationId }),
+          executeWorkflow({
+            moduleKey: activeId,
+            organizationId: activeOrganizationId,
+          }),
         ).unwrap();
         dispatch(crmSessionActions.setToast("Workflow execution completed"));
         return;
@@ -1890,15 +1931,15 @@ export default function AdminDashboardPage() {
       dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
-    const recordId = findModuleRecordIdForRow(
-      workspace.moduleRecords[activeModule.id],
-      row,
-    );
+    const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
-    if (dedicatedAdminModuleIds.has(activeModule.id)) {
+    if (
+      dedicatedAdminModuleIds.has(activeModule.id) ||
+      organizationStructureModuleIds.has(activeModule.id)
+    ) {
       await dispatch(
         deleteDedicatedCrmRecord({
           moduleKey: activeModule.id,
@@ -1915,7 +1956,14 @@ export default function AdminDashboardPage() {
         }),
       ).unwrap();
     }
-    dispatch(crmSessionActions.setToast(`${activeModule.title} record archived`));
+    if (organizationStructureModuleIds.has(activeModule.id)) {
+      await dispatch(
+        loadIdentityHierarchy({ organizationId: activeOrganizationId }),
+      ).unwrap();
+    }
+    dispatch(
+      crmSessionActions.setToast(`${activeModule.title} record archived`),
+    );
   }
 
   async function restoreRow(row: string[]) {
@@ -1924,15 +1972,15 @@ export default function AdminDashboardPage() {
       dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
-    const recordId = findModuleRecordIdForRow(
-      workspace.moduleRecords[activeModule.id],
-      row,
-    );
+    const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
-    if (dedicatedAdminModuleIds.has(activeModule.id)) {
+    if (
+      dedicatedAdminModuleIds.has(activeModule.id) ||
+      organizationStructureModuleIds.has(activeModule.id)
+    ) {
       await dispatch(
         restoreDedicatedCrmRecord({
           moduleKey: activeModule.id,
@@ -1949,7 +1997,14 @@ export default function AdminDashboardPage() {
         }),
       ).unwrap();
     }
-    dispatch(crmSessionActions.setToast(`${activeModule.title} record restored`));
+    if (organizationStructureModuleIds.has(activeModule.id)) {
+      await dispatch(
+        loadIdentityHierarchy({ organizationId: activeOrganizationId }),
+      ).unwrap();
+    }
+    dispatch(
+      crmSessionActions.setToast(`${activeModule.title} record restored`),
+    );
   }
 
   async function bulkUpdateSelectedStatus(status: string) {
@@ -1962,9 +2017,7 @@ export default function AdminDashboardPage() {
       selected.includes(row.join("|")),
     );
     const recordIds = selectedRows
-      .map((row) =>
-        findModuleRecordIdForRow(workspace.moduleRecords[activeModule.id], row),
-      )
+      .map((row) => findModuleRecordIdForRow(getActiveModuleApiRecords(), row))
       .filter(Boolean);
     if (recordIds.length === 0) {
       dispatch(crmSessionActions.setToast("Select API-backed records first"));
@@ -2099,7 +2152,9 @@ export default function AdminDashboardPage() {
                   dispatch(crmWorkspaceActions.setActiveBranchId(branchId))
                 }
                 onOrganizationChange={(organizationId) => {
-                  dispatch(crmWorkspaceActions.setActiveOrganizationId(organizationId));
+                  dispatch(
+                    crmWorkspaceActions.setActiveOrganizationId(organizationId),
+                  );
                   setApiSyncEnabled(true);
                   void (async () => {
                     await dispatch(loadCrmWorkspace({ organizationId }));
@@ -2189,9 +2244,20 @@ export default function AdminDashboardPage() {
             usingServerRows={apiSyncEnabled}
             view={moduleView}
             setView={setModuleView}
-            openRecordForm={setRecordForm}
-            archiveRow={archiveRow}
-            bulkStatusEnabled={activeModule.id !== "organizations"}
+            openRecordForm={(form) => {
+              if (activeModule.id === "organizations" && form.mode === "edit") {
+                setOrganizationEditRow(form.row ?? null);
+                return;
+              }
+              setRecordForm(form);
+            }}
+            archiveRow={async (row) => {
+              setArchiveConfirmRow(row);
+            }}
+            bulkStatusEnabled={
+              activeModule.id !== "organizations" &&
+              !organizationStructureModuleIds.has(activeModule.id)
+            }
             bulkUpdateSelectedStatus={bulkUpdateSelectedStatus}
             runAction={runAction}
             restoreRow={restoreRow}
@@ -2270,13 +2336,19 @@ export default function AdminDashboardPage() {
           <OrganizationFormModal
             onClose={() => setOrganizationFormOpen(false)}
             onSubmit={async (draft) => {
-              const response = await dispatch(createOrganization(draft)).unwrap();
+              const response = await dispatch(
+                createOrganization(draft),
+              ).unwrap();
               const created = normalizeResponseObject(response) as {
                 organization?: unknown;
               };
-              const organizationId = getUnknownRecordId(created.organization ?? created);
+              const organizationId = getUnknownRecordId(
+                created.organization ?? created,
+              );
               await dispatch(
-                loadCrmWorkspace(organizationId ? { organizationId } : undefined),
+                loadCrmWorkspace(
+                  organizationId ? { organizationId } : undefined,
+                ),
               ).unwrap();
               if (organizationId) {
                 await dispatch(loadBranches({ organizationId })).unwrap();
@@ -2287,11 +2359,25 @@ export default function AdminDashboardPage() {
           />
         ) : null}
 
+        {organizationEditRow ? (
+          <OrganizationEditModal
+            organizations={workspace.organizations}
+            onClose={() => setOrganizationEditRow(null)}
+            onSubmit={async (draft) => {
+              await dispatch(updateOrganization(draft)).unwrap();
+              await dispatch(loadOrganizations()).unwrap();
+              await dispatch(loadCrmWorkspace()).unwrap();
+              dispatch(crmSessionActions.setToast("Organization updated"));
+              setOrganizationEditRow(null);
+            }}
+            row={organizationEditRow}
+          />
+        ) : null}
+
         {organizationSetupForm ? (
           <OrganizationSetupModal
             activeOrganizationId={activeOrganizationId}
             branches={workspace.branches}
-            businessUnits={workspace.businessUnits}
             departments={workspace.departments}
             kind={organizationSetupForm.kind}
             onClose={() => setOrganizationSetupForm(null)}
@@ -2305,15 +2391,17 @@ export default function AdminDashboardPage() {
 
               if (organizationSetupForm.kind === "branch") {
                 await dispatch(createBranch(normalizedDraft)).unwrap();
-                await dispatch(loadBranches({ organizationId: draft.organizationId })).unwrap();
-              } else if (organizationSetupForm.kind === "campus") {
-                await dispatch(createCampus(normalizedDraft)).unwrap();
+                await dispatch(
+                  loadBranches({ organizationId: draft.organizationId }),
+                ).unwrap();
               } else if (organizationSetupForm.kind === "department") {
                 await dispatch(createDepartment(normalizedDraft)).unwrap();
               } else if (organizationSetupForm.kind === "team") {
                 await dispatch(createTeam(normalizedDraft)).unwrap();
               } else if (organizationSetupForm.kind === "branding") {
-                await dispatch(updateOrganizationBranding(normalizedDraft)).unwrap();
+                await dispatch(
+                  updateOrganizationBranding(normalizedDraft),
+                ).unwrap();
               } else {
                 await dispatch(updateChannelSetting(normalizedDraft)).unwrap();
               }
@@ -2321,7 +2409,11 @@ export default function AdminDashboardPage() {
               await dispatch(
                 loadIdentityHierarchy({ organizationId: draft.organizationId }),
               ).unwrap();
-              dispatch(crmSessionActions.setToast(`${organizationSetupForm.title} saved`));
+              dispatch(
+                crmSessionActions.setToast(
+                  `${organizationSetupForm.title} saved`,
+                ),
+              );
               setOrganizationSetupForm(null);
             }}
             organizations={workspace.organizations}
@@ -2333,18 +2425,59 @@ export default function AdminDashboardPage() {
           <OrganizationUserFormModal
             activeOrganizationId={activeOrganizationId}
             branches={workspace.branches}
-            businessUnits={workspace.businessUnits}
-            campuses={workspace.campuses}
             departments={workspace.departments}
             onClose={() => setOrganizationUserFormOpen(false)}
             onSubmit={async (draft) => {
               await dispatch(createOrganizationUser(draft)).unwrap();
-              await dispatch(loadOrganizationUsers({ organizationId: draft.organizationId })).unwrap();
+              await dispatch(
+                loadOrganizationUsers({ organizationId: draft.organizationId }),
+              ).unwrap();
               dispatch(crmSessionActions.setToast("CRM user created"));
               setOrganizationUserFormOpen(false);
             }}
             teams={workspace.teams}
             organizations={workspace.organizations}
+          />
+        ) : null}
+
+        {detail && activeModule ? (
+          <RecordDetailModal
+            module={activeModule}
+            onArchive={(row) => setArchiveConfirmRow(row)}
+            onClose={() => setDetail(null)}
+            onEdit={(row) => {
+              setDetail(null);
+              if (activeModule.id === "organizations") {
+                setOrganizationEditRow(row);
+                return;
+              }
+              setRecordForm({ mode: "edit", row });
+            }}
+            onFollowUp={() => {
+              void runAction("Follow-up");
+            }}
+            row={detail}
+            stats={
+              activeModule.id === "organizations"
+                ? organizationDetailStats
+                : undefined
+            }
+          />
+        ) : null}
+
+        {archiveConfirmRow && activeModule ? (
+          <ArchiveConfirmModal
+            module={activeModule}
+            onClose={() => setArchiveConfirmRow(null)}
+            onConfirm={async () => {
+              const row = archiveConfirmRow;
+              setArchiveConfirmRow(null);
+              await archiveRow(row);
+              if (detail?.join("|") === row.join("|")) {
+                setDetail(null);
+              }
+            }}
+            row={archiveConfirmRow}
           />
         ) : null}
 
@@ -2355,8 +2488,6 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-
 
 function ModulePanel(props: {
   activeContext: DemoContext;
@@ -2404,7 +2535,10 @@ function ModulePanel(props: {
     (_, index) =>
       Math.max(
         1,
-        Math.min(props.totalPages - Math.min(4, props.totalPages - 1), props.currentPage - 2),
+        Math.min(
+          props.totalPages - Math.min(4, props.totalPages - 1),
+          props.currentPage - 2,
+        ),
       ) + index,
   ).filter((page, index, pages) => pages.indexOf(page) === index);
 
@@ -2458,7 +2592,9 @@ function ModulePanel(props: {
           </div>
           <div>
             <span>Page</span>
-            <strong>{props.currentPage}/{props.totalPages}</strong>
+            <strong>
+              {props.currentPage}/{props.totalPages}
+            </strong>
           </div>
         </div>
       </div>
@@ -2472,7 +2608,19 @@ function ModulePanel(props: {
           {module.id !== "organizations" ? (
             <button
               className="btn btn-primary"
-              onClick={() => props.openRecordForm({ mode: "create" })}
+              onClick={() => {
+                const createAction = module.actions?.find((action) =>
+                  action.toLowerCase().startsWith("create "),
+                );
+                if (
+                  createAction &&
+                  organizationStructureModuleIds.has(module.id)
+                ) {
+                  void props.runAction(createAction);
+                  return;
+                }
+                props.openRecordForm({ mode: "create" });
+              }}
               type="button"
             >
               <Icon name="check" />
@@ -2486,7 +2634,8 @@ function ModulePanel(props: {
               }
               key={action}
               onClick={() =>
-                action.toLowerCase() === "create"
+                action.toLowerCase() === "create" &&
+                !organizationStructureModuleIds.has(module.id)
                   ? props.openRecordForm({ mode: "create" })
                   : void props.runAction(action)
               }
@@ -2614,7 +2763,11 @@ function ModulePanel(props: {
                       type="checkbox"
                     />
                   </th>
-                  <th>S. No.</th>
+                  <th>
+                    <span className="adminDataSort table-static-head">
+                      S. No.
+                    </span>
+                  </th>
                   {module.columns.map((column, index) => (
                     <th key={column}>
                       <button
@@ -2644,7 +2797,11 @@ function ModulePanel(props: {
                       </button>
                     </th>
                   ))}
-                  <th>Action</th>
+                  <th>
+                    <span className="adminDataSort table-static-head">
+                      Actions
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -2675,70 +2832,70 @@ function ModulePanel(props: {
                   </tr>
                 ) : (
                   props.rows.map((row, rowIndex) => {
-                  const id = row.join("|");
-                  const isArchived = row.some(
-                    (value) => value.toLowerCase() === "archived",
-                  );
-                  return (
-                    <tr
-                      className={
-                        props.selected.includes(id) ? "selected-row" : ""
-                      }
-                      key={id}
-                    >
-                      <td>
-                        <input
-                          checked={props.selected.includes(id)}
-                          onChange={() => toggleRow(id)}
-                          type="checkbox"
-                        />
-                      </td>
-                      <td>{props.pageStart + rowIndex + 1}</td>
-                      {row.map((value, index) => (
-                        <td key={`${id}-${index}`}>{renderCell(value)}</td>
-                      ))}
-                      <td className="row-actions">
-                        <button
-                          onClick={() => props.setDetail(row)}
-                          type="button"
-                        >
-                          <Icon name="document" />
-                          View
-                        </button>
-                        <button
-                          onClick={() =>
-                            props.openRecordForm({ mode: "edit", row })
-                          }
-                          type="button"
-                        >
-                          <Icon name="settings" />
-                          Edit
-                        </button>
-                        {isArchived ? (
+                    const id = row.join("|");
+                    const isArchived = row.some(
+                      (value) => value.toLowerCase() === "archived",
+                    );
+                    return (
+                      <tr
+                        className={
+                          props.selected.includes(id) ? "selected-row" : ""
+                        }
+                        key={id}
+                      >
+                        <td>
+                          <input
+                            checked={props.selected.includes(id)}
+                            onChange={() => toggleRow(id)}
+                            type="checkbox"
+                          />
+                        </td>
+                        <td>{props.pageStart + rowIndex + 1}</td>
+                        {row.map((value, index) => (
+                          <td key={`${id}-${index}`}>{renderCell(value)}</td>
+                        ))}
+                        <td className="row-actions">
                           <button
-                            onClick={() => {
-                              void props.restoreRow(row);
-                            }}
+                            onClick={() => props.setDetail(row)}
                             type="button"
                           >
-                            <Icon name="check" />
-                            Restore
+                            <Icon name="document" />
+                            View
                           </button>
-                        ) : (
                           <button
-                            onClick={() => {
-                              void props.archiveRow(row);
-                            }}
+                            onClick={() =>
+                              props.openRecordForm({ mode: "edit", row })
+                            }
                             type="button"
                           >
-                            <Icon name="shield" />
-                            Archive
+                            <Icon name="settings" />
+                            Edit
                           </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
+                          {isArchived ? (
+                            <button
+                              onClick={() => {
+                                void props.restoreRow(row);
+                              }}
+                              type="button"
+                            >
+                              <Icon name="check" />
+                              Restore
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                void props.archiveRow(row);
+                              }}
+                              type="button"
+                            >
+                              <Icon name="shield" />
+                              Archive
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -2763,75 +2920,75 @@ function ModulePanel(props: {
               </div>
             ) : (
               props.rows.map((row) => {
-              const id = row.join("|");
-              const isArchived = row.some(
-                (value) => value.toLowerCase() === "archived",
-              );
-              return (
-                <article
-                  className={`record-card ${
-                    props.selected.includes(id) ? "selected-row" : ""
-                  }`}
-                  key={id}
-                >
-                  <div className="record-card-head">
-                    <input
-                      checked={props.selected.includes(id)}
-                      onChange={() => toggleRow(id)}
-                      type="checkbox"
-                    />
-                    <strong>{row[0]}</strong>
-                  </div>
-                  <dl>
-                    {module.columns.slice(1, 6).map((column, index) => (
-                      <div key={column}>
-                        <dt>{column}</dt>
-                        <dd>{renderCell(row[index + 1] ?? "-")}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <div className="record-card-actions">
-                    <button
-                      className="btn btn-outline-primary btn-sm"
-                      onClick={() => props.setDetail(row)}
-                      type="button"
-                    >
-                      View
-                    </button>
-                    <button
-                      className="btn btn-light btn-sm"
-                      onClick={() =>
-                        props.openRecordForm({ mode: "edit", row })
-                      }
-                      type="button"
-                    >
-                      Edit
-                    </button>
-                    {isArchived ? (
+                const id = row.join("|");
+                const isArchived = row.some(
+                  (value) => value.toLowerCase() === "archived",
+                );
+                return (
+                  <article
+                    className={`record-card ${
+                      props.selected.includes(id) ? "selected-row" : ""
+                    }`}
+                    key={id}
+                  >
+                    <div className="record-card-head">
+                      <input
+                        checked={props.selected.includes(id)}
+                        onChange={() => toggleRow(id)}
+                        type="checkbox"
+                      />
+                      <strong>{row[0]}</strong>
+                    </div>
+                    <dl>
+                      {module.columns.slice(1, 6).map((column, index) => (
+                        <div key={column}>
+                          <dt>{column}</dt>
+                          <dd>{renderCell(row[index + 1] ?? "-")}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <div className="record-card-actions">
                       <button
-                        className="btn btn-light btn-sm"
-                        onClick={() => {
-                          void props.restoreRow(row);
-                        }}
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => props.setDetail(row)}
                         type="button"
                       >
-                        Restore
+                        View
                       </button>
-                    ) : (
                       <button
                         className="btn btn-light btn-sm"
-                        onClick={() => {
-                          void props.archiveRow(row);
-                        }}
+                        onClick={() =>
+                          props.openRecordForm({ mode: "edit", row })
+                        }
                         type="button"
                       >
-                        Archive
+                        Edit
                       </button>
-                    )}
-                  </div>
-                </article>
-              );
-            })
+                      {isArchived ? (
+                        <button
+                          className="btn btn-light btn-sm"
+                          onClick={() => {
+                            void props.restoreRow(row);
+                          }}
+                          type="button"
+                        >
+                          Restore
+                        </button>
+                      ) : (
+                        <button
+                          className="btn btn-light btn-sm"
+                          onClick={() => {
+                            void props.archiveRow(row);
+                          }}
+                          type="button"
+                        >
+                          Archive
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })
             )}
           </div>
         )}
@@ -2910,45 +3067,256 @@ function ModulePanel(props: {
             </label>
           </div>
           <span className="pagination-total">
-            Page {props.currentPage} of {props.totalPages} / {props.total} records
+            Page {props.currentPage} of {props.totalPages} / {props.total}{" "}
+            records
           </span>
         </div>
       </div>
-
-      {props.detail ? (
-        <aside className="detail-panel">
-          <button
-            className="panel-close"
-            onClick={() => props.setDetail(null)}
-            type="button"
-          >
-            Close
-          </button>
-          <span className="eyebrow">Record Detail</span>
-          <div className="panel-title">
-            <Icon name={module.icon ?? "document"} />
-            <h3>{props.detail[0]}</h3>
-          </div>
-          {module.columns.map((column, index) => (
-            <div className="detail-row" key={column}>
-              <span>{column}</span>
-              <strong>{props.detail?.[index]}</strong>
-            </div>
-          ))}
-          <button
-            className="btn btn-primary"
-            onClick={() => props.runAction("Follow-up")}
-            type="button"
-          >
-            <Icon name="task" />
-            Create Follow-up
-          </button>
-        </aside>
-      ) : null}
     </section>
   );
 }
 
+function getRecordStatus(row: string[]) {
+  return (
+    row.find((value) =>
+      [
+        "active",
+        "open",
+        "in progress",
+        "in_progress",
+        "review",
+        "under review",
+        "completed",
+        "archived",
+        "blocked",
+      ].includes(value.toLowerCase()),
+    ) ?? "Active"
+  );
+}
+
+function RecordDetailModal({
+  module,
+  onArchive,
+  onClose,
+  onEdit,
+  onFollowUp,
+  row,
+  stats,
+}: {
+  module: AdminModule;
+  onArchive: (row: string[]) => void;
+  onClose: () => void;
+  onEdit: (row: string[]) => void;
+  onFollowUp: () => void;
+  row: string[];
+  stats?: Array<{ label: string; value: number | string }>;
+}) {
+  const status = getRecordStatus(row);
+  const isArchived = row.some((value) => value.toLowerCase() === "archived");
+  const primaryFields = module.columns.slice(0, 3);
+  const remainingFields = module.columns.slice(3);
+  const canCreateFollowUp = new Set([
+    "leads",
+    "follow-ups",
+    "tasks",
+    "applications",
+    "admissions",
+    "call-center",
+  ]).has(module.id);
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section
+        aria-labelledby="record-detail-title"
+        aria-modal="true"
+        className="record-modal record-detail-modal"
+        role="dialog"
+      >
+        <div className="record-modal-head enterprise-modal-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell">
+              <Icon name={module.icon ?? "document"} />
+            </div>
+            <div>
+              <span className="eyebrow">{module.group}</span>
+              <h3 id="record-detail-title">
+                {row[0] || `${module.title} Record`}
+              </h3>
+              <p>
+                {module.id === "organizations"
+                  ? "Organization registry, lifecycle, and hierarchy overview."
+                  : `${module.title} record overview and operational context.`}
+              </p>
+            </div>
+          </div>
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="record-detail-summary">
+          <div>
+            <span>Status</span>
+            <strong className={statusClass(status as ModuleStatus)}>
+              {formatStatus(status)}
+            </strong>
+          </div>
+          {stats?.map((item) => (
+            <div key={item.label}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="record-detail-grid">
+          {primaryFields.map((column, index) => (
+            <div className="record-detail-card" key={column}>
+              <span>{column}</span>
+              <strong>{renderCell(row[index] ?? "-")}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className="record-detail-section">
+          <div className="section-title-row">
+            <h4>Record Information</h4>
+            <span>{remainingFields.length} additional fields</span>
+          </div>
+          <dl className="detail-definition-list">
+            {remainingFields.map((column, offset) => {
+              const index = offset + 3;
+              return (
+                <div key={column}>
+                  <dt>{column}</dt>
+                  <dd>{renderCell(row[index] ?? "-")}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
+
+        <div className="record-modal-actions">
+          {canCreateFollowUp ? (
+            <button
+              className="btn btn-light"
+              onClick={onFollowUp}
+              type="button"
+            >
+              <Icon name="task" />
+              Create Follow-up
+            </button>
+          ) : null}
+          <button
+            className="btn btn-light"
+            onClick={() => onEdit(row)}
+            type="button"
+          >
+            <Icon name="settings" />
+            Edit
+          </button>
+          {!isArchived ? (
+            <button
+              className="btn btn-danger-soft"
+              onClick={() => onArchive(row)}
+              type="button"
+            >
+              <Icon name="shield" />
+              Archive
+            </button>
+          ) : null}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function ArchiveConfirmModal({
+  module,
+  onClose,
+  onConfirm,
+  row,
+}: {
+  module: AdminModule;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+  row: string[];
+}) {
+  const [isArchiving, setIsArchiving] = useState(false);
+
+  async function confirmArchive() {
+    setIsArchiving(true);
+    await onConfirm();
+    setIsArchiving(false);
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section
+        aria-labelledby="archive-confirm-title"
+        aria-modal="true"
+        className="record-modal archive-confirm-modal"
+        role="dialog"
+      >
+        <div className="record-modal-head enterprise-modal-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell danger">
+              <Icon name="shield" />
+            </div>
+            <div>
+              <span className="eyebrow">Archive Confirmation</span>
+              <h3 id="archive-confirm-title">
+                Archive this {module.title} record?
+              </h3>
+              <p>
+                This keeps the record in history but removes it from active
+                workflows.
+              </p>
+            </div>
+          </div>
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="archive-record-preview">
+          <span>Selected record</span>
+          <strong>{row[0] || `${module.title} Record`}</strong>
+          <p>{row.slice(1, 4).filter(Boolean).join(" / ")}</p>
+        </div>
+
+        <div className="record-modal-actions">
+          <button
+            className="btn btn-light"
+            disabled={isArchiving}
+            onClick={onClose}
+            type="button"
+          >
+            Cancel
+          </button>
+          <button
+            className="btn btn-danger-soft"
+            disabled={isArchiving}
+            onClick={() => {
+              void confirmArchive();
+            }}
+            type="button"
+          >
+            {isArchiving ? "Archiving..." : "Archive Record"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
 
 function RecordFormModal({
   module,
@@ -2971,7 +3339,10 @@ function RecordFormModal({
     Object.fromEntries(
       editableColumns.map((column) => {
         const rowIndex = module.columns.indexOf(column);
-        return [toPayloadKey(column), rowIndex >= 0 ? (row?.[rowIndex] ?? "") : ""];
+        return [
+          toPayloadKey(column),
+          rowIndex >= 0 ? (row?.[rowIndex] ?? "") : "",
+        ];
       }),
     ),
   );
@@ -3146,7 +3517,9 @@ function OrganizationFormModal({
         primaryDomain: draft.primaryDomain?.trim() || undefined,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Organization creation failed");
+      setError(
+        err instanceof Error ? err.message : "Organization creation failed",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -3160,7 +3533,11 @@ function OrganizationFormModal({
             <span className="eyebrow">Organization Management</span>
             <h3>Create Organization</h3>
           </div>
-          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
             Close
           </button>
         </div>
@@ -3221,7 +3598,7 @@ function OrganizationFormModal({
               onChange={(event) =>
                 setDraft({ ...draft, branchName: event.target.value })
               }
-              placeholder="Main Campus"
+              placeholder="Main Branch"
               value={draft.branchName}
             />
           </label>
@@ -3284,10 +3661,174 @@ function OrganizationFormModal({
   );
 }
 
+function OrganizationEditModal({
+  organizations,
+  onClose,
+  onSubmit,
+  row,
+}: {
+  organizations: unknown[];
+  onClose: () => void;
+  onSubmit: (draft: OrganizationDraft & { id: string }) => Promise<void>;
+  row: string[];
+}) {
+  const organizationId = findOrganizationIdByName(organizations, row[0]);
+  const source = normalizeResponseObject(
+    organizations.find(
+      (record) => getUnknownRecordId(record) === organizationId,
+    ),
+  );
+  const [draft, setDraft] = useState<OrganizationDraft & { id: string }>({
+    code: typeof source.code === "string" ? source.code : "",
+    id: organizationId,
+    name: row[0] ?? "",
+    primaryDomain:
+      typeof source.primaryDomain === "string" ? source.primaryDomain : "",
+    type:
+      typeof source.type === "string"
+        ? source.type
+        : row[1]?.toLowerCase().replaceAll(" ", "_") || "coaching",
+  });
+  const [status, setStatus] = useState(
+    typeof source.status === "string" ? source.status : row[3] || "active",
+  );
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit() {
+    if (!draft.id || !draft.name.trim()) {
+      setError("Organization name is required");
+      return;
+    }
+    setIsSaving(true);
+    setError("");
+    try {
+      await onSubmit({
+        ...draft,
+        name: draft.name.trim(),
+        primaryDomain: draft.primaryDomain?.trim() || undefined,
+        status,
+        type: draft.type,
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Organization update failed",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section className="record-modal" role="dialog" aria-modal="true">
+        <div className="record-modal-head enterprise-modal-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell">
+              <Icon name="building" />
+            </div>
+            <div>
+              <span className="eyebrow">Organization Registry</span>
+              <h3>Edit Organization</h3>
+              <p>
+                Update organization identity, type, domain, and lifecycle
+                status.
+              </p>
+            </div>
+          </div>
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+        <div className="record-form-grid">
+          <label className="formrow wide">
+            <span className="label">Organization Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, name: event.target.value })
+              }
+              value={draft.name}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Code</span>
+            <input
+              className="input form-control"
+              disabled
+              value={draft.code ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Type</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                setDraft({ ...draft, type: event.target.value })
+              }
+              value={draft.type}
+            >
+              <option value="coaching">Coaching</option>
+              <option value="school">School</option>
+              <option value="college">College</option>
+              <option value="university">University</option>
+              <option value="edtech">EdTech</option>
+              <option value="study_abroad">Study abroad</option>
+              <option value="training">Training</option>
+            </select>
+          </label>
+          <label className="formrow">
+            <span className="label">Status</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) => setStatus(event.target.value)}
+              value={status}
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </label>
+          <label className="formrow wide">
+            <span className="label">Primary Domain</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryDomain: event.target.value })
+              }
+              placeholder="academy.mentora.test"
+              value={draft.primaryDomain ?? ""}
+            />
+          </label>
+        </div>
+        {error ? <div className="auth-error modal-error">{error}</div> : null}
+        <div className="record-modal-actions">
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={!draft.name.trim() || isSaving}
+            onClick={() => {
+              void submit();
+            }}
+            type="button"
+          >
+            {isSaving ? "Saving" : "Save Organization"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function OrganizationSetupModal({
   activeOrganizationId,
   branches,
-  businessUnits,
   departments,
   kind,
   onClose,
@@ -3297,7 +3838,6 @@ function OrganizationSetupModal({
 }: {
   activeOrganizationId: string;
   branches: unknown[];
-  businessUnits: unknown[];
   departments: unknown[];
   kind: OrganizationSetupKind;
   onClose: () => void;
@@ -3306,7 +3846,6 @@ function OrganizationSetupModal({
   title: string;
 }) {
   const organizationOptions = getOrganizationOptions(organizations, []);
-  const businessUnitOptions = getRecordOptions(businessUnits);
   const branchOptions = getBranchOptions(branches, []);
   const departmentOptions = getRecordOptions(departments);
   const [draft, setDraft] = useState<OrganizationSetupDraft>({
@@ -3318,9 +3857,7 @@ function OrganizationSetupModal({
   });
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const needsNameAndCode = ["branch", "campus", "department", "team"].includes(
-    kind,
-  );
+  const needsNameAndCode = ["branch", "department", "team"].includes(kind);
   const canSubmit =
     Boolean(draft.organizationId) &&
     (!needsNameAndCode || Boolean(draft.name?.trim() && draft.code?.trim())) &&
@@ -3350,7 +3887,11 @@ function OrganizationSetupModal({
             <span className="eyebrow">Organization Setup</span>
             <h3>{title}</h3>
           </div>
-          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
             Close
           </button>
         </div>
@@ -3377,7 +3918,9 @@ function OrganizationSetupModal({
           {needsNameAndCode ? (
             <>
               <label className="formrow wide">
-                <span className="label">{kind === "team" ? "Team" : title.replace("Create ", "")} Name</span>
+                <span className="label">
+                  {kind === "team" ? "Team" : title.replace("Create ", "")} Name
+                </span>
                 <input
                   className="input form-control"
                   onChange={(event) =>
@@ -3400,31 +3943,7 @@ function OrganizationSetupModal({
             </>
           ) : null}
 
-          {["branch", "campus", "department"].includes(kind) &&
-          businessUnitOptions.length > 0 ? (
-            <label className="formrow">
-              <span className="label">Business Unit</span>
-              <select
-                className="form-select form-select-sm"
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    businessUnitId: event.target.value || undefined,
-                  })
-                }
-                value={draft.businessUnitId ?? ""}
-              >
-                <option value="">None</option>
-                {businessUnitOptions.map((unit) => (
-                  <option key={unit.value} value={unit.value}>
-                    {unit.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-
-          {["campus", "department"].includes(kind) && branchOptions.length > 0 ? (
+          {kind === "department" && branchOptions.length > 0 ? (
             <label className="formrow">
               <span className="label">Branch</span>
               <select
@@ -3495,19 +4014,6 @@ function OrganizationSetupModal({
             </>
           ) : null}
 
-          {kind === "campus" ? (
-            <label className="formrow wide">
-              <span className="label">Address</span>
-              <input
-                className="input form-control"
-                onChange={(event) =>
-                  setDraft({ ...draft, address: event.target.value })
-                }
-                value={draft.address ?? ""}
-              />
-            </label>
-          ) : null}
-
           {kind === "department" ? (
             <label className="formrow">
               <span className="label">Function</span>
@@ -3524,7 +4030,7 @@ function OrganizationSetupModal({
                 <option value="marketing">Marketing</option>
                 <option value="finance">Finance</option>
                 <option value="academics">Academics</option>
-                <option value="ops">Operations</option>
+                <option value="operations">Operations</option>
               </select>
             </label>
           ) : null}
@@ -3658,8 +4164,6 @@ function OrganizationSetupModal({
 function OrganizationUserFormModal({
   activeOrganizationId,
   branches,
-  businessUnits,
-  campuses,
   departments,
   onClose,
   onSubmit,
@@ -3668,8 +4172,6 @@ function OrganizationUserFormModal({
 }: {
   activeOrganizationId: string;
   branches: unknown[];
-  businessUnits: unknown[];
-  campuses: unknown[];
   departments: unknown[];
   onClose: () => void;
   onSubmit: (draft: OrganizationUserDraft) => Promise<void>;
@@ -3677,8 +4179,6 @@ function OrganizationUserFormModal({
   organizations: unknown[];
 }) {
   const organizationOptions = getOrganizationOptions(organizations, []);
-  const businessUnitOptions = getRecordOptions(businessUnits);
-  const campusOptions = getRecordOptions(campuses);
   const branchOptions = getBranchOptions(branches, []);
   const departmentOptions = getRecordOptions(departments);
   const teamOptions = getRecordOptions(teams);
@@ -3692,7 +4192,11 @@ function OrganizationUserFormModal({
   const [isSaving, setIsSaving] = useState(false);
 
   async function submit() {
-    if (!draft.organizationId || !draft.email.trim() || draft.password.length < 8) {
+    if (
+      !draft.organizationId ||
+      !draft.email.trim() ||
+      draft.password.length < 8
+    ) {
       setError("Organization, email, and an 8 character password are required");
       return;
     }
@@ -3715,7 +4219,11 @@ function OrganizationUserFormModal({
             <span className="eyebrow">User Management</span>
             <h3>Create CRM User</h3>
           </div>
-          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
             Close
           </button>
         </div>
@@ -3737,54 +4245,6 @@ function OrganizationUserFormModal({
               ))}
             </select>
           </label>
-          {businessUnitOptions.length > 0 ? (
-            <label className="formrow">
-              <span className="label">Business Unit</span>
-              <select
-                className="form-select form-select-sm"
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    businessUnitIds: event.target.value
-                      ? [event.target.value]
-                      : undefined,
-                  })
-                }
-                value={draft.businessUnitIds?.[0] ?? ""}
-              >
-                <option value="">All business units</option>
-                {businessUnitOptions.map((unit) => (
-                  <option key={unit.value} value={unit.value}>
-                    {unit.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          {campusOptions.length > 0 ? (
-            <label className="formrow">
-              <span className="label">Campus</span>
-              <select
-                className="form-select form-select-sm"
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    campusIds: event.target.value
-                      ? [event.target.value]
-                      : undefined,
-                  })
-                }
-                value={draft.campusIds?.[0] ?? ""}
-              >
-                <option value="">All campuses</option>
-                {campusOptions.map((campus) => (
-                  <option key={campus.value} value={campus.value}>
-                    {campus.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
           {branchOptions.length > 0 ? (
             <label className="formrow">
               <span className="label">Branch</span>
@@ -3841,7 +4301,9 @@ function OrganizationUserFormModal({
                 onChange={(event) =>
                   setDraft({
                     ...draft,
-                    teamIds: event.target.value ? [event.target.value] : undefined,
+                    teamIds: event.target.value
+                      ? [event.target.value]
+                      : undefined,
                   })
                 }
                 value={draft.teamIds?.[0] ?? ""}
@@ -3951,12 +4413,16 @@ function renderCell(value: string) {
   return value;
 }
 
-function findModuleRecordIdForRow(records: unknown[] | undefined, row: string[]) {
+function findModuleRecordIdForRow(
+  records: unknown[] | undefined,
+  row: string[],
+) {
   if (!records?.length) return "";
   const title = row[0];
   const record = records.find((item) => {
     if (!item || typeof item !== "object") return false;
-    return (item as { title?: unknown }).title === title;
+    const object = item as { name?: unknown; title?: unknown };
+    return object.title === title || object.name === title;
   });
   return getUnknownRecordId(record);
 }

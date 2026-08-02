@@ -90,11 +90,9 @@ export const COLLECTION_NAMES = {
   SAFETY_EVENT: 'safety_events',
 
   ORGANIZATION: 'organizations',
-  BUSINESS_UNIT: 'business_units',
   BRANCH: 'branches',
   DEPARTMENT: 'departments',
   TEAM: 'teams',
-  CAMPUS: 'campuses',
   ORGANIZATION_BRANDING: 'organization_branding',
   CHANNEL_SETTING: 'channel_settings',
   LEAD_SOURCE: 'lead_sources',

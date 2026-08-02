@@ -29,7 +29,7 @@ import {
 import { ScholarshipsService } from '../services/scholarships.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('scholarships')
+@Controller('admin/scholarships')
 export class ScholarshipsController {
   constructor(private readonly service: ScholarshipsService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(

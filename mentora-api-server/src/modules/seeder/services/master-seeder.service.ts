@@ -639,8 +639,8 @@ export class MasterSeederService {
         type: 'school',
         slug: 'northstar',
         branches: [
-          ['Pune Campus', 'PUNE', 'Pune', 'Maharashtra'],
-          ['Mumbai Campus', 'MUMBAI', 'Mumbai', 'Maharashtra'],
+          ['Pune Branch', 'PUNE', 'Pune', 'Maharashtra'],
+          ['Mumbai Branch', 'MUMBAI', 'Mumbai', 'Maharashtra'],
         ],
       },
       {
@@ -748,7 +748,7 @@ export class MasterSeederService {
       ['Marketing', 'MARKETING', 'marketing'],
       ['Finance', 'FINANCE', 'finance'],
       ['Academics', 'ACADEMICS', 'academics'],
-      ['Operations', 'OPS', 'ops'],
+      ['Operations', 'OPS', 'operations'],
     ];
 
     const departments: DepartmentDocument[] = [];

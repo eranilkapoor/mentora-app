@@ -29,7 +29,7 @@ import {
 import { FinanceLedgersService } from '../services/finance-ledgers.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('finance-ledgers')
+@Controller('admin/finance-ledgers')
 export class FinanceLedgersController {
   constructor(private readonly service: FinanceLedgersService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(

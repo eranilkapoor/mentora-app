@@ -25,7 +25,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { EventsService } from '../services/events.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('events')
+@Controller('admin/events')
 export class EventsController {
   constructor(private readonly service: EventsService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(

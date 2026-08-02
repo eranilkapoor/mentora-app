@@ -10,10 +10,6 @@ import { OrganizationsController } from './controllers/organizations.controller'
 import {
   Branch,
   BranchSchema,
-  BusinessUnit,
-  BusinessUnitSchema,
-  Campus,
-  CampusSchema,
   ChannelSetting,
   ChannelSettingSchema,
   Department,
@@ -36,11 +32,9 @@ import { OrganizationsService } from './services/organizations.service';
     ContextsModule,
     MongooseModule.forFeature([
       { name: Organization.name, schema: OrganizationSchema },
-      { name: BusinessUnit.name, schema: BusinessUnitSchema },
       { name: Branch.name, schema: BranchSchema },
       { name: Department.name, schema: DepartmentSchema },
       { name: Team.name, schema: TeamSchema },
-      { name: Campus.name, schema: CampusSchema },
       { name: OrganizationBranding.name, schema: OrganizationBrandingSchema },
       { name: ChannelSetting.name, schema: ChannelSettingSchema },
       { name: LeadSource.name, schema: LeadSourceSchema },

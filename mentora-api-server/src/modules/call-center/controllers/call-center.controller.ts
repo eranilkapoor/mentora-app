@@ -25,7 +25,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { CallCenterService } from '../services/call-center.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('call-center')
+@Controller('admin/call-center')
 export class CallCenterController {
   constructor(private readonly service: CallCenterService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(

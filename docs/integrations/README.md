@@ -37,7 +37,7 @@ npm run smoke:providers:strict
 The admin CRM can also test configured providers through the API:
 
 ```text
-GET /api/v1/integrations/providers/:providerKey/test?organizationId=<organizationId>
+GET /api/v1/admin/integrations/providers/:providerKey/test?organizationId=<organizationId>
 ```
 
 The provider catalogue reports required environment keys, missing keys, organization configuration status, and whether the provider is ready for live use. A provider should not be enabled for production workflows until this readiness check passes in the target environment.
@@ -57,3 +57,4 @@ npm run lint:check
 - Production backend validation requires strict store receipt verification, S3 storage, Sentry monitoring, payment secrets, distinct JWT refresh secrets, and safe CORS origins.
 - Production CRM workflows must use real provider credentials or explicitly disabled provider actions; no demo fallback should be used for customer data.
 - The docs here describe the current repository state. If a provider console changes its UI, keep the values and validation steps aligned with the env names in `mentora-api-server/src/config/*` and `mentora-mobile-app/src/core/utils/config.ts`.
+

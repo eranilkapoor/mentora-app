@@ -18,7 +18,7 @@ import { UpdateOrganizationSecurityPolicyDto } from '../dto/security-policies.dt
 import { SecurityPoliciesService } from '../services/security-policies.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('security-policies')
+@Controller('admin/security-policies')
 export class SecurityPoliciesController {
   constructor(private readonly service: SecurityPoliciesService) {}
 

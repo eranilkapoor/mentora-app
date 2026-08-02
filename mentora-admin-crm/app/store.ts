@@ -47,8 +47,6 @@ type CrmWorkspaceState = {
   activeBranchId: string;
   activeOrganizationId: string;
   branches: unknown[];
-  businessUnits: unknown[];
-  campuses: unknown[];
   contexts: unknown[];
   coverage: unknown[];
   dashboard: unknown | null;
@@ -76,12 +74,11 @@ export type OrganizationDraft = {
   id?: string;
   name: string;
   primaryDomain?: string;
+  status?: string;
   type: string;
 };
 
 export type OrganizationUserDraft = {
-  businessUnitIds?: string[];
-  campusIds?: string[];
   branchIds?: string[];
   departmentIds?: string[];
   teamIds?: string[];
@@ -95,7 +92,6 @@ export type OrganizationUserDraft = {
 export type OrganizationSetupDraft = {
   address?: string;
   branchId?: string;
-  businessUnitId?: string;
   channel?: string;
   city?: string;
   code?: string;
@@ -197,26 +193,33 @@ export type ModuleRecordListParams = {
   organizationId: string;
 };
 
+function adminPath(path: string) {
+  return path.startsWith("/admin/") ? path : `/admin${path}`;
+}
+
 const dedicatedCrmRoutes: Record<string, string> = {
-  admissions: "/admissions",
-  applications: "/applications",
-  "call-center": "/call-center",
-  campaigns: "/campaigns",
-  communications: "/communications",
-  documents: "/documents",
-  emails: "/communications",
-  events: "/events",
-  "field-force": "/field-force",
-  finance: "/finance-ledgers",
-  interview: "/interviews",
-  leads: "/leads",
-  automation: "/workflows/rules",
-  reports: "/reports/definitions",
-  scholarship: "/scholarships",
+  admissions: adminPath("/admissions"),
+  applications: adminPath("/applications"),
+  branches: adminPath("/branches"),
+  "call-center": adminPath("/call-center"),
+  campaigns: adminPath("/campaigns"),
+  communications: adminPath("/communications"),
+  departments: adminPath("/departments"),
+  documents: adminPath("/documents"),
+  emails: adminPath("/communications"),
+  events: adminPath("/events"),
+  "field-force": adminPath("/field-force"),
+  finance: adminPath("/finance-ledgers"),
+  interview: adminPath("/interviews"),
+  leads: adminPath("/leads"),
+  automation: adminPath("/workflows/rules"),
+  reports: adminPath("/reports/definitions"),
+  scholarship: adminPath("/scholarships"),
   support: "/admin/support/tickets",
-  sms: "/communications",
-  tasks: "/tasks",
-  whatsapp: "/whatsapp",
+  sms: adminPath("/communications"),
+  tasks: adminPath("/tasks"),
+  teams: adminPath("/teams"),
+  whatsapp: adminPath("/whatsapp"),
 };
 
 const allAdminModuleIds = [
@@ -225,9 +228,10 @@ const allAdminModuleIds = [
   "authentication",
   "users",
   "organizations",
+  "branches",
+  "departments",
+  "teams",
   "security",
-  "feature-flags",
-  "usage-limits",
   "billing",
   "branding",
   "global-settings",
@@ -467,7 +471,11 @@ async function deleteJson(path: string) {
 export const loginWithCredentials = createAsyncThunk(
   "crmSession/loginWithCredentials",
   async (credentials: LoginCredentials) => {
-    const response = await sendJson("/auth/login", "POST", credentials);
+    const response = await sendJson(
+      adminPath("/auth/login"),
+      "POST",
+      credentials,
+    );
     const data = normalizeApiObject(response) as Record<string, unknown>;
     const user =
       data.user && typeof data.user === "object"
@@ -506,9 +514,10 @@ export const loadCrmWorkspace = createAsyncThunk(
   "crmWorkspace/load",
   async (params?: { organizationId?: string }) => {
     const query = new URLSearchParams();
-    if (params?.organizationId) query.set("organizationId", params.organizationId);
+    if (params?.organizationId)
+      query.set("organizationId", params.organizationId);
     return getJson(
-      `/dashboard/bootstrap${query.size ? `?${query.toString()}` : ""}`,
+      `${adminPath("/dashboard/bootstrap")}${query.size ? `?${query.toString()}` : ""}`,
     );
   },
 );
@@ -516,14 +525,18 @@ export const loadCrmWorkspace = createAsyncThunk(
 export const loadOrganizations = createAsyncThunk(
   "crmWorkspace/loadOrganizations",
   async () => {
-    return getJson("/organizations?limit=100&status=active");
+    return getJson(adminPath("/organizations?limit=100&status=active"));
   },
 );
 
 export const loadBranches = createAsyncThunk(
   "crmWorkspace/loadBranches",
   async ({ organizationId }: { organizationId: string }) => {
-    return getJson(`/branches?organizationId=${encodeURIComponent(organizationId)}`);
+    return getJson(
+      adminPath(
+        `/branches?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
+    );
   },
 );
 
@@ -531,7 +544,9 @@ export const loadIdentityHierarchy = createAsyncThunk(
   "crmWorkspace/loadIdentityHierarchy",
   async ({ organizationId }: { organizationId: string }) => {
     return getJson(
-      `/identity/hierarchy?organizationId=${encodeURIComponent(organizationId)}`,
+      adminPath(
+        `/identity/hierarchy?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
     );
   },
 );
@@ -539,21 +554,21 @@ export const loadIdentityHierarchy = createAsyncThunk(
 export const createOrganization = createAsyncThunk(
   "crmWorkspace/createOrganization",
   async (draft: OrganizationDraft) => {
-    return sendJson("/organizations", "POST", draft);
+    return sendJson(adminPath("/organizations"), "POST", draft);
   },
 );
 
 export const updateOrganization = createAsyncThunk(
   "crmWorkspace/updateOrganization",
   async (draft: OrganizationDraft & { id: string }) => {
-    return sendJson(`/organizations/${draft.id}`, "PUT", draft);
+    return sendJson(adminPath(`/organizations/${draft.id}`), "PUT", draft);
   },
 );
 
 export const createOrganizationUser = createAsyncThunk(
   "crmWorkspace/createOrganizationUser",
   async (draft: OrganizationUserDraft) => {
-    return sendJson("/organization-users/create", "POST", draft);
+    return sendJson(adminPath("/organization-users/create"), "POST", draft);
   },
 );
 
@@ -571,7 +586,9 @@ export const loadModuleRecords = createAsyncThunk(
     if (params.sortBy) query.set("sortBy", params.sortBy);
     if (params.sortOrder) query.set("sortOrder", params.sortOrder);
     if (params.status) query.set("status", params.status);
-    const records = await getJson(`/module-records?${query.toString()}`);
+    const records = await getJson(
+      adminPath(`/module-records?${query.toString()}`),
+    );
 
     return { moduleKey: params.moduleKey, records };
   },
@@ -614,8 +631,8 @@ export const saveModuleRecord = createAsyncThunk(
       payload: draft.payload,
     };
     const response = draft.id
-      ? await sendJson(`/module-records/${draft.id}`, "POST", body)
-      : await sendJson("/module-records", "POST", body);
+      ? await sendJson(adminPath(`/module-records/${draft.id}`), "POST", body)
+      : await sendJson(adminPath("/module-records"), "POST", body);
 
     return { draft, response };
   },
@@ -633,7 +650,9 @@ export const deleteModuleRecord = createAsyncThunk(
     organizationId: string;
   }) => {
     const response = await deleteJson(
-      `/module-records/${recordId}?organizationId=${encodeURIComponent(organizationId)}`,
+      adminPath(
+        `/module-records/${recordId}?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
     );
     return { moduleKey, recordId, response };
   },
@@ -671,9 +690,11 @@ export const restoreModuleRecord = createAsyncThunk(
     organizationId: string;
   }) => {
     const response = await sendJson(
-      `/module-records/${recordId}/restore?organizationId=${encodeURIComponent(
-        organizationId,
-      )}`,
+      adminPath(
+        `/module-records/${recordId}/restore?organizationId=${encodeURIComponent(
+          organizationId,
+        )}`,
+      ),
       "POST",
       {},
     );
@@ -716,11 +737,15 @@ export const bulkUpdateModuleRecordStatus = createAsyncThunk(
     status: string;
     organizationId: string;
   }) => {
-    const response = await sendJson("/module-records/operations/bulk-status", "POST", {
-      recordIds,
-      status,
-      organizationId,
-    });
+    const response = await sendJson(
+      adminPath("/module-records/operations/bulk-status"),
+      "POST",
+      {
+        recordIds,
+        status,
+        organizationId,
+      },
+    );
     return { moduleKey, recordIds, response, status };
   },
 );
@@ -772,17 +797,27 @@ export const exportLeads = createAsyncThunk(
   "crmWorkspace/exportLeads",
   async ({ organizationId }: { organizationId: string }) => {
     return getJson(
-      `/leads/operations/export?organizationId=${encodeURIComponent(organizationId)}`,
+      adminPath(
+        `/leads/operations/export?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
     );
   },
 );
 
 export const exportModuleRecords = createAsyncThunk(
   "crmWorkspace/exportModuleRecords",
-  async ({ moduleKey, organizationId }: { moduleKey?: string; organizationId: string }) => {
+  async ({
+    moduleKey,
+    organizationId,
+  }: {
+    moduleKey?: string;
+    organizationId: string;
+  }) => {
     const query = new URLSearchParams({ organizationId });
     if (moduleKey) query.set("moduleKey", moduleKey);
-    return getJson(`/module-records/operations/export?${query.toString()}`);
+    return getJson(
+      adminPath(`/module-records/operations/export?${query.toString()}`),
+    );
   },
 );
 
@@ -797,7 +832,7 @@ export const findLeadDuplicates = createAsyncThunk(
     phone?: string;
     organizationId: string;
   }) => {
-    return sendJson("/leads/operations/duplicates", "POST", {
+    return sendJson(adminPath("/leads/operations/duplicates"), "POST", {
       email,
       phone,
       organizationId,
@@ -807,8 +842,14 @@ export const findLeadDuplicates = createAsyncThunk(
 
 export const updateLeadTags = createAsyncThunk(
   "crmWorkspace/updateLeadTags",
-  async ({ leadId, organizationId }: { leadId: string; organizationId: string }) => {
-    return sendJson(`/leads/${leadId}/tags`, "POST", {
+  async ({
+    leadId,
+    organizationId,
+  }: {
+    leadId: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath(`/leads/${leadId}/tags`), "POST", {
       organizationId,
       tags: ["exam-ready", "high-intent", "parent-follow-up"],
     });
@@ -817,8 +858,14 @@ export const updateLeadTags = createAsyncThunk(
 
 export const scoreLead = createAsyncThunk(
   "crmWorkspace/scoreLead",
-  async ({ leadId, organizationId }: { leadId: string; organizationId: string }) => {
-    return sendJson(`/leads/${leadId}/score`, "POST", {
+  async ({
+    leadId,
+    organizationId,
+  }: {
+    leadId: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath(`/leads/${leadId}/score`), "POST", {
       organizationId,
       signals: {
         engagement: 12,
@@ -829,8 +876,14 @@ export const scoreLead = createAsyncThunk(
 
 export const addLeadAttachment = createAsyncThunk(
   "crmWorkspace/addLeadAttachment",
-  async ({ leadId, organizationId }: { leadId: string; organizationId: string }) => {
-    return sendJson(`/leads/${leadId}/attachments`, "POST", {
+  async ({
+    leadId,
+    organizationId,
+  }: {
+    leadId: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath(`/leads/${leadId}/attachments`), "POST", {
       organizationId,
       fileName: "counseling-note.txt",
       mimeType: "text/plain",
@@ -843,7 +896,7 @@ export const addLeadAttachment = createAsyncThunk(
 export const importSampleLeads = createAsyncThunk(
   "crmWorkspace/importSampleLeads",
   async ({ organizationId }: { organizationId: string }) => {
-    return sendJson("/leads/operations/import", "POST", {
+    return sendJson(adminPath("/leads/operations/import"), "POST", {
       organizationId,
       rows: [
         {
@@ -865,8 +918,14 @@ export const importSampleLeads = createAsyncThunk(
 
 export const createWorkflowRule = createAsyncThunk(
   "crmWorkspace/createWorkflowRule",
-  async ({ moduleKey, organizationId }: { moduleKey: string; organizationId: string }) => {
-    return sendJson("/workflows/rules", "POST", {
+  async ({
+    moduleKey,
+    organizationId,
+  }: {
+    moduleKey: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath("/workflows/rules"), "POST", {
       organizationId,
       name: `${moduleKey.replaceAll("_", " ").replaceAll("-", " ")} auto follow-up`,
       moduleKey,
@@ -884,8 +943,14 @@ export const createWorkflowRule = createAsyncThunk(
 
 export const executeWorkflow = createAsyncThunk(
   "crmWorkspace/executeWorkflow",
-  async ({ moduleKey, organizationId }: { moduleKey: string; organizationId: string }) => {
-    return sendJson("/workflows/execute", "POST", {
+  async ({
+    moduleKey,
+    organizationId,
+  }: {
+    moduleKey: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath("/workflows/execute"), "POST", {
       organizationId,
       moduleKey,
       trigger: "record.created",
@@ -896,8 +961,14 @@ export const executeWorkflow = createAsyncThunk(
 
 export const createReportDefinition = createAsyncThunk(
   "crmWorkspace/createReportDefinition",
-  async ({ moduleKey, organizationId }: { moduleKey: string; organizationId: string }) => {
-    return sendJson("/reports/definitions", "POST", {
+  async ({
+    moduleKey,
+    organizationId,
+  }: {
+    moduleKey: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath("/reports/definitions"), "POST", {
       organizationId,
       name: `${moduleKey.replaceAll("_", " ")} operations report`,
       moduleKey,
@@ -911,8 +982,14 @@ export const createReportDefinition = createAsyncThunk(
 
 export const createSampleDocument = createAsyncThunk(
   "crmWorkspace/createSampleDocument",
-  async ({ entityId, organizationId }: { entityId: string; organizationId: string }) => {
-    return sendJson("/documents", "POST", {
+  async ({
+    entityId,
+    organizationId,
+  }: {
+    entityId: string;
+    organizationId: string;
+  }) => {
+    return sendJson(adminPath("/documents"), "POST", {
       organizationId,
       category: "academic",
       entityId,
@@ -927,7 +1004,11 @@ export const createSampleDocument = createAsyncThunk(
 export const loadDocuments = createAsyncThunk(
   "crmWorkspace/loadDocuments",
   async ({ organizationId }: { organizationId: string }) => {
-    return getJson(`/documents?organizationId=${encodeURIComponent(organizationId)}`);
+    return getJson(
+      adminPath(
+        `/documents?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
+    );
   },
 );
 
@@ -940,7 +1021,7 @@ export const updateCampaignMetrics = createAsyncThunk(
     campaignId: string;
     organizationId: string;
   }) => {
-    return sendJson(`/campaigns/${campaignId}/metrics`, "POST", {
+    return sendJson(adminPath(`/campaigns/${campaignId}/metrics`), "POST", {
       organizationId,
       metrics: { clicks: 420, conversions: 37, leads: 96 },
       roi: { adSpend: 18000, revenueAttributed: 126000, roas: 7 },
@@ -952,16 +1033,15 @@ export const updateCampaignMetrics = createAsyncThunk(
 export const runCrmRecordAction = createAsyncThunk(
   "crmWorkspace/runCrmRecordAction",
   async ({ body, path }: { body: Record<string, unknown>; path: string }) => {
-    return sendJson(path, "POST", body);
+    return sendJson(adminPath(path), "POST", body);
   },
 );
 
 export const createBranch = createAsyncThunk(
   "crmWorkspace/createBranch",
   async (draft: OrganizationSetupDraft) => {
-    return sendJson("/branches", "POST", {
+    return sendJson(adminPath("/branches"), "POST", {
       organizationId: draft.organizationId,
-      businessUnitId: draft.businessUnitId || undefined,
       city: draft.city || undefined,
       code: draft.code,
       name: draft.name,
@@ -973,10 +1053,9 @@ export const createBranch = createAsyncThunk(
 export const createDepartment = createAsyncThunk(
   "crmWorkspace/createDepartment",
   async (draft: OrganizationSetupDraft) => {
-    return sendJson("/departments", "POST", {
+    return sendJson(adminPath("/departments"), "POST", {
       organizationId: draft.organizationId,
       branchId: draft.branchId || undefined,
-      businessUnitId: draft.businessUnitId || undefined,
       code: draft.code,
       function: draft.function || undefined,
       name: draft.name,
@@ -987,7 +1066,7 @@ export const createDepartment = createAsyncThunk(
 export const createTeam = createAsyncThunk(
   "crmWorkspace/createTeam",
   async (draft: OrganizationSetupDraft) => {
-    return sendJson("/teams", "POST", {
+    return sendJson(adminPath("/teams"), "POST", {
       organizationId: draft.organizationId,
       code: draft.code,
       departmentId: draft.departmentId || undefined,
@@ -996,24 +1075,10 @@ export const createTeam = createAsyncThunk(
   },
 );
 
-export const createCampus = createAsyncThunk(
-  "crmWorkspace/createCampus",
-  async (draft: OrganizationSetupDraft) => {
-    return sendJson("/campuses", "POST", {
-      organizationId: draft.organizationId,
-      address: draft.address || undefined,
-      branchId: draft.branchId || undefined,
-      businessUnitId: draft.businessUnitId || undefined,
-      code: draft.code,
-      name: draft.name,
-    });
-  },
-);
-
 export const updateOrganizationBranding = createAsyncThunk(
   "crmWorkspace/updateOrganizationBranding",
   async (draft: OrganizationSetupDraft) => {
-    return sendJson("/organization-branding", "POST", {
+    return sendJson(adminPath("/organization-branding"), "POST", {
       organizationId: draft.organizationId,
       domains: draft.domains
         ?.split(",")
@@ -1030,7 +1095,7 @@ export const updateOrganizationBranding = createAsyncThunk(
 export const updateChannelSetting = createAsyncThunk(
   "crmWorkspace/updateChannelSetting",
   async (draft: OrganizationSetupDraft) => {
-    return sendJson("/channel-settings", "POST", {
+    return sendJson(adminPath("/channel-settings"), "POST", {
       organizationId: draft.organizationId,
       channel: draft.channel,
       limits: draft.limits,
@@ -1047,7 +1112,11 @@ export const updateChannelSetting = createAsyncThunk(
 export const loadOrganizationUsers = createAsyncThunk(
   "crmWorkspace/loadOrganizationUsers",
   async ({ organizationId }: { organizationId: string }) => {
-    return getJson(`/organization-users?organizationId=${encodeURIComponent(organizationId)}`);
+    return getJson(
+      adminPath(
+        `/organization-users?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
+    );
   },
 );
 
@@ -1055,7 +1124,9 @@ export const loadIntegrationProviders = createAsyncThunk(
   "crmWorkspace/loadIntegrationProviders",
   async ({ organizationId }: { organizationId: string }) => {
     return getJson(
-      `/integrations/providers?organizationId=${encodeURIComponent(organizationId)}`,
+      adminPath(
+        `/integrations/providers?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
     );
   },
 );
@@ -1069,18 +1140,22 @@ export const upsertIntegrationProvider = createAsyncThunk(
     providerKey: string;
     organizationId: string;
   }) => {
-    return sendJson(`/integrations/providers/${providerKey}`, "PUT", {
-      organizationId,
-      status: "configured",
-      health: {
-        checkedBy: "admin-crm",
-        dryRun: true,
+    return sendJson(
+      adminPath(`/integrations/providers/${providerKey}`),
+      "PUT",
+      {
+        organizationId,
+        status: "configured",
+        health: {
+          checkedBy: "admin-crm",
+          dryRun: true,
+        },
+        settings: {
+          environment: "sandbox",
+          owner: "operations",
+        },
       },
-      settings: {
-        environment: "sandbox",
-        owner: "operations",
-      },
-    });
+    );
   },
 );
 
@@ -1094,9 +1169,11 @@ export const testIntegrationProvider = createAsyncThunk(
     organizationId: string;
   }) => {
     return getJson(
-      `/integrations/providers/${providerKey}/test?organizationId=${encodeURIComponent(
-        organizationId,
-      )}`,
+      adminPath(
+        `/integrations/providers/${providerKey}/test?organizationId=${encodeURIComponent(
+          organizationId,
+        )}`,
+      ),
     );
   },
 );
@@ -1105,7 +1182,9 @@ export const loadSecurityPolicy = createAsyncThunk(
   "crmWorkspace/loadSecurityPolicy",
   async ({ organizationId }: { organizationId: string }) => {
     return getJson(
-      `/security-policies?organizationId=${encodeURIComponent(organizationId)}`,
+      adminPath(
+        `/security-policies?organizationId=${encodeURIComponent(organizationId)}`,
+      ),
     );
   },
 );
@@ -1113,7 +1192,7 @@ export const loadSecurityPolicy = createAsyncThunk(
 export const updateSecurityPolicy = createAsyncThunk(
   "crmWorkspace/updateSecurityPolicy",
   async ({ organizationId }: { organizationId: string }) => {
-    return sendJson("/security-policies", "PUT", {
+    return sendJson(adminPath("/security-policies"), "PUT", {
       organizationId,
       allowedIpCidrs: [],
       dataRetentionPolicy: {
@@ -1147,8 +1226,6 @@ const initialWorkspaceState: CrmWorkspaceState = {
   activeBranchId: "",
   activeOrganizationId: "",
   branches: [],
-  businessUnits: [],
-  campuses: [],
   contexts: [],
   coverage: [],
   dashboard: null,
@@ -1357,8 +1434,6 @@ const crmWorkspaceSlice = createSlice({
             : getRecordId(organizations[0]);
         state.activeBranchId = "";
         state.branches = [];
-        state.businessUnits = [];
-        state.campuses = [];
         state.departments = [];
         state.teams = [];
         state.contexts = normalizeApiData(data.contexts);
@@ -1388,14 +1463,10 @@ const crmWorkspaceSlice = createSlice({
       .addCase(loadIdentityHierarchy.fulfilled, (state, action) => {
         const data = normalizeApiObject(action.payload) as {
           branches?: unknown;
-          businessUnits?: unknown;
-          campuses?: unknown;
           departments?: unknown;
           teams?: unknown;
           users?: unknown;
         };
-        state.businessUnits = normalizeApiData(data.businessUnits);
-        state.campuses = normalizeApiData(data.campuses);
         state.branches = normalizeApiData(data.branches);
         state.departments = normalizeApiData(data.departments);
         state.teams = normalizeApiData(data.teams);
@@ -1523,21 +1594,31 @@ const crmWorkspaceSlice = createSlice({
         const recordIds = new Set(action.payload.recordIds);
         state.moduleRecords[action.payload.moduleKey] = records.map((record) =>
           recordIds.has(getRecordId(record))
-            ? { ...(record as Record<string, unknown>), status: action.payload.status }
+            ? {
+                ...(record as Record<string, unknown>),
+                status: action.payload.status,
+              }
             : record,
         );
         state.error = null;
       })
-      .addCase(bulkUpdateDedicatedCrmRecordStatus.fulfilled, (state, action) => {
-        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
-        const recordIds = new Set(action.payload.recordIds);
-        state.moduleRecords[action.payload.moduleKey] = records.map((record) =>
-          recordIds.has(getRecordId(record))
-            ? { ...(record as Record<string, unknown>), status: action.payload.status }
-            : record,
-        );
-        state.error = null;
-      })
+      .addCase(
+        bulkUpdateDedicatedCrmRecordStatus.fulfilled,
+        (state, action) => {
+          const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+          const recordIds = new Set(action.payload.recordIds);
+          state.moduleRecords[action.payload.moduleKey] = records.map(
+            (record) =>
+              recordIds.has(getRecordId(record))
+                ? {
+                    ...(record as Record<string, unknown>),
+                    status: action.payload.status,
+                  }
+                : record,
+          );
+          state.error = null;
+        },
+      )
       .addCase(saveDedicatedCrmRecord.fulfilled, (state, action) => {
         const record = normalizeApiObject(action.payload.response);
         const moduleKey = action.payload.draft.moduleKey;
@@ -1599,9 +1680,6 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(createBranch.fulfilled, (state) => {
-        state.error = null;
-      })
-      .addCase(createCampus.fulfilled, (state) => {
         state.error = null;
       })
       .addCase(createDepartment.fulfilled, (state) => {
@@ -1696,13 +1774,13 @@ function normalizeApiData(value: unknown): unknown[] {
     "data" in value &&
     (value as { data?: unknown }).data &&
     typeof (value as { data?: unknown }).data === "object" &&
-    "items" in ((value as { data: Record<string, unknown> }).data) &&
+    "items" in (value as { data: Record<string, unknown> }).data &&
     Array.isArray(
       ((value as { data: Record<string, unknown> }).data as { items?: unknown })
         .items,
     )
   ) {
-    return ((value as { data: { items: unknown[] } }).data).items;
+    return (value as { data: { items: unknown[] } }).data.items;
   }
   if (
     value &&

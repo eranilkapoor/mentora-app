@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { AdminAuthController } from './controllers/admin-auth.controller';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { AuthPasswordService } from './services/auth-password.service';
@@ -71,7 +72,7 @@ import { ReferralsModule } from '../referrals/referrals.module';
     SafetyModule,
     ReferralsModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AdminAuthController],
   providers: [
     JwtStrategy,
     AuthService,

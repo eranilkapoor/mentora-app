@@ -29,7 +29,7 @@ import {
 import { AdmissionsService } from '../services/admissions.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('admissions')
+@Controller('admin/admissions')
 export class AdmissionsController {
   constructor(private readonly service: AdmissionsService) {}
   @Post()

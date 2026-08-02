@@ -48,6 +48,10 @@ export class CreateOrganizationDto {
   @IsOptional()
   @IsString()
   primaryDomain?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'suspended'])
+  status?: string;
 }
 
 export class UpdateOrganizationDto {
@@ -155,10 +159,6 @@ export class CreateBranchDto {
   @IsMongoId()
   organizationId!: string;
 
-  @IsOptional()
-  @IsMongoId()
-  businessUnitId?: string;
-
   @IsString()
   name!: string;
 
@@ -172,34 +172,6 @@ export class CreateBranchDto {
   @IsOptional()
   @IsString()
   state?: string;
-}
-
-export class CreateBusinessUnitDto {
-  @IsMongoId()
-  organizationId!: string;
-
-  @IsString()
-  name!: string;
-
-  @IsString()
-  code!: string;
-
-  @IsOptional()
-  @IsIn([
-    'admissions',
-    'academics',
-    'marketing',
-    'sales',
-    'finance',
-    'operations',
-    'support',
-    'technology',
-  ])
-  category?: string;
-
-  @IsOptional()
-  @IsMongoId()
-  ownerId?: string;
 }
 
 export class CreateLeadSourceDto {
@@ -260,10 +232,6 @@ export class CreateDepartmentDto {
   @IsMongoId()
   organizationId!: string;
 
-  @IsOptional()
-  @IsMongoId()
-  businessUnitId?: string;
-
   @IsString()
   name!: string;
 
@@ -275,17 +243,20 @@ export class CreateDepartmentDto {
   branchId?: string;
 
   @IsOptional()
-  @IsIn(['admissions', 'sales', 'marketing', 'finance', 'academics', 'ops'])
+  @IsIn([
+    'admissions',
+    'sales',
+    'marketing',
+    'finance',
+    'academics',
+    'operations',
+  ])
   function?: string;
 }
 
 export class CreateTeamDto {
   @IsMongoId()
   organizationId!: string;
-
-  @IsOptional()
-  @IsMongoId()
-  businessUnitId?: string;
 
   @IsString()
   name!: string;
@@ -309,38 +280,6 @@ export class CreateTeamDto {
   @IsOptional()
   @IsObject()
   capacityRules?: Record<string, unknown>;
-}
-
-export class CreateCampusDto {
-  @IsMongoId()
-  organizationId!: string;
-
-  @IsOptional()
-  @IsMongoId()
-  businessUnitId?: string;
-
-  @IsString()
-  name!: string;
-
-  @IsString()
-  code!: string;
-
-  @IsOptional()
-  @IsMongoId()
-  branchId?: string;
-
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsObject()
-  operatingHours?: Record<string, unknown>;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  holidays?: string[];
 }
 
 export class UpsertOrganizationBrandingDto {
@@ -406,16 +345,6 @@ export class UpsertOrganizationUserDto {
   @IsOptional()
   @IsArray()
   @IsMongoId({ each: true })
-  businessUnitIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  campusIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
   branchIds?: string[];
 
   @IsOptional()
@@ -455,16 +384,6 @@ export class CreateOrganizationUserDto {
 
   @IsIn(EDUCATION_PLATFORM_USER_ROLES)
   role!: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  businessUnitIds?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsMongoId({ each: true })
-  campusIds?: string[];
 
   @IsOptional()
   @IsArray()

@@ -25,7 +25,7 @@ import {
 import { CampaignsService } from '../services/campaigns.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('campaigns')
+@Controller('admin/campaigns')
 export class CampaignsController {
   constructor(private readonly service: CampaignsService) {}
 

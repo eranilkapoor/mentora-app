@@ -37,7 +37,7 @@ import {
 import { LeadsService } from '../services/leads.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('leads')
+@Controller('admin/leads')
 export class LeadsController {
   constructor(private readonly service: LeadsService) {}
 

@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const response = await fetch(`${apiBaseUrl}/api/v1/leads/public`, {
+  const response = await fetch(`${apiBaseUrl}/api/v1/leads/capture`, {
     body: JSON.stringify({
       tenantCode,
       firstName,

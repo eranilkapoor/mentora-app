@@ -25,7 +25,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { WhatsappService } from '../services/whatsapp.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('whatsapp')
+@Controller('admin/whatsapp')
 export class WhatsappController {
   constructor(private readonly service: WhatsappService) {}
   @Post() @Permissions(Permission.CRM_COMMUNICATION_MANAGE) async create(

@@ -1,6 +1,6 @@
 import { IsEmail, IsObject, IsOptional, IsString } from 'class-validator';
 
-export class PublicLeadCaptureDto {
+export class LeadCaptureDto {
   @IsString()
   organizationCode!: string;
 

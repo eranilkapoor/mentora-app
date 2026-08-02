@@ -21,8 +21,6 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateBranchDto,
-  CreateBusinessUnitDto,
-  CreateCampusDto,
   CreateDepartmentDto,
   CreateLeadSourceDto,
   CreateLeadStageDto,
@@ -39,7 +37,7 @@ import {
 import { OrganizationsService } from '../services/organizations.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller()
+@Controller('admin')
 export class OrganizationsController {
   constructor(private readonly service: OrganizationsService) {}
 
@@ -98,27 +96,6 @@ export class OrganizationsController {
     );
   }
 
-  @Post('business-units')
-  @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
-  async createBusinessUnit(@Body() dto: CreateBusinessUnitDto) {
-    return successResponse(
-      await this.service.createBusinessUnit(dto),
-      'EDUCATION_PLATFORM_BUSINESS_UNIT_CREATED',
-      'CRM business unit created',
-    );
-  }
-
-  @Get('business-units')
-  @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listBusinessUnits(@Query('organizationId') organizationId: string) {
-    return successResponse(
-      await this.service.listBusinessUnits(organizationId),
-      'EDUCATION_PLATFORM_BUSINESS_UNITS_FETCHED',
-      'CRM business units fetched',
-    );
-  }
-
   @Get('identity/hierarchy')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
   async getIdentityHierarchy(@Query('organizationId') organizationId: string) {
@@ -136,6 +113,32 @@ export class OrganizationsController {
       await this.service.listBranches(organizationId),
       'EDUCATION_PLATFORM_BRANCHES_FETCHED',
       'CRM branches fetched',
+    );
+  }
+
+  @Delete('branches/:id')
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  async archiveBranch(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.updateBranchStatus(id, organizationId, 'inactive'),
+      'EDUCATION_PLATFORM_BRANCH_ARCHIVED',
+      'CRM branch archived',
+    );
+  }
+
+  @Post('branches/:id/restore')
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  async restoreBranch(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.updateBranchStatus(id, organizationId, 'active'),
+      'EDUCATION_PLATFORM_BRANCH_RESTORED',
+      'CRM branch restored',
     );
   }
 
@@ -202,6 +205,32 @@ export class OrganizationsController {
     );
   }
 
+  @Delete('departments/:id')
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  async archiveDepartment(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.updateDepartmentStatus(id, organizationId, 'inactive'),
+      'EDUCATION_PLATFORM_DEPARTMENT_ARCHIVED',
+      'CRM department archived',
+    );
+  }
+
+  @Post('departments/:id/restore')
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  async restoreDepartment(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.updateDepartmentStatus(id, organizationId, 'active'),
+      'EDUCATION_PLATFORM_DEPARTMENT_RESTORED',
+      'CRM department restored',
+    );
+  }
+
   @Post('teams')
   @HttpCode(HttpStatus.CREATED)
   @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
@@ -223,24 +252,29 @@ export class OrganizationsController {
     );
   }
 
-  @Post('campuses')
-  @HttpCode(HttpStatus.CREATED)
+  @Delete('teams/:id')
   @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
-  async createCampus(@Body() dto: CreateCampusDto) {
+  async archiveTeam(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
     return successResponse(
-      await this.service.createCampus(dto),
-      'EDUCATION_PLATFORM_CAMPUS_CREATED',
-      'CRM campus created',
+      await this.service.updateTeamStatus(id, organizationId, 'inactive'),
+      'EDUCATION_PLATFORM_TEAM_ARCHIVED',
+      'CRM team archived',
     );
   }
 
-  @Get('campuses')
-  @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listCampuses(@Query('organizationId') organizationId: string) {
+  @Post('teams/:id/restore')
+  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  async restoreTeam(
+    @Param('id') id: string,
+    @Query('organizationId') organizationId: string,
+  ) {
     return successResponse(
-      await this.service.listCampuses(organizationId),
-      'EDUCATION_PLATFORM_CAMPUSES_FETCHED',
-      'CRM campuses fetched',
+      await this.service.updateTeamStatus(id, organizationId, 'active'),
+      'EDUCATION_PLATFORM_TEAM_RESTORED',
+      'CRM team restored',
     );
   }
 

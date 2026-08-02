@@ -21,8 +21,6 @@ import {
 } from '@/modules/contexts/schemas/contexts.schema';
 import {
   CreateBranchDto,
-  CreateBusinessUnitDto,
-  CreateCampusDto,
   CreateDepartmentDto,
   CreateLeadSourceDto,
   CreateLeadStageDto,
@@ -39,10 +37,6 @@ import {
 import {
   Branch,
   BranchDocument,
-  BusinessUnit,
-  BusinessUnitDocument,
-  Campus,
-  CampusDocument,
   ChannelSetting,
   ChannelSettingDocument,
   Department,
@@ -64,16 +58,12 @@ export class OrganizationsService {
   constructor(
     @InjectModel(Organization.name)
     private readonly organizations: Model<OrganizationDocument>,
-    @InjectModel(BusinessUnit.name)
-    private readonly businessUnits: Model<BusinessUnitDocument>,
     @InjectModel(Branch.name)
     private readonly branches: Model<BranchDocument>,
     @InjectModel(Department.name)
     private readonly departments: Model<DepartmentDocument>,
     @InjectModel(Team.name)
     private readonly teams: Model<TeamDocument>,
-    @InjectModel(Campus.name)
-    private readonly campuses: Model<CampusDocument>,
     @InjectModel(OrganizationBranding.name)
     private readonly branding: Model<OrganizationBrandingDocument>,
     @InjectModel(ChannelSetting.name)
@@ -189,35 +179,10 @@ export class OrganizationsService {
       {
         ...dto,
         organizationId,
-        businessUnitId: toOptionalObjectId(dto.businessUnitId),
         code: dto.code.toUpperCase(),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
-  }
-
-  async createBusinessUnit(dto: CreateBusinessUnitDto) {
-    const organizationId = toOrganizationObjectId(dto.organizationId);
-    return this.businessUnits.findOneAndUpdate(
-      { organizationId, code: dto.code.toUpperCase() },
-      {
-        ...dto,
-        organizationId,
-        code: dto.code.toUpperCase(),
-        ownerId: toOptionalObjectId(dto.ownerId),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-  }
-
-  async listBusinessUnits(organizationId: string) {
-    return this.businessUnits
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
-      })
-      .sort({ name: 1 })
-      .lean();
   }
 
   async listBranches(organizationId: string) {
@@ -251,6 +216,19 @@ export class OrganizationsService {
     );
 
     return [branch.toObject()];
+  }
+
+  async updateBranchStatus(id: string, organizationId: string, status: string) {
+    return this.branches
+      .findOneAndUpdate(
+        {
+          _id: toRequiredObjectId(id),
+          organizationId: toOrganizationObjectId(organizationId),
+        },
+        { status },
+        { new: true },
+      )
+      .lean();
   }
   async createLeadSource(dto: CreateLeadSourceDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
@@ -297,7 +275,6 @@ export class OrganizationsService {
       {
         ...dto,
         organizationId,
-        businessUnitId: toOptionalObjectId(dto.businessUnitId),
         branchId: toOptionalObjectId(dto.branchId),
         code: dto.code.toUpperCase(),
       },
@@ -315,6 +292,23 @@ export class OrganizationsService {
       .lean();
   }
 
+  async updateDepartmentStatus(
+    id: string,
+    organizationId: string,
+    status: string,
+  ) {
+    return this.departments
+      .findOneAndUpdate(
+        {
+          _id: toRequiredObjectId(id),
+          organizationId: toOrganizationObjectId(organizationId),
+        },
+        { status },
+        { new: true },
+      )
+      .lean();
+  }
+
   async createTeam(dto: CreateTeamDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.teams.findOneAndUpdate(
@@ -323,7 +317,6 @@ export class OrganizationsService {
         ...dto,
         organizationId,
         code: dto.code.toUpperCase(),
-        businessUnitId: toOptionalObjectId(dto.businessUnitId),
         departmentId: toOptionalObjectId(dto.departmentId),
         managerId: toOptionalObjectId(dto.managerId),
         memberIds: dto.memberIds?.map((id) => toRequiredObjectId(id)) ?? [],
@@ -342,28 +335,16 @@ export class OrganizationsService {
       .lean();
   }
 
-  async createCampus(dto: CreateCampusDto) {
-    const organizationId = toOrganizationObjectId(dto.organizationId);
-    return this.campuses.findOneAndUpdate(
-      { organizationId, code: dto.code.toUpperCase() },
-      {
-        ...dto,
-        organizationId,
-        businessUnitId: toOptionalObjectId(dto.businessUnitId),
-        branchId: toOptionalObjectId(dto.branchId),
-        code: dto.code.toUpperCase(),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-  }
-
-  async listCampuses(organizationId: string) {
-    return this.campuses
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
-      })
-      .sort({ name: 1 })
+  async updateTeamStatus(id: string, organizationId: string, status: string) {
+    return this.teams
+      .findOneAndUpdate(
+        {
+          _id: toRequiredObjectId(id),
+          organizationId: toOrganizationObjectId(organizationId),
+        },
+        { status },
+        { new: true },
+      )
       .lean();
   }
 
@@ -414,9 +395,6 @@ export class OrganizationsService {
         ...dto,
         userId,
         organizationId,
-        businessUnitIds:
-          dto.businessUnitIds?.map((id) => toRequiredObjectId(id)) ?? [],
-        campusIds: dto.campusIds?.map((id) => toRequiredObjectId(id)) ?? [],
         branchIds: dto.branchIds?.map((id) => toRequiredObjectId(id)) ?? [],
         departmentIds:
           dto.departmentIds?.map((id) => toRequiredObjectId(id)) ?? [],
@@ -443,8 +421,6 @@ export class OrganizationsService {
       this.memberships
         .find(filter)
         .populate('userId', 'email phone status roles permissions lastLoginAt')
-        .populate('businessUnitIds', 'name code category status')
-        .populate('campusIds', 'name code branchId address status')
         .populate('branchIds', 'name code city state status')
         .populate('departmentIds', 'name code branchId function status')
         .populate('teamIds', 'name code departmentId status')
@@ -532,8 +508,6 @@ export class OrganizationsService {
     });
 
     const membership = await this.upsertOrganizationUser({
-      businessUnitIds: dto.businessUnitIds,
-      campusIds: dto.campusIds,
       branchIds: dto.branchIds,
       departmentIds: dto.departmentIds,
       teamIds: dto.teamIds,
@@ -555,30 +529,19 @@ export class OrganizationsService {
   }
 
   async getIdentityHierarchy(organizationId: string) {
-    const [
-      organization,
-      businessUnits,
-      campuses,
-      branches,
-      departments,
-      teams,
-      users,
-    ] = await Promise.all([
-      this.organizations
-        .findById(toOrganizationObjectId(organizationId))
-        .lean(),
-      this.listBusinessUnits(organizationId),
-      this.listCampuses(organizationId),
-      this.listBranches(organizationId),
-      this.listDepartments(organizationId),
-      this.listTeams(organizationId),
-      this.listOrganizationUsers({ organizationId, limit: '100' }),
-    ]);
+    const [organization, branches, departments, teams, users] =
+      await Promise.all([
+        this.organizations
+          .findById(toOrganizationObjectId(organizationId))
+          .lean(),
+        this.listBranches(organizationId),
+        this.listDepartments(organizationId),
+        this.listTeams(organizationId),
+        this.listOrganizationUsers({ organizationId, limit: '100' }),
+      ]);
 
     return {
       organization,
-      businessUnits,
-      campuses,
       branches,
       departments,
       teams,

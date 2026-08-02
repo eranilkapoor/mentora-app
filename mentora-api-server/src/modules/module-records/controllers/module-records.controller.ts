@@ -28,7 +28,7 @@ import { ModuleCoverageService } from '../services/module-coverage.service';
 import { ModuleRecordsService } from '../services/module-records.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('module-records')
+@Controller('admin/module-records')
 export class ModuleRecordsController {
   constructor(
     private readonly service: ModuleRecordsService,

@@ -19,7 +19,7 @@ import { UpsertIntegrationProviderDto } from '../dto/integrations.dto';
 import { IntegrationsService } from '../services/integrations.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('integrations')
+@Controller('admin/integrations')
 export class IntegrationsController {
   constructor(private readonly service: IntegrationsService) {}
 

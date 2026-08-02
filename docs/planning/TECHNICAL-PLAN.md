@@ -26,24 +26,22 @@ CRM identity and access management uses this hierarchy:
 ```text
 Platform
 └── Organization / Organization
-    ├── Business Unit
-    ├── Campus
     ├── Branch
     ├── Department
     ├── Team
     └── Users / Memberships
 ```
 
-Organization-scoped CRM users are stored as `users` plus `user_memberships`. A membership can carry business-unit, campus, branch, department, and team scope IDs, plus the CRM role and explicit permission overrides. Super admins can operate across all organizations; other users are constrained by active organization membership and optional scoped IDs.
+Organization-scoped CRM users are stored as `users` plus `user_memberships`. A membership can carry branch, department, and team scope IDs, plus the CRM role and explicit permission overrides. Super admins can operate across all organizations; other users are constrained by active organization membership and optional scoped IDs.
 
-IAM APIs include `business-units`, `campuses`, `branches`, `departments`, `teams`, `organization-users`, `admin/rbac`, and `identity/hierarchy`. The CRM should use `GET /api/v1/identity/hierarchy?organizationId=...` to hydrate all hierarchy dropdowns from server data.
+IAM APIs include `admin/branches`, `admin/departments`, `admin/teams`, `admin/organization-users`, `admin/rbac`, and `admin/identity/hierarchy`. The CRM should use `GET /api/v1/admin/identity/hierarchy?organizationId=...` to hydrate all hierarchy dropdowns from server data.
 
 ## CRM Product Layers
 
 Backend module coverage and admin CRM navigation are aligned to five layers:
 
 - Platform Foundation: organization registration, subscription plans, billing, feature flags, usage limits, super admin, activation/suspension, domains, branding, global settings, and audit logs.
-- Identity and Organization: authentication, users, roles, permissions, business units, campuses, branches, departments, teams, reporting hierarchy, data visibility, login history, and device sessions.
+- Identity and Organization: authentication, users, roles, permissions, branches, departments, teams, reporting hierarchy, data visibility, login history, and device sessions.
 - Generic CRM: leads, contacts, lead sources/stages, activities, notes, tasks, follow-ups, meetings, assignments, tags, custom fields, imports/exports, and communication timeline.
 - Education-Specific Modules: academic sessions, programs, courses, specializations, applications, document verification, admissions, interviews, offers, scholarships, enrollment, fees, and student portal.
 - Growth and Automation: campaigns, landing pages, workflow automation, lead scoring, attribution, telephony, chatbots, analytics, AI assistance, and channel modules for email, SMS, WhatsApp, push, and calls.
@@ -142,6 +140,17 @@ monitoring
 cache
 audit
 ```
+
+## API Surface Boundaries
+
+Mentora now uses two clear API faces:
+
+- Customer, student, parent, and public website APIs do not use an admin prefix. Examples: `/api/v1/auth`, `/api/v1/students`, `/api/v1/learning`, `/api/v1/payments`, `/api/v1/subscriptions`, `/api/v1/settings`, `/api/v1/support/tickets`, `/api/v1/notifications`, `/api/v1/feature-flags`, and `/api/v1/leads/capture`.
+- CRM, super admin, organization admin, counselor, finance, marketing, call center, and operations APIs use `/api/v1/admin/...`. Examples: `/api/v1/admin/auth/login`, `/api/v1/admin/dashboard/bootstrap`, `/api/v1/admin/organizations`, `/api/v1/admin/branches`, `/api/v1/admin/leads`, `/api/v1/admin/applications`, `/api/v1/admin/admissions`, `/api/v1/admin/tasks`, `/api/v1/admin/reports`, and `/api/v1/admin/security-policies`.
+
+Feature flags remain a customer/runtime capability. Admin access control is governed by RBAC, memberships, organization context, branch context, security policies, audit logs, and session controls, not feature flags.
+
+Support and leads are shared domains with separate API faces where needed: public lead capture uses `/api/v1/leads/capture`, CRM lead management uses `/api/v1/admin/leads`, customer support uses `/api/v1/support/tickets`, and CRM support operations use `/api/v1/admin/support/tickets`.
 
 ## AI Access Guard
 
@@ -313,12 +322,12 @@ POST   /api/v1/payments/verify
 Education CRM:
 
 ```text
-GET    /api/v1/dashboard/bootstrap
-GET    /api/v1/dashboard?organizationId=:organizationId
-GET    /api/v1/module-records/coverage
-GET    /api/v1/module-records?organizationId=:organizationId&moduleKey=:moduleKey
-POST   /api/v1/module-records
-POST   /api/v1/module-records/:recordId
+GET    /api/v1/admin/dashboard/bootstrap
+GET    /api/v1/admin/dashboard?organizationId=:organizationId
+GET    /api/v1/admin/module-records/coverage
+GET    /api/v1/admin/module-records?organizationId=:organizationId&moduleKey=:moduleKey
+POST   /api/v1/admin/module-records
+POST   /api/v1/admin/module-records/:recordId
 GET    /api/v1/me/contexts
 POST   /api/v1/me/context
 ```
@@ -329,7 +338,7 @@ Public website:
 POST   /api/demo-request
 ```
 
-The public website route validates first name plus email/phone and forwards to `POST /api/v1/leads/public` when `NEXT_PUBLIC_API_BASE_URL` is configured. This keeps the browser on a same-origin endpoint and avoids CORS friction during demos.
+The public website route validates first name plus email/phone and forwards to `POST /api/v1/leads/capture` when `NEXT_PUBLIC_API_BASE_URL` is configured. This keeps the browser on a same-origin endpoint and avoids CORS friction during demos.
 
 ## Mobile Navigation
 

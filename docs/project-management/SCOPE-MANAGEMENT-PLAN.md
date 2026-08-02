@@ -13,26 +13,26 @@ Mentora will deliver a four-application Education SaaS CRM and AI tutoring platf
 
 ## Product Scope
 
-| Product area | Included capabilities |
-| --- | --- |
-| Identity | Login, sessions, roles, permissions, organization memberships, context switching, MFA/SSO configuration surfaces. |
-| Organization | Organizations, branches, departments, teams, campuses, domains, branding, channel settings. |
-| CRM | Leads, applications, admissions, tasks, campaigns, communications, call center, WhatsApp, email, SMS, interviews, scholarships, events, field force, reports, analytics, workflows. |
-| Learning | Students, parents, relationships, academic records, subjects, schedules, entitlements, AI tutor, classrooms, assessments, progress. |
-| Finance | Payments, subscriptions, invoices, refunds, finance ledgers, reconciliation, accounting export metadata. |
-| Security | Security policies, audit logs, access review, retention controls, token/session behavior, organization isolation. |
-| Public website | Brand, legal pages, plans, support, lead/demo capture. |
-| Operations | Deployment, database runbook, monitoring, secrets, launch, production readiness. |
+| Product area   | Included capabilities                                                                                                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity       | Login, sessions, roles, permissions, organization memberships, context switching, MFA/SSO configuration surfaces.                                                                   |
+| Organization   | Organizations, branches, departments, teams, domains, branding, channel settings.                                                                                                   |
+| CRM            | Leads, applications, admissions, tasks, campaigns, communications, call center, WhatsApp, email, SMS, interviews, scholarships, events, field force, reports, analytics, workflows. |
+| Learning       | Students, parents, relationships, academic records, subjects, schedules, entitlements, AI tutor, classrooms, assessments, progress.                                                 |
+| Finance        | Payments, subscriptions, invoices, refunds, finance ledgers, reconciliation, accounting export metadata.                                                                            |
+| Security       | Security policies, audit logs, access review, retention controls, token/session behavior, organization isolation.                                                                   |
+| Public website | Brand, legal pages, plans, support, lead/demo capture.                                                                                                                              |
+| Operations     | Deployment, database runbook, monitoring, secrets, launch, production readiness.                                                                                                    |
 
 ## Exclusions
 
-| Exclusion | Reason |
-| --- | --- |
-| Full ERP replacement | Mentora CRM manages admissions and learning operations, not every ERP function. |
-| Live provider automation without credentials | Provider workflows need vendor accounts, approvals, webhooks, and smoke tests. |
-| Production legal approval by engineering | Legal/privacy/compliance acceptance requires business/legal review. |
-| Mobile-first admin CRM | CRM target is desktop/tablet. |
-| Proprietary competitor copying | Mentora may be functionally comparable, but must use Mentora-owned UX, code, content, and branding. |
+| Exclusion                                    | Reason                                                                                              |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Full ERP replacement                         | Mentora CRM manages admissions and learning operations, not every ERP function.                     |
+| Live provider automation without credentials | Provider workflows need vendor accounts, approvals, webhooks, and smoke tests.                      |
+| Production legal approval by engineering     | Legal/privacy/compliance acceptance requires business/legal review.                                 |
+| Mobile-first admin CRM                       | CRM target is desktop/tablet.                                                                       |
+| Proprietary competitor copying               | Mentora may be functionally comparable, but must use Mentora-owned UX, code, content, and branding. |
 
 ## Scope Baseline
 

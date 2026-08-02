@@ -4,8 +4,6 @@ import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants'
 import { EDUCATION_PLATFORM_USER_ROLES } from '@/common/constants/education-platform.constants';
 import {
   Branch,
-  BusinessUnit,
-  Campus,
   Department,
   Team,
   Organization,
@@ -28,12 +26,6 @@ export class UserMembership {
     index: true,
   })
   organizationId!: Types.ObjectId;
-
-  @Prop({ type: [Types.ObjectId], ref: BusinessUnit.name, default: [] })
-  businessUnitIds!: Types.ObjectId[];
-
-  @Prop({ type: [Types.ObjectId], ref: Campus.name, default: [] })
-  campusIds!: Types.ObjectId[];
 
   @Prop({ type: [Types.ObjectId], ref: Branch.name, default: [] })
   branchIds!: Types.ObjectId[];

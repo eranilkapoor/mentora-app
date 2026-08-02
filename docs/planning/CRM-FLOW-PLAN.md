@@ -9,7 +9,7 @@ CRM user opens admin CRM
   -> login with seeded or created CRM credentials
   -> backend validates user, roles, permissions, active session
   -> frontend restores/persists session until logout or expiry
-  -> frontend calls GET /api/v1/dashboard/bootstrap
+  -> frontend calls GET /api/v1/admin/dashboard/bootstrap
   -> backend returns allowed organization contexts, active organization, dashboard metrics, module coverage
   -> user lands on dashboard
   -> organization/branch switcher is shown only to users with the right scope
@@ -28,8 +28,7 @@ Required API behavior:
 ```text
 Super admin or organization admin opens Organization Management
   -> create organization for university, college, school, coaching brand, institute, franchise
-  -> add branches/campuses/franchises
-  -> add departments and teams
+  -> manage Branches, Departments, and Teams from their own CRM pages
   -> configure lead sources and stages
   -> configure branding and domains
   -> configure channel settings
@@ -38,14 +37,20 @@ Super admin or organization admin opens Organization Management
 
 Primary APIs:
 
-- `POST /api/v1/organizations` (organization create API)
-- `GET /api/v1/organizations` (organization list API)
-- `POST /api/v1/branches`
-- `POST /api/v1/departments`
-- `POST /api/v1/teams`
-- `POST /api/v1/organization-branding`
-- `POST /api/v1/channel-settings`
-- `POST /api/v1/organization-users/create`
+- `POST /api/v1/admin/organizations` (organization create API)
+- `GET /api/v1/admin/organizations` (organization list API)
+- `POST /api/v1/admin/branches`
+- `DELETE /api/v1/admin/branches/:id`
+- `POST /api/v1/admin/branches/:id/restore`
+- `POST /api/v1/admin/departments`
+- `DELETE /api/v1/admin/departments/:id`
+- `POST /api/v1/admin/departments/:id/restore`
+- `POST /api/v1/admin/teams`
+- `DELETE /api/v1/admin/teams/:id`
+- `POST /api/v1/admin/teams/:id/restore`
+- `POST /api/v1/admin/organization-branding`
+- `POST /api/v1/admin/channel-settings`
+- `POST /api/v1/admin/organization-users/create`
 
 External-only items:
 
@@ -75,18 +80,18 @@ Lead enters from website, ads, WhatsApp, walk-in, import, or API
 
 Primary APIs:
 
-- `POST /api/v1/leads`
-- `POST /api/v1/leads/operations/duplicates`
-- `POST /api/v1/leads/operations/import`
-- `GET /api/v1/leads/operations/export`
-- `POST /api/v1/leads/:id/score`
-- `POST /api/v1/leads/:id/tags`
-- `POST /api/v1/applications`
-- `POST /api/v1/applications/:id/review`
-- `POST /api/v1/applications/:id/decision`
-- `POST /api/v1/admissions`
-- `POST /api/v1/admissions/:id/allocate`
-- `POST /api/v1/admissions/:id/handoff`
+- `POST /api/v1/admin/leads`
+- `POST /api/v1/admin/leads/operations/duplicates`
+- `POST /api/v1/admin/leads/operations/import`
+- `GET /api/v1/admin/leads/operations/export`
+- `POST /api/v1/admin/leads/:id/score`
+- `POST /api/v1/admin/leads/:id/tags`
+- `POST /api/v1/admin/applications`
+- `POST /api/v1/admin/applications/:id/review`
+- `POST /api/v1/admin/applications/:id/decision`
+- `POST /api/v1/admin/admissions`
+- `POST /api/v1/admin/admissions/:id/allocate`
+- `POST /api/v1/admin/admissions/:id/handoff`
 
 ## Engagement Flow
 
@@ -102,13 +107,13 @@ Marketing/admin opens Campaigns or Communications
 
 Primary APIs:
 
-- `POST /api/v1/campaigns`
-- `POST /api/v1/campaigns/:id/metrics`
+- `POST /api/v1/admin/campaigns`
+- `POST /api/v1/admin/campaigns/:id/metrics`
 - `POST /api/v1/communications`
 - `POST /api/v1/admin/notifications`
 - `GET /api/v1/admin/notifications/templates`
 - `GET /api/v1/admin/notifications/analytics`
-- `POST /api/v1/integrations/providers/:providerKey`
+- `POST /api/v1/admin/integrations/providers/:providerKey`
 
 External-only items:
 
@@ -159,9 +164,9 @@ Admissions user opens Scholarship or Interview
 
 Primary APIs:
 
-- `POST /api/v1/scholarships`
-- `POST /api/v1/scholarships/:id/evaluate`
-- `POST /api/v1/scholarships/:id/decision`
+- `POST /api/v1/admin/scholarships`
+- `POST /api/v1/admin/scholarships/:id/evaluate`
+- `POST /api/v1/admin/scholarships/:id/decision`
 - `POST /api/v1/interviews`
 - `POST /api/v1/interviews/:id`
 - `POST /api/v1/interviews/:id/complete`
@@ -179,17 +184,17 @@ Operations/admin user opens tasks, calendar, documents, events, field force
   -> manage SLA, reminder, comment, escalation, reassignment, completion
   -> create calendar/interview/event schedule metadata
   -> upload/request/verify documents
-  -> create event registration/attendance/QR/webinar/campus visit metadata
+  -> create event registration/attendance/QR/webinar/branch visit metadata
   -> create field visit, route, geo, mileage, check-in/out metadata
 ```
 
 Primary APIs:
 
-- `POST /api/v1/tasks`
-- `POST /api/v1/tasks/:id/workflow`
-- `POST /api/v1/documents`
-- `GET /api/v1/documents`
-- `POST /api/v1/documents/:id/verify`
+- `POST /api/v1/admin/tasks`
+- `POST /api/v1/admin/tasks/:id/workflow`
+- `POST /api/v1/admin/documents`
+- `GET /api/v1/admin/documents`
+- `POST /api/v1/admin/documents/:id/verify`
 - `POST /api/v1/events`
 - `POST /api/v1/events/:id`
 - `POST /api/v1/events/:id/complete`
@@ -220,9 +225,9 @@ Primary APIs:
 
 - `POST /api/v1/payments`
 - `GET /api/v1/payments`
-- `POST /api/v1/finance-ledgers`
-- `POST /api/v1/finance-ledgers/:id/reconcile`
-- `POST /api/v1/finance-ledgers/:id/complete`
+- `POST /api/v1/admin/finance-ledgers`
+- `POST /api/v1/admin/finance-ledgers/:id/reconcile`
+- `POST /api/v1/admin/finance-ledgers/:id/complete`
 
 External-only items:
 
@@ -244,13 +249,13 @@ Management user opens Dashboard, Reports, Analytics, or AI Features
 
 Primary APIs:
 
-- `GET /api/v1/dashboard/bootstrap`
-- `GET /api/v1/dashboard`
-- `POST /api/v1/reports/definitions`
-- `POST /api/v1/reports/export-jobs`
-- `GET /api/v1/module-records/coverage`
-- `GET /api/v1/module-records/export`
-- `POST /api/v1/module-records`
+- `GET /api/v1/admin/dashboard/bootstrap`
+- `GET /api/v1/admin/dashboard`
+- `POST /api/v1/admin/reports/definitions`
+- `POST /api/v1/admin/reports/export-jobs`
+- `GET /api/v1/admin/module-records/coverage`
+- `GET /api/v1/admin/module-records/export`
+- `POST /api/v1/admin/module-records`
 - `POST /api/v1/analytics`
 
 External-only items:
@@ -273,10 +278,10 @@ Admin opens Integrations or Security
 
 Primary APIs:
 
-- `GET /api/v1/integrations/providers`
-- `PUT /api/v1/integrations/providers/:providerKey`
-- `GET /api/v1/security-policies`
-- `PUT /api/v1/security-policies`
+- `GET /api/v1/admin/integrations/providers`
+- `PUT /api/v1/admin/integrations/providers/:providerKey`
+- `GET /api/v1/admin/security-policies`
+- `PUT /api/v1/admin/security-policies`
 - `GET /api/v1/admin/audit-logs`
 
 External-only items:

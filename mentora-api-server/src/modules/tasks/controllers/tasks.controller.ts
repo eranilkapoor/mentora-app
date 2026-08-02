@@ -27,7 +27,7 @@ import {
 import { TasksService } from '../services/tasks.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('tasks')
+@Controller('admin/tasks')
 export class TasksController {
   constructor(private readonly service: TasksService) {}
 

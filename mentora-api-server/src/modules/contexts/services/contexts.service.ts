@@ -27,9 +27,6 @@ export class ContextsService {
         ...dto,
         userId,
         organizationId,
-        businessUnitIds:
-          dto.businessUnitIds?.map((id) => toRequiredObjectId(id)) ?? [],
-        campusIds: dto.campusIds?.map((id) => toRequiredObjectId(id)) ?? [],
         branchIds: dto.branchIds?.map((id) => toRequiredObjectId(id)) ?? [],
         departmentIds:
           dto.departmentIds?.map((id) => toRequiredObjectId(id)) ?? [],
@@ -43,8 +40,6 @@ export class ContextsService {
     return this.memberships
       .find({ userId: toRequiredObjectId(userId), status: 'active' })
       .populate('organizationId', 'name code type status')
-      .populate('businessUnitIds', 'name code category status')
-      .populate('campusIds', 'name code branchId address status')
       .populate('branchIds', 'name code city state status')
       .populate('departmentIds', 'name code branchId function status')
       .populate('teamIds', 'name code departmentId managerId status')
@@ -81,8 +76,6 @@ export class ContextsService {
         status: 'active',
       })
       .populate('organizationId', 'name code type status')
-      .populate('businessUnitIds', 'name code category status')
-      .populate('campusIds', 'name code branchId address status')
       .populate('branchIds', 'name code city state status')
       .populate('departmentIds', 'name code branchId function status')
       .populate('teamIds', 'name code departmentId managerId status')
@@ -94,16 +87,6 @@ export class ContextsService {
       );
     }
 
-    this.assertScopedId(
-      membership.businessUnitIds,
-      dto.businessUnitId,
-      'Education CRM business unit is not available for this user',
-    );
-    this.assertScopedId(
-      membership.campusIds,
-      dto.campusId,
-      'Education CRM campus is not available for this user',
-    );
     this.assertScopedId(
       membership.branchIds,
       dto.branchId,
@@ -122,16 +105,12 @@ export class ContextsService {
 
     return {
       organizationId: dto.organizationId,
-      businessUnitId: dto.businessUnitId,
-      campusId: dto.campusId,
       branchId: dto.branchId,
       departmentId: dto.departmentId,
       teamId: dto.teamId,
       role: membership.role,
       permissions: membership.permissions,
       organization: membership.organizationId,
-      businessUnits: membership.businessUnitIds,
-      campuses: membership.campusIds,
       branches: membership.branchIds,
       departments: membership.departmentIds,
       teams: membership.teamIds,

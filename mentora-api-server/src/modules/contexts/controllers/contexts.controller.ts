@@ -15,7 +15,7 @@ import { SelectContextDto, UpsertUserMembershipDto } from '../dto/contexts.dto';
 import { ContextsService } from '../services/contexts.service';
 
 @UseGuards(JwtAuthGuard)
-@Controller()
+@Controller('admin')
 export class ContextsController {
   constructor(private readonly service: ContextsService) {}
 

@@ -3,12 +3,7 @@ import type { AdminModule, IconName, ModuleStatus } from "./adminTypes";
 
 export type ThemeMode = "system" | "light" | "dark";
 export type OrganizationSetupKind =
-  | "branch"
-  | "campus"
-  | "department"
-  | "team"
-  | "branding"
-  | "channel";
+  "branch" | "department" | "team" | "branding" | "channel";
 
 export const dedicatedAdminModuleIds = new Set([
   "admissions",
@@ -30,6 +25,12 @@ export const dedicatedAdminModuleIds = new Set([
   "sms",
   "tasks",
   "whatsapp",
+]);
+
+export const organizationStructureModuleIds = new Set([
+  "branches",
+  "departments",
+  "teams",
 ]);
 
 export const readonlyFormColumns = new Set([
@@ -83,6 +84,7 @@ export const moduleIcons: Record<string, IconName> = {
   automation: "automation",
   billing: "payment",
   branding: "organization",
+  branches: "building",
   calendar: "calendar",
   "call-center": "headset",
   campaigns: "campaign",
@@ -92,11 +94,11 @@ export const moduleIcons: Record<string, IconName> = {
   courses: "graduation",
   "custom-fields": "settings",
   dashboard: "dashboard",
+  departments: "organization",
   documents: "document",
   emails: "mail",
   enrollment: "check",
   fees: "finance",
-  "feature-flags": "settings",
   "follow-ups": "calendar",
   "global-settings": "settings",
   "imports-exports": "report",
@@ -129,8 +131,8 @@ export const moduleIcons: Record<string, IconName> = {
   support: "chat",
   students: "user",
   tasks: "task",
+  teams: "user",
   telephony: "headset",
-  "usage-limits": "analytics",
   users: "user",
   whatsapp: "chat",
 };
@@ -248,13 +250,15 @@ export const moduleActions: Record<string, string[]> = {
   organizations: [
     "Create Organization",
     "Create Branch",
-    "Create Campus",
     "Create Department",
     "Create Team",
     "Update Branding",
     "Configure Channel",
     "Export Setup",
   ],
+  branches: ["Create Branch", "Export Setup", "Audit"],
+  departments: ["Create Department", "Export Setup", "Audit"],
+  teams: ["Create Team", "Export Setup", "Audit"],
   reports: [
     "Create Report",
     "Saved Report",
@@ -353,7 +357,7 @@ export const moduleActions: Record<string, string[]> = {
     "Attendance",
     "QR Check-in",
     "Webinar",
-    "Campus Visit",
+    "Branch Visit",
     "Event Lead Capture",
     "Complete",
   ],
@@ -406,42 +410,48 @@ export const securityControlGroups = [
     icon: "user" as IconName,
     title: "RBAC & Access",
     metric: "42 roles",
-    description: "Roles, permissions, teams, departments, and organization memberships.",
+    description:
+      "Roles, permissions, teams, departments, and organization memberships.",
     actions: ["Manage RBAC", "Review Access", "Export Users"],
   },
   {
     icon: "report" as IconName,
     title: "Audit & Activity",
     metric: "18.4k events",
-    description: "Audit logs, admin activity, session history, and sensitive changes.",
+    description:
+      "Audit logs, admin activity, session history, and sensitive changes.",
     actions: ["Audit Export", "Activity Logs"],
   },
   {
     icon: "shield" as IconName,
     title: "Network Controls",
     metric: "6 rules",
-    description: "IP restrictions, VPN allowlists, device/session rules, and geo policy.",
+    description:
+      "IP restrictions, VPN allowlists, device/session rules, and geo policy.",
     actions: ["Load Policy", "Update Policy"],
   },
   {
     icon: "lock" as IconName,
     title: "Data Protection",
     metric: "9 policies",
-    description: "Data masking, encryption policy, backups, retention, and admin exports.",
+    description:
+      "Data masking, encryption policy, backups, retention, and admin exports.",
     actions: ["Update Policy", "Audit Export"],
   },
   {
     icon: "integration" as IconName,
     title: "Identity Providers",
     metric: "2 providers",
-    description: "2FA, SSO, Microsoft/Google login, password policy, and recovery rules.",
+    description:
+      "2FA, SSO, Microsoft/Google login, password policy, and recovery rules.",
     actions: ["Update Policy", "Configure Provider"],
   },
   {
     icon: "settings" as IconName,
     title: "Compliance Ops",
     metric: "12 checks",
-    description: "Scheduled exports, backup verification, legal hold, and compliance review.",
+    description:
+      "Scheduled exports, backup verification, legal hold, and compliance review.",
     actions: ["Audit Export", "Schedule Report"],
   },
 ];
@@ -506,11 +516,8 @@ export const navGroups = [
     items: [
       "dashboard",
       "platform-foundation",
-      "organizations",
       "billing",
       "payments",
-      "feature-flags",
-      "usage-limits",
       "branding",
       "global-settings",
       "audit-logs",
@@ -518,7 +525,15 @@ export const navGroups = [
   },
   {
     title: "Identity & Organization",
-    items: ["authentication", "users", "organizations", "security"],
+    items: [
+      "authentication",
+      "users",
+      "organizations",
+      "branches",
+      "departments",
+      "teams",
+      "security",
+    ],
   },
   {
     title: "Generic CRM",
@@ -844,11 +859,25 @@ export const modules: AdminModule[] = [
     description:
       "Central notification inbox, templates, delivery logs, failed queue, analytics, preferences, and provider health.",
     filters: ["Type", "Channel", "Status", "Owner"],
-    columns: ["Notification", "Channel", "Audience", "Status", "Owner", "Updated"],
+    columns: [
+      "Notification",
+      "Channel",
+      "Audience",
+      "Status",
+      "Owner",
+      "Updated",
+    ],
     rows: [
       ["Unread parent digest", "In-app", "Parents", "Pending", "Ops", "Today"],
       ["Failed SMS batch", "SMS", "Students", "Review", "Support", "Today"],
-      ["Template approval", "Email", "Leads", "Active", "Marketing", "Yesterday"],
+      [
+        "Template approval",
+        "Email",
+        "Leads",
+        "Active",
+        "Marketing",
+        "Yesterday",
+      ],
     ],
   },
   {
@@ -960,21 +989,7 @@ export const extraModules: AdminModule[] = [
     "platform-foundation",
     "Platform Foundation",
     "Platform Foundation",
-    "Organization registration, activation, suspension, subscription plans, billing, feature flags, usage limits, branding, domain mapping, global settings, and audit logs.",
-  ),
-  createLayerModule(
-    "feature-flags",
-    "Feature Flags",
-    "Platform Foundation",
-    "Organization-aware feature flags for enabling CRM, learning, billing, automation, integrations, and experimental AI capabilities.",
-    ["Flag", "Audience", "Rollout", "Status", "Owner", "Updated"],
-  ),
-  createLayerModule(
-    "usage-limits",
-    "Usage Limits",
-    "Platform Foundation",
-    "Plan and organization limits for seats, students, AI tutor minutes, campaigns, storage, API calls, devices, and concurrent sessions.",
-    ["Limit", "Plan", "Current Usage", "Threshold", "Status", "Scope"],
+    "Organization registration, activation, suspension, subscription plans, billing, branding, domain mapping, global settings, and audit logs.",
   ),
   createLayerModule(
     "billing",
@@ -1015,7 +1030,14 @@ export const extraModules: AdminModule[] = [
     columns: ["Control", "Provider", "Scope", "Owner", "Status", "Updated"],
     rows: [
       ["MFA policy", "Password + OTP", "Admins", "Security", "Active", "Today"],
-      ["Google login", "OAuth", "Organization", "Platform", "Draft", "Yesterday"],
+      [
+        "Google login",
+        "OAuth",
+        "Organization",
+        "Platform",
+        "Draft",
+        "Yesterday",
+      ],
       ["Session review", "JWT", "All users", "Security", "Active", "22 Jul"],
     ],
   },
@@ -1037,23 +1059,61 @@ export const extraModules: AdminModule[] = [
   {
     id: "organizations",
     title: "Organizations",
-    group: "Enrollment",
+    group: "Identity & Organization",
     metric: "12 organizations",
     description:
-      "Universities, colleges, institutes, schools, coaching brands, franchises, branches, departments, domains, branding, and channel settings.",
-    filters: ["Type", "Branch", "Plan", "Status"],
-    columns: [
-      "Organization",
-      "Type",
-      "Branches",
-      "Departments",
-      "Plan",
-      "Status",
-    ],
+      "Universities, colleges, institutes, schools, coaching brands, franchises, domains, branding, channel settings, and activation lifecycle.",
+    filters: ["Type", "Plan", "Status"],
+    columns: ["Organization", "Type", "Plan", "Status"],
     rows: [
-      ["Webnza Coaching", "Coaching", "4", "8", "Enterprise", "Active"],
-      ["North Campus College", "College", "2", "5", "Growth", "Active"],
-      ["Bright Future School", "School", "1", "4", "Starter", "Trial"],
+      ["Webnza Coaching", "Coaching", "Enterprise", "Active"],
+      ["North Branch College", "College", "Growth", "Active"],
+      ["Bright Future School", "School", "Starter", "Trial"],
+    ],
+  },
+  {
+    id: "branches",
+    title: "Branches",
+    group: "Identity & Organization",
+    metric: "API backed",
+    description:
+      "Branch offices or learning centers used for counselor assignment, lead ownership, admissions, finance, and operational visibility.",
+    filters: ["City", "State", "Status"],
+    columns: ["Branch", "Code", "City", "State", "Status"],
+    rows: [
+      ["Delhi Admissions", "DEL-ADM", "Delhi", "Delhi", "Active"],
+      ["Mumbai Center", "MUM-CTR", "Mumbai", "Maharashtra", "Active"],
+      ["Online Counseling", "ONL-COU", "Online", "India", "Active"],
+    ],
+  },
+  {
+    id: "departments",
+    title: "Departments",
+    group: "Identity & Organization",
+    metric: "API backed",
+    description:
+      "Functional departments such as admissions, marketing, finance, academic operations, call center, and support.",
+    filters: ["Function", "Status"],
+    columns: ["Department", "Code", "Function", "Status", "Created"],
+    rows: [
+      ["Admissions", "ADM-DEPT", "Admissions", "Active", "22 Jul"],
+      ["Finance", "FIN-DEPT", "Finance", "Active", "22 Jul"],
+      ["Academic Ops", "OPS-DEPT", "Operations", "Active", "22 Jul"],
+    ],
+  },
+  {
+    id: "teams",
+    title: "Teams",
+    group: "Identity & Organization",
+    metric: "API backed",
+    description:
+      "Operational teams for branch visibility, counselor queues, lead assignment, escalation, task routing, and reporting hierarchy.",
+    filters: ["Department", "Branch", "Status"],
+    columns: ["Team", "Code", "Department", "Branch", "Status"],
+    rows: [
+      ["North Counselors", "NORTH-COUN", "Admissions", "Delhi", "Active"],
+      ["WhatsApp Desk", "WA-DESK", "Call Center", "Online", "Active"],
+      ["Collections", "COLLECT", "Finance", "Mumbai", "Active"],
     ],
   },
   {
@@ -1319,7 +1379,7 @@ export const extraModules: AdminModule[] = [
     group: "Operations",
     metric: "14 events",
     description:
-      "Education fairs, seminars, webinars, campus visits, registrations, attendance, QR check-in, and event lead capture.",
+      "Education fairs, seminars, webinars, branch visits, registrations, attendance, QR check-in, and event lead capture.",
     filters: ["Type", "City", "Owner", "Status"],
     columns: [
       "Event",
@@ -1332,7 +1392,7 @@ export const extraModules: AdminModule[] = [
     rows: [
       ["NEET webinar", "Webinar", "640", "412", "Marketing", "Active"],
       ["Delhi education fair", "Fair", "220", "164", "Field Team", "Open"],
-      ["Campus visit", "Visit", "82", "61", "Admissions", "Completed"],
+      ["Branch visit", "Visit", "82", "61", "Admissions", "Completed"],
     ],
   },
   {
@@ -1476,7 +1536,7 @@ export const extraModules: AdminModule[] = [
     "meetings",
     "Meetings",
     "Generic CRM",
-    "Counseling meetings, demo sessions, parent meetings, campus visits, interviews, and calendar sync readiness.",
+    "Counseling meetings, demo sessions, parent meetings, branch visits, interviews, and calendar sync readiness.",
     ["Meeting", "Type", "Attendees", "Start", "Owner", "Status"],
   ),
   createLayerModule(
@@ -1603,7 +1663,14 @@ export const extraModules: AdminModule[] = [
         "Review",
         "Yesterday",
       ],
-      ["Audit export", "Organization", "Monthly", "Compliance", "Active", "22 Jul"],
+      [
+        "Audit export",
+        "Organization",
+        "Monthly",
+        "Compliance",
+        "Active",
+        "22 Jul",
+      ],
     ],
   },
 ];
@@ -1616,6 +1683,9 @@ export const productionModuleIds = new Set([
   "communications",
   "notifications",
   "organizations",
+  "branches",
+  "departments",
+  "teams",
 ]);
 
 export const workflowModuleIds = new Set([
@@ -1655,7 +1725,10 @@ export function getModuleHref(id: string) {
   return id === "dashboard" ? "/" : `/${id}`;
 }
 
-export function resolveRouteModuleId(pathname: string | null, fallback: string) {
+export function resolveRouteModuleId(
+  pathname: string | null,
+  fallback: string,
+) {
   const segment = pathname?.split("/").filter(Boolean)[0] ?? "";
   if (!segment) return "dashboard";
   if (segment === "organizations") return "organizations";
@@ -1663,4 +1736,3 @@ export function resolveRouteModuleId(pathname: string | null, fallback: string) 
   if (fallback === "organizations") return "organizations";
   return moduleMap[fallback] ? fallback : "dashboard";
 }
-

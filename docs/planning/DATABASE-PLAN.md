@@ -36,8 +36,6 @@ CRM organization and IAM hierarchy:
 
 ```text
 organizations
-business_units
-campuses
 branches
 departments
 teams
@@ -45,7 +43,7 @@ organization_branding
 channel_settings
 ```
 
-`user_memberships` links a user to one organization and can optionally scope access to one or more business units, campuses, branches, departments, and teams.
+`user_memberships` links a user to one organization and can optionally scope access to one or more branches, departments, and teams.
 
 Family and consent:
 

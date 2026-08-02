@@ -25,7 +25,7 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import { FieldForceService } from '../services/field-force.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
-@Controller('field-force')
+@Controller('admin/field-force')
 export class FieldForceController {
   constructor(private readonly service: FieldForceService) {}
   @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(
