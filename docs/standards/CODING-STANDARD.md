@@ -23,6 +23,9 @@
 | Types                 | PascalCase              | `UserPayload`             |
 | Decorators            | PascalCase              | `CurrentUser`             |
 | Environment Variables | UPPER_SNAKE_CASE        | `DATABASE_URL`            |
+| Markdown documents    | UPPER-KEBAB-CASE        | `TECHNICAL-PLAN.md`       |
+
+Markdown documentation files under `docs/` must use uppercase names with hyphen separators, except `README.md`, which remains the index filename for each folder. Code files keep the language/framework convention shown above.
 
 ---
 

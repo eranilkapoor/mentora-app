@@ -2,7 +2,7 @@
 
 Do not commit real reviewer credentials. Copy this file to:
 
-`docs/launch/REVIEWER-CREDENTIALS.private.md`
+`docs/launch/REVIEWER-CREDENTIALS-PRIVATE.md`
 
 That private file is ignored by git.
 

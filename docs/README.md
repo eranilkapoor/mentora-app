@@ -59,4 +59,4 @@ Launch files are Mentora working templates. They must be reviewed before product
 ## Standards
 
 - [Coding Standard](standards/CODING-STANDARD.md): naming, folder, file, class, function, and NestJS conventions.
-- [Pre-Launch Security Checklist](standards/pre-launch-security-checklist.md): security checks for auth, data, payments, infrastructure, and release.
+- [Pre-Launch Security Checklist](standards/PRE-LAUNCH-SECURITY-CHECKLIST.md): security checks for auth, data, payments, infrastructure, and release.

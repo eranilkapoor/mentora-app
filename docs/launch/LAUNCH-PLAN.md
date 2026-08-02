@@ -32,7 +32,7 @@ Status legend:
 | Terms & Conditions screen/content |        Done | Mobile feature exists and `mentora-public-website/terms-conditions.html` provides a public-page source. Needs hosted production URL if linked externally.               |
 | Data Safety form mapping          |     Pending | Must be completed manually in Play Console based on actual data collection.                                                                                             |
 | Content rating                    |     Pending | Play Console task, not code.                                                                                                                                            |
-| App access/reviewer credentials   | Partly Done | Private reviewer credential template added at `docs/launch/REVIEWER-CREDENTIALS.template.md`; real reviewer account must be created outside git.                        |
+| App access/reviewer credentials   | Partly Done | Private reviewer credential template added at `docs/launch/REVIEWER-CREDENTIALS-TEMPLATE.md`; real reviewer account must be created outside git.                        |
 | Account deletion flow             | Partly Done | FE delete request exists; BE scheduled deletion/anonymization task exists; `mentora-public-website/account-deletion.html` exists. Needs final policy QA and hosted URL. |
 | Consent management                |        Done | BE `ConsentService`, consent schema, and FE account consent API exist.                                                                                                  |
 
