@@ -29,6 +29,18 @@ export function WorkspaceSwitcher({
   onOrganizationChange: (organizationId: string) => void;
   organizations: unknown[];
 }) {
+  const staticOrganizationLabel =
+    activeOrganizationId && organizations.length > 0
+      ? getOrganizationOptions(organizations, contexts).find(
+          (organization) => organization.value === activeOrganizationId,
+        )?.label
+      : activeContext.organization;
+  const staticBranchLabel =
+    activeBranchId && branches.length > 0
+      ? getRecordOptions(branches).find(
+          (branch) => branch.value === activeBranchId,
+        )?.label
+      : activeContext.branch;
   const organizationOptions = canSwitchOrganization
     ? [
         { label: "All organizations", value: "" },
@@ -58,6 +70,14 @@ export function WorkspaceSwitcher({
   const selectedBranchValue = activeBranchId;
 
   function selectContext(field: "organization" | "branch", value: string) {
+    if (field === "organization" && value === "") {
+      onOrganizationChange(value);
+      return;
+    }
+    if (field === "branch" && value === "") {
+      onBranchChange(value);
+      return;
+    }
     if (field === "organization" && organizations.length > 0) {
       onOrganizationChange(value);
       return;
@@ -105,7 +125,12 @@ export function WorkspaceSwitcher({
             ))}
           </select>
         </label>
-      ) : null}
+      ) : (
+        <div className="workspace-static">
+          <Icon name="organization" />
+          <span>{staticOrganizationLabel}</span>
+        </div>
+      )}
       {canSwitchBranch ? (
         <label>
           <FontAwesomeIcon aria-hidden icon={faBuilding} />
@@ -121,13 +146,12 @@ export function WorkspaceSwitcher({
             ))}
           </select>
         </label>
-      ) : null}
-      {!canSwitchOrganization && !canSwitchBranch ? (
+      ) : (
         <div className="workspace-static">
-          <Icon name="organization" />
-          <span>{activeContext.label}</span>
+          <FontAwesomeIcon aria-hidden icon={faBuilding} />
+          <span>{staticBranchLabel}</span>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

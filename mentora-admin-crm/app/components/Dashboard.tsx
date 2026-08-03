@@ -69,7 +69,11 @@ export function Dashboard({
   const pipelineRows = [
     ["New", getDashboardMetric(dashboard, "newLeads"), "leads"],
     ["Hot", getDashboardMetric(dashboard, "hotLeads"), "leads"],
-    ["Applications", getDashboardMetric(dashboard, "applications"), "applications"],
+    [
+      "Applications",
+      getDashboardMetric(dashboard, "applications"),
+      "applications",
+    ],
     ["Open Tasks", getDashboardMetric(dashboard, "openTasks"), "tasks"],
   ];
 
@@ -77,7 +81,7 @@ export function Dashboard({
     <section className="workspace">
       <div className="hero-panel">
         <div>
-          <span className="eyebrow">Command Center</span>
+          <span className="eyebrow">Dashboard</span>
           <h2>Enrollment operating dashboard</h2>
           <p>
             Live funnel, team workload, campaign ROI, payment collections, and
@@ -184,4 +188,3 @@ export function Dashboard({
     </section>
   );
 }
-

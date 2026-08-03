@@ -1023,6 +1023,67 @@ select:focus-visible {
   padding-bottom: 14px;
 }
 
+.enterprise-form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.enterprise-form-grid label {
+  color: var(--muted);
+  display: grid;
+  font-size: 12px;
+  font-weight: 850;
+  gap: 7px;
+  letter-spacing: 0;
+}
+
+.enterprise-form-grid input,
+.enterprise-form-grid select {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 750;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.enterprise-form-grid select:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.enterprise-form-grid .checkbox-field {
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  display: flex;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+.enterprise-form-grid .checkbox-field input {
+  accent-color: var(--brand);
+  min-height: auto;
+  padding: 0;
+}
+
+.enterprise-form-grid .form-actions {
+  align-items: end;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 900px) {
+  .enterprise-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .workspace {
   padding: 22px 22px 76px;
 }
@@ -1521,68 +1582,6 @@ select:focus-visible {
   gap: 8px;
 }
 
-.iam-command-center {
-  display: grid;
-  grid-template-columns: minmax(260px, 1.4fr) minmax(240px, 1fr) auto;
-  gap: 16px;
-  align-items: stretch;
-  padding: 16px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-}
-
-.iam-command-center h3 {
-  margin: 4px 0 6px;
-  font-size: 1.05rem;
-}
-
-.iam-command-center p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.iam-metric-grid,
-.iam-role-list,
-.iam-action-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-content: flex-start;
-}
-
-.iam-metric-card,
-.iam-role-list span {
-  min-width: 118px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface-2);
-}
-
-.iam-metric-card span,
-.iam-role-list span {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.iam-metric-card strong {
-  display: block;
-  margin-top: 2px;
-  font-size: 1.15rem;
-}
-
-.iam-action-strip {
-  justify-content: flex-end;
-  align-items: flex-start;
-}
-
-.iam-action-strip strong {
-  width: 100%;
-  text-align: right;
-}
-
 .radio-pill-group {
   display: inline-flex;
   gap: 8px;
@@ -1665,18 +1664,6 @@ select:focus-visible {
   font-size: 13px;
   font-weight: 800;
   padding: 10px 0;
-}
-
-@media (max-width: 1180px) {
-  .iam-command-center {
-    grid-template-columns: 1fr;
-  }
-
-  .iam-action-strip,
-  .iam-action-strip strong {
-    justify-content: flex-start;
-    text-align: left;
-  }
 }
 
 .navigationlist {

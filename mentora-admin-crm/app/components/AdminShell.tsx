@@ -59,6 +59,7 @@ import {
   loadModuleRecords,
   loadCrmWorkspace,
   loginWithCredentials,
+  normalizeBackendCrmContexts,
   readPersistedCrmSession,
   restoreDedicatedCrmRecord,
   restoreModuleRecord,
@@ -79,6 +80,7 @@ import {
   testIntegrationProvider,
   type DemoContext,
   type DemoUser,
+  type CrmProfilePreferences,
   type ModuleRecordDraft,
   type OrganizationDraft,
   type OrganizationSetupDraft,
@@ -147,6 +149,7 @@ export default function AdminDashboardPage() {
     loginEmail,
     loginError,
     loginPassword,
+    preferences,
     themeMode,
     toast,
   } = useAppSelector((state) => state.crmSession);
@@ -185,8 +188,10 @@ export default function AdminDashboardPage() {
     title: string;
   } | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [organizationUserFormOpen, setOrganizationUserFormOpen] =
-    useState(false);
+  const [organizationUserForm, setOrganizationUserForm] = useState<{
+    mode: "create" | "edit";
+    row?: string[];
+  } | null>(null);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
   const mainMenuRef = useRef<HTMLElement | null>(null);
   const workspaceSyncKeyRef = useRef("");
@@ -202,6 +207,7 @@ export default function AdminDashboardPage() {
     dispatch(
       crmSessionActions.restorePersistedSession(readPersistedCrmSession()),
     );
+    dispatch(crmWorkspaceActions.restorePersistedContext());
   }, [dispatch]);
 
   useEffect(() => {
@@ -222,6 +228,32 @@ export default function AdminDashboardPage() {
     void dispatch(loadCrmWorkspace());
     void dispatch(loadOrganizations());
   }, [accessToken, activeContext, dispatch, loggedInUser]);
+
+  useEffect(() => {
+    const backendContexts = normalizeBackendCrmContexts(workspace.contexts);
+    if (backendContexts.length === 0) return;
+    dispatch(crmSessionActions.applyBackendContexts(backendContexts));
+  }, [dispatch, workspace.contexts]);
+
+  useEffect(() => {
+    if (!loggedInUser || preferences.restoreLastContext) return;
+    dispatch(
+      crmWorkspaceActions.setActiveOrganizationId(
+        preferences.defaultOrganizationId,
+      ),
+    );
+    if (preferences.defaultBranchId) {
+      dispatch(
+        crmWorkspaceActions.setActiveBranchId(preferences.defaultBranchId),
+      );
+    }
+  }, [
+    dispatch,
+    loggedInUser,
+    preferences.defaultBranchId,
+    preferences.defaultOrganizationId,
+    preferences.restoreLastContext,
+  ]);
 
   const activeOrganizationId = workspace.activeOrganizationId;
   const activeSessionRole =
@@ -428,19 +460,23 @@ export default function AdminDashboardPage() {
     safeCurrentPage * pageSize,
   );
   const selectedCount = selected.length;
-  const canSwitchOrganization = ["super_admin", "organization_admin"].includes(
-    activeContext?.role ?? "",
-  );
-  const canSwitchBranch = [
-    "super_admin",
-    "organization_admin",
-    "branch_admin",
-    "admission_manager",
-    "sales_executive",
-    "call-center",
-    "finance",
-    "field_agent",
-  ].includes(activeContext?.role ?? "");
+  const currentRole = activeSessionRole;
+  const contextOrganizationCount = new Set(
+    loggedInUser?.contexts.map((context) => context.organization) ?? [],
+  ).size;
+  const contextBranchCount = new Set(
+    loggedInUser?.contexts.map((context) => context.branch) ?? [],
+  ).size;
+  const canSwitchOrganization =
+    currentRole === "super_admin" ||
+    (contextOrganizationCount > 1 &&
+      ["organization_admin", "branch_admin"].includes(currentRole));
+  const canSwitchBranch =
+    currentRole === "super_admin" ||
+    ["organization_admin", "finance", "admission_manager"].includes(
+      currentRole,
+    ) ||
+    contextBranchCount > 1;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -840,7 +876,7 @@ export default function AdminDashboardPage() {
 
       try {
         if (normalized.includes("create")) {
-          setOrganizationUserFormOpen(true);
+          setOrganizationUserForm({ mode: "create" });
           dispatch(crmSessionActions.setToast("Create a CRM user"));
           return;
         }
@@ -2066,10 +2102,6 @@ export default function AdminDashboardPage() {
 
   async function archiveRow(row: string[]) {
     if (!activeModule) return;
-    if (!activeOrganizationId) {
-      dispatch(crmSessionActions.setToast("Organization context is required"));
-      return;
-    }
     const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
@@ -2091,6 +2123,10 @@ export default function AdminDashboardPage() {
         }),
       ).unwrap();
       dispatch(crmSessionActions.setToast("User access suspended"));
+      return;
+    }
+    if (!activeOrganizationId) {
+      dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
     if (activeModule.id === "roles" || activeModule.id === "permissions") {
@@ -2142,10 +2178,6 @@ export default function AdminDashboardPage() {
 
   async function restoreRow(row: string[]) {
     if (!activeModule) return;
-    if (!activeOrganizationId) {
-      dispatch(crmSessionActions.setToast("Organization context is required"));
-      return;
-    }
     const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
@@ -2167,6 +2199,10 @@ export default function AdminDashboardPage() {
         }),
       ).unwrap();
       dispatch(crmSessionActions.setToast("User access activated"));
+      return;
+    }
+    if (!activeOrganizationId) {
+      dispatch(crmSessionActions.setToast("Organization context is required"));
       return;
     }
     if (activeModule.id === "roles" || activeModule.id === "permissions") {
@@ -2418,7 +2454,22 @@ export default function AdminDashboardPage() {
         </header>
 
         {activeId === "my-profile" ? (
-          <MyProfilePage activeContext={currentContext} user={loggedInUser} />
+          <MyProfilePage
+            activeContext={currentContext}
+            branches={workspace.branches}
+            modules={allModules.filter((module) => canAccessModule(module.id))}
+            onDefaultOrganizationChange={(organizationId) => {
+              if (!organizationId) return;
+              void dispatch(loadBranches({ organizationId }));
+            }}
+            onSavePreferences={(nextPreferences) => {
+              dispatch(crmSessionActions.setPreferences(nextPreferences));
+              dispatch(crmSessionActions.setToast("Profile preferences saved"));
+            }}
+            organizations={workspace.organizations}
+            preferences={preferences}
+            user={loggedInUser}
+          />
         ) : activeId === "change-password" ? (
           <ChangePasswordPage
             onSubmit={async (draft) => {
@@ -2462,6 +2513,10 @@ export default function AdminDashboardPage() {
             openRecordForm={(form) => {
               if (activeModule.id === "organizations" && form.mode === "edit") {
                 setOrganizationEditRow(form.row ?? null);
+                return;
+              }
+              if (activeModule.id === "users") {
+                setOrganizationUserForm(form);
                 return;
               }
               setRecordForm(form);
@@ -2716,20 +2771,51 @@ export default function AdminDashboardPage() {
           />
         ) : null}
 
-        {organizationUserFormOpen ? (
+        {organizationUserForm ? (
           <OrganizationUserFormModal
             activeOrganizationId={activeOrganizationId}
             branches={workspace.branches}
             departments={workspace.departments}
-            onClose={() => setOrganizationUserFormOpen(false)}
+            mode={organizationUserForm.mode}
+            onClose={() => setOrganizationUserForm(null)}
+            onOrganizationChange={(organizationId) => {
+              if (!organizationId) return;
+              void dispatch(loadBranches({ organizationId }));
+              void dispatch(loadIdentityHierarchy({ organizationId }));
+            }}
             onSubmit={async (draft) => {
-              await dispatch(createOrganizationUser(draft)).unwrap();
+              if (organizationUserForm.mode === "edit" && draft.id) {
+                await dispatch(
+                  updateAdminUser({
+                    branchIds: draft.branchIds,
+                    departmentIds: draft.departmentIds,
+                    id: draft.id,
+                    organizationId: draft.organizationId,
+                    role: draft.role,
+                    status: draft.status,
+                    teamIds: draft.teamIds,
+                  }),
+                ).unwrap();
+              } else {
+                await dispatch(createOrganizationUser(draft)).unwrap();
+              }
               await dispatch(
                 loadOrganizationUsers({ organizationId: draft.organizationId }),
               ).unwrap();
-              dispatch(crmSessionActions.setToast("CRM user created"));
-              setOrganizationUserFormOpen(false);
+              dispatch(
+                crmSessionActions.setToast(
+                  organizationUserForm.mode === "edit"
+                    ? "CRM user updated"
+                    : "CRM user created",
+                ),
+              );
+              setOrganizationUserForm(null);
             }}
+            row={organizationUserForm.row}
+            sourceRecord={findModuleRecordForRow(
+              workspace.moduleRecords.users ?? [],
+              organizationUserForm.row ?? [],
+            )}
             teams={workspace.teams}
             organizations={workspace.organizations}
           />
@@ -2804,17 +2890,51 @@ export default function AdminDashboardPage() {
 
 function MyProfilePage({
   activeContext,
+  branches,
+  modules,
+  onDefaultOrganizationChange,
+  onSavePreferences,
+  organizations,
+  preferences,
   user,
 }: {
   activeContext: DemoContext;
+  branches: unknown[];
+  modules: AdminModule[];
+  onDefaultOrganizationChange: (organizationId: string) => void;
+  onSavePreferences: (preferences: CrmProfilePreferences) => void;
+  organizations: unknown[];
+  preferences: CrmProfilePreferences;
   user: DemoUser;
 }) {
+  const [draft, setDraft] = useState(preferences);
+  const organizationOptions = getOrganizationOptions(
+    organizations,
+    user.contexts,
+  );
+  const branchOptions = getBranchOptions(branches, user.contexts);
+  useEffect(() => {
+    setDraft(preferences);
+  }, [preferences]);
+
   const profileRows = [
     ["Name", user.name],
     ["Email", user.email],
     ["Active Role", activeContext.role.replaceAll("_", " ")],
     ["Organization", activeContext.organization],
     ["Branch", activeContext.branch],
+    [
+      "Default Landing Page",
+      moduleMap[draft.defaultLandingPage]?.title ?? "Dashboard",
+    ],
+    [
+      "Default Context",
+      draft.restoreLastContext
+        ? "Restore last selected context"
+        : `${draft.defaultOrganizationId ? "Specific organization" : "All organizations"} / ${
+            draft.defaultBranchId ? "Specific branch" : "All branches"
+          }`,
+    ],
     ["Available Contexts", String(user.contexts.length)],
   ];
 
@@ -2848,6 +2968,111 @@ function MyProfilePage({
             </div>
           ))}
         </dl>
+      </div>
+      <div className="account-panel">
+        <div className="account-panel-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell">
+              <FontAwesomeIcon icon={faBarsProgress} />
+            </div>
+            <div>
+              <span className="eyebrow">Preferences</span>
+              <h3>Default Workspace</h3>
+              <p>Choose where the CRM opens and how context is restored.</p>
+            </div>
+          </div>
+        </div>
+        <form
+          className="enterprise-form-grid"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSavePreferences(draft);
+          }}
+        >
+          <label>
+            <span>Default landing page</span>
+            <select
+              value={draft.defaultLandingPage}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  defaultLandingPage: event.target.value || "dashboard",
+                }))
+              }
+            >
+              {modules.map((module) => (
+                <option key={module.id} value={module.id}>
+                  {module.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Default organization</span>
+            <select
+              disabled={draft.restoreLastContext}
+              value={draft.defaultOrganizationId}
+              onChange={(event) => {
+                const organizationId = event.target.value;
+                setDraft((current) => ({
+                  ...current,
+                  defaultOrganizationId: organizationId,
+                  defaultBranchId: organizationId
+                    ? current.defaultBranchId
+                    : "",
+                }));
+                onDefaultOrganizationChange(organizationId);
+              }}
+            >
+              <option value="">All organizations</option>
+              {organizationOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>Default branch</span>
+            <select
+              disabled={
+                draft.restoreLastContext || !draft.defaultOrganizationId
+              }
+              value={draft.defaultBranchId}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  defaultBranchId: event.target.value,
+                }))
+              }
+            >
+              <option value="">All branches</option>
+              {branchOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="checkbox-field">
+            <input
+              checked={draft.restoreLastContext}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  restoreLastContext: event.target.checked,
+                }))
+              }
+              type="checkbox"
+            />
+            <span>Restore last selected context after login</span>
+          </label>
+          <div className="form-actions">
+            <button className="btn btn-primary" type="submit">
+              Save Preferences
+            </button>
+          </div>
+        </form>
       </div>
     </section>
   );
@@ -3157,14 +3382,6 @@ function ModulePanel(props: {
 
       {module.id === "security" ? (
         <SecurityControlCenter runAction={props.runAction} />
-      ) : null}
-
-      {module.id === "authentication" ? (
-        <AuthenticationCommandCenter runAction={props.runAction} />
-      ) : null}
-
-      {module.id === "users" ? (
-        <UsersCommandCenter total={props.total} />
       ) : null}
 
       <div className="navigationlist">
@@ -3740,95 +3957,6 @@ function getRowLifecycleState(
       inactiveValues.includes(value.toLowerCase()),
     ),
   };
-}
-
-function AuthenticationCommandCenter(props: {
-  runAction: (label: string) => Promise<void>;
-}) {
-  const workspace = useAppSelector((state) => state.crmWorkspace);
-  const overview = normalizeResponseObject(workspace.authOverview);
-  const metrics: Array<[string, unknown]> = [
-    ["Total users", overview.totalUsers],
-    ["Active users", overview.activeUsers],
-    ["Suspended", overview.suspendedUsers],
-    ["Active sessions", overview.activeSessions],
-  ];
-
-  return (
-    <section
-      aria-label="Authentication command center"
-      className="iam-command-center"
-    >
-      <div>
-        <span className="eyebrow">Authentication owns</span>
-        <h3>
-          Login, sessions, MFA readiness, SSO configuration, and device control
-        </h3>
-        <p>
-          This module validates credentials, issues sessions, tracks devices,
-          applies security policy, and lets admins revoke access when risk is
-          detected.
-        </p>
-      </div>
-      <div className="iam-metric-grid">
-        {metrics.map(([label, value]) => (
-          <article className="iam-metric-card" key={String(label)}>
-            <span>{label}</span>
-            <strong>
-              {typeof value === "number" ? value.toLocaleString() : "0"}
-            </strong>
-          </article>
-        ))}
-      </div>
-      <div className="iam-action-strip">
-        {["Review sessions", "Configure MFA policy", "Configure SSO"].map(
-          (label) => (
-            <button
-              className="btn btn-light secondary"
-              key={label}
-              onClick={() => void props.runAction(label)}
-              type="button"
-            >
-              <Icon name={label.includes("SSO") ? "lock" : "shield"} />
-              {label}
-            </button>
-          ),
-        )}
-      </div>
-    </section>
-  );
-}
-
-function UsersCommandCenter(props: { total: number }) {
-  const userScopes = [
-    "Super admins operate the full platform.",
-    "Organization admins manage one organization.",
-    "Branch admins and agents operate assigned branches.",
-    "Students and parents use customer-facing access.",
-  ];
-
-  return (
-    <section aria-label="Users command center" className="iam-command-center">
-      <div>
-        <span className="eyebrow">Users owns</span>
-        <h3>People, roles, memberships, hierarchy, and access lifecycle</h3>
-        <p>
-          Create users from CRM credentials, attach them to organizations and
-          branches, manage role membership, suspend risky accounts, and revoke
-          active sessions.
-        </p>
-      </div>
-      <div className="iam-role-list">
-        {userScopes.map((item) => (
-          <span key={item}>{item}</span>
-        ))}
-      </div>
-      <div className="iam-action-strip">
-        <strong>{props.total.toLocaleString()} live users</strong>
-        <span>Search, create, suspend, activate, and audit users below.</span>
-      </div>
-    </section>
-  );
 }
 
 function RecordDetailModal({
@@ -5205,16 +5333,24 @@ function OrganizationUserFormModal({
   activeOrganizationId,
   branches,
   departments,
+  mode,
   onClose,
+  onOrganizationChange,
   onSubmit,
+  row,
+  sourceRecord,
   teams,
   organizations,
 }: {
   activeOrganizationId: string;
   branches: unknown[];
   departments: unknown[];
+  mode: "create" | "edit";
   onClose: () => void;
+  onOrganizationChange: (organizationId: string) => void;
   onSubmit: (draft: OrganizationUserDraft) => Promise<void>;
+  row?: string[];
+  sourceRecord?: unknown;
   teams: unknown[];
   organizations: unknown[];
 }) {
@@ -5222,30 +5358,78 @@ function OrganizationUserFormModal({
   const branchOptions = getBranchOptions(branches, []);
   const departmentOptions = getRecordOptions(departments);
   const teamOptions = getRecordOptions(teams);
+  const source = normalizeResponseObject(sourceRecord);
+  const memberships = Array.isArray(source.memberships)
+    ? source.memberships
+    : [];
+  const primaryMembership = normalizeResponseObject(memberships[0]);
+  const sourceOrganizationId = getUnknownRecordId(
+    primaryMembership.organizationId,
+  );
+  const sourceBranchIds = Array.isArray(primaryMembership.branchIds)
+    ? primaryMembership.branchIds.map(getUnknownRecordId).filter(Boolean)
+    : [];
+  const sourceDepartmentIds = Array.isArray(primaryMembership.departmentIds)
+    ? primaryMembership.departmentIds.map(getUnknownRecordId).filter(Boolean)
+    : [];
+  const sourceTeamIds = Array.isArray(primaryMembership.teamIds)
+    ? primaryMembership.teamIds.map(getUnknownRecordId).filter(Boolean)
+    : [];
+  const sourceRole =
+    typeof primaryMembership.role === "string"
+      ? primaryMembership.role
+      : row?.[3]?.toLowerCase().replaceAll(" ", "_") || "admission_counselor";
   const [draft, setDraft] = useState<OrganizationUserDraft>({
-    email: "",
+    branchIds: sourceBranchIds.length ? sourceBranchIds : undefined,
+    departmentIds: sourceDepartmentIds.length ? sourceDepartmentIds : undefined,
+    email: typeof source.email === "string" ? source.email : (row?.[0] ?? ""),
+    id: getUnknownRecordId(source),
     password: "",
-    role: "admission_counselor",
-    organizationId: activeOrganizationId || organizationOptions[0]?.value || "",
+    role: sourceRole,
+    organizationId:
+      sourceOrganizationId ||
+      activeOrganizationId ||
+      organizationOptions[0]?.value ||
+      "",
+    status:
+      typeof source.status === "string"
+        ? source.status
+        : row?.[6]?.toLowerCase() || "active",
+    teamIds: sourceTeamIds.length ? sourceTeamIds : undefined,
   });
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const isEditMode = mode === "edit";
 
   async function submit() {
     if (
       !draft.organizationId ||
       !draft.email.trim() ||
-      draft.password.length < 8
+      (!isEditMode && draft.password.length < 8)
     ) {
-      setError("Organization, email, and an 8 character password are required");
+      setError(
+        isEditMode
+          ? "Organization and email are required"
+          : "Organization, email, and an 8 character password are required",
+      );
       return;
     }
     setIsSaving(true);
     setError("");
     try {
-      await onSubmit({ ...draft, email: draft.email.trim().toLowerCase() });
+      await onSubmit({
+        ...draft,
+        email: draft.email.trim().toLowerCase(),
+        password: isEditMode ? "" : draft.password,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "User creation failed");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isEditMode
+            ? "User update failed"
+            : "User creation failed",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -5257,7 +5441,11 @@ function OrganizationUserFormModal({
         <div className="record-modal-head">
           <div>
             <span className="eyebrow">User Management</span>
-            <h3>Create CRM User</h3>
+            <h3>{isEditMode ? "Edit CRM User" : "Create CRM User"}</h3>
+            <p>
+              Manage credentials, lifecycle status, organization membership,
+              branch visibility, and role assignment.
+            </p>
           </div>
           <button
             className="btn btn-light btn-sm"
@@ -5272,9 +5460,17 @@ function OrganizationUserFormModal({
             <span className="label">Organization</span>
             <select
               className="form-select form-select-sm"
-              onChange={(event) =>
-                setDraft({ ...draft, organizationId: event.target.value })
-              }
+              onChange={(event) => {
+                const organizationId = event.target.value;
+                setDraft({
+                  ...draft,
+                  branchIds: undefined,
+                  departmentIds: undefined,
+                  organizationId,
+                  teamIds: undefined,
+                });
+                onOrganizationChange(organizationId);
+              }}
               value={draft.organizationId}
             >
               <option value="">Select organization</option>
@@ -5361,6 +5557,7 @@ function OrganizationUserFormModal({
             <span className="label">Email</span>
             <input
               className="input form-control"
+              disabled={isEditMode}
               onChange={(event) =>
                 setDraft({ ...draft, email: event.target.value })
               }
@@ -5369,17 +5566,19 @@ function OrganizationUserFormModal({
               value={draft.email}
             />
           </label>
-          <label className="formrow">
-            <span className="label">Temporary Password</span>
-            <input
-              className="input form-control"
-              onChange={(event) =>
-                setDraft({ ...draft, password: event.target.value })
-              }
-              type="password"
-              value={draft.password}
-            />
-          </label>
+          {!isEditMode ? (
+            <label className="formrow">
+              <span className="label">Temporary Password</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({ ...draft, password: event.target.value })
+                }
+                type="password"
+                value={draft.password}
+              />
+            </label>
+          ) : null}
           <label className="formrow">
             <span className="label">Role</span>
             <select
@@ -5400,6 +5599,23 @@ function OrganizationUserFormModal({
               <option value="field_agent">Field agent</option>
             </select>
           </label>
+          {isEditMode ? (
+            <label className="formrow">
+              <span className="label">Status</span>
+              <select
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  setDraft({ ...draft, status: event.target.value })
+                }
+                value={draft.status ?? "active"}
+              >
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="suspended">Suspended</option>
+                <option value="blocked">Blocked</option>
+              </select>
+            </label>
+          ) : null}
         </div>
         {error ? <div className="auth-error modal-error">{error}</div> : null}
         <div className="record-modal-actions">
@@ -5414,7 +5630,7 @@ function OrganizationUserFormModal({
             }}
             type="button"
           >
-            {isSaving ? "Creating" : "Create User"}
+            {isSaving ? "Saving" : isEditMode ? "Save User" : "Create User"}
           </button>
         </div>
       </section>

@@ -15,10 +15,19 @@ import {
 
 export type DemoContext = {
   organization: string;
+  organizationId?: string;
   branch: string;
+  branchIds?: string[];
   role: string;
   label: string;
   modules: string[];
+};
+
+export type CrmProfilePreferences = {
+  defaultBranchId: string;
+  defaultLandingPage: string;
+  defaultOrganizationId: string;
+  restoreLastContext: boolean;
 };
 
 export type DemoUser = {
@@ -39,6 +48,7 @@ type CrmSessionState = {
   loginError: string | null;
   loginPassword: string;
   loggedInUser: DemoUser | null;
+  preferences: CrmProfilePreferences;
   themeMode: "system" | "light" | "dark";
   toast: string;
 };
@@ -90,10 +100,12 @@ export type OrganizationUserDraft = {
   departmentIds?: string[];
   teamIds?: string[];
   email: string;
+  id?: string;
   password: string;
   phone?: string;
   role: string;
   organizationId: string;
+  status?: string;
 };
 
 export type OrganizationSetupDraft = {
@@ -122,6 +134,13 @@ const apiBaseUrl =
 
 let crmAccessToken = "";
 const crmSessionStorageKey = "mentora.crm.session.v1";
+const crmWorkspaceContextStorageKey = "mentora.crm.workspace-context.v1";
+const defaultCrmProfilePreferences: CrmProfilePreferences = {
+  defaultBranchId: "",
+  defaultLandingPage: "dashboard",
+  defaultOrganizationId: "",
+  restoreLastContext: true,
+};
 
 function setCrmAccessToken(token: string) {
   crmAccessToken = token;
@@ -129,7 +148,12 @@ function setCrmAccessToken(token: string) {
 
 export type PersistedCrmSession = Pick<
   CrmSessionState,
-  "accessToken" | "activeContext" | "activeId" | "loggedInUser" | "themeMode"
+  | "accessToken"
+  | "activeContext"
+  | "activeId"
+  | "loggedInUser"
+  | "preferences"
+  | "themeMode"
 >;
 
 export function readPersistedCrmSession(): Partial<PersistedCrmSession> {
@@ -156,12 +180,129 @@ function writePersistedCrmSession(session: PersistedCrmSession) {
 function clearPersistedCrmSession() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(crmSessionStorageKey);
+  window.localStorage.removeItem(crmWorkspaceContextStorageKey);
+}
+
+type PersistedWorkspaceContext = {
+  activeBranchId: string;
+  activeOrganizationId: string;
+};
+
+function readPersistedWorkspaceContext(): Partial<PersistedWorkspaceContext> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(crmWorkspaceContextStorageKey);
+    return raw ? (JSON.parse(raw) as Partial<PersistedWorkspaceContext>) : {};
+  } catch {
+    window.localStorage.removeItem(crmWorkspaceContextStorageKey);
+    return {};
+  }
+}
+
+function writePersistedWorkspaceContext(context: PersistedWorkspaceContext) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(
+    crmWorkspaceContextStorageKey,
+    JSON.stringify(context),
+  );
 }
 
 function isUnauthorizedError(message?: string) {
   return /\b(401|unauthorized|token expired|jwt expired)\b/i.test(
     message ?? "",
   );
+}
+
+function resolvePrimaryCrmRole(roles: string[]) {
+  const priority = [
+    "super_admin",
+    "organization_admin",
+    "branch_admin",
+    "admission_manager",
+    "sales_executive",
+    "finance",
+    "marketing_executive",
+    "call-center",
+    "field_agent",
+    "support",
+  ];
+  return priority.find((role) => roles.includes(role)) ?? roles[0] ?? "user";
+}
+
+function getObjectValue(record: unknown, keys: string[]) {
+  if (!record || typeof record !== "object") return undefined;
+  const object = record as Record<string, unknown>;
+  return keys.map((key) => object[key]).find((value) => value != null);
+}
+
+function getRecordIdValue(record: unknown) {
+  const value = getObjectValue(record, ["_id", "id"]);
+  if (typeof value === "string") return value;
+  if (
+    value &&
+    typeof value === "object" &&
+    "toHexString" in value &&
+    typeof (value as { toHexString?: unknown }).toHexString === "function"
+  ) {
+    return (value as { toHexString: () => string }).toHexString();
+  }
+  return "";
+}
+
+function getRecordDisplayName(record: unknown, fallback: string) {
+  const value = getObjectValue(record, ["name", "title", "label", "code"]);
+  return typeof value === "string" && value.trim() ? value : fallback;
+}
+
+function normalizeContextArray(value: unknown) {
+  if (Array.isArray(value)) return value;
+  return [];
+}
+
+export function normalizeBackendCrmContexts(value: unknown): DemoContext[] {
+  return normalizeContextArray(value)
+    .map((context) => {
+      if (!context || typeof context !== "object") return null;
+      const object = context as Record<string, unknown>;
+      const role =
+        typeof object.role === "string" && object.role.trim()
+          ? object.role
+          : "user";
+      const organizationRecord =
+        object.organization ?? object.organizationId ?? null;
+      const branchRecords = normalizeContextArray(
+        object.branches ?? object.branchIds,
+      );
+      const organizationId = getRecordIdValue(organizationRecord);
+      const branchIds = branchRecords
+        .map((branch) => getRecordIdValue(branch))
+        .filter(Boolean);
+      const isGlobalSuperAdmin = role === "super_admin" && !organizationId;
+      const organization = isGlobalSuperAdmin
+        ? "All Organizations"
+        : getRecordDisplayName(organizationRecord, "Assigned Organization");
+      const branch =
+        isGlobalSuperAdmin || branchRecords.length === 0
+          ? role === "super_admin" || role === "organization_admin"
+            ? "All Branches"
+            : "Assigned Branches"
+          : branchRecords.length === 1
+            ? getRecordDisplayName(branchRecords[0], "Assigned Branch")
+            : `${branchRecords.length} Branches`;
+
+      const normalizedContext: DemoContext = {
+        branch,
+        branchIds,
+        label: `${role.replaceAll("_", " ")} / ${organization} / ${branch}`,
+        modules: allAdminModuleIds,
+        organization,
+        organizationId,
+        role,
+      };
+
+      return normalizedContext;
+    })
+    .filter((context): context is DemoContext => context !== null);
 }
 
 function clearExpiredSession(state: CrmSessionState) {
@@ -502,17 +643,22 @@ export const loginWithCredentials = createAsyncThunk(
 
     const accessToken =
       typeof data.accessToken === "string" ? data.accessToken : "";
+    const roles = Array.isArray(user.roles) ? user.roles.map(String) : [];
+    const role = resolvePrimaryCrmRole(roles);
     return {
       accessToken,
       email,
       name,
       contexts: [
         {
-          branch: "All Branches",
+          branch: role === "super_admin" ? "All Branches" : "Assigned Branches",
           label: "Authenticated CRM Workspace",
           modules: allAdminModuleIds,
-          role: "super_admin",
-          organization: "All Organizations",
+          role,
+          organization:
+            role === "super_admin"
+              ? "All Organizations"
+              : "Assigned Organization",
         },
       ],
     } satisfies AuthenticatedCrmUser;
@@ -1339,6 +1485,7 @@ const initialSessionState: CrmSessionState = {
   loginError: null,
   loginPassword: "",
   loggedInUser: null,
+  preferences: defaultCrmProfilePreferences,
   themeMode: "system",
   toast: "Ready",
 };
@@ -1372,6 +1519,7 @@ function persistCurrentSession(state: CrmSessionState) {
     activeContext: state.activeContext,
     activeId: state.activeId,
     loggedInUser: state.loggedInUser,
+    preferences: state.preferences,
     themeMode: state.themeMode,
   });
 }
@@ -1424,6 +1572,39 @@ const crmSessionSlice = createSlice({
       state.toast = `Logged in as ${action.payload.name}`;
       persistCurrentSession(state);
     },
+    applyBackendContexts(state, action: PayloadAction<DemoContext[]>) {
+      if (!state.loggedInUser || action.payload.length === 0) return;
+      const contexts = action.payload;
+      state.loggedInUser = {
+        ...state.loggedInUser,
+        contexts,
+      };
+      const currentContextStillAllowed = contexts.some(
+        (context) =>
+          context.role === state.activeContext?.role &&
+          context.organizationId === state.activeContext?.organizationId &&
+          context.branchIds?.join("|") ===
+            state.activeContext?.branchIds?.join("|"),
+      );
+      if (!currentContextStillAllowed) {
+        state.activeContext =
+          contexts.find(
+            (context) =>
+              context.role === "super_admin" && !context.organizationId,
+          ) ??
+          contexts.find(
+            (context) =>
+              context.organizationId ===
+              state.preferences.defaultOrganizationId,
+          ) ??
+          contexts[0] ??
+          null;
+      }
+      state.activeId = state.activeContext?.modules.includes(state.activeId)
+        ? state.activeId
+        : state.preferences.defaultLandingPage || "dashboard";
+      persistCurrentSession(state);
+    },
     logout(state) {
       state.activeContext = null;
       state.activeId = "dashboard";
@@ -1448,6 +1629,16 @@ const crmSessionSlice = createSlice({
       state.themeMode = action.payload;
       persistCurrentSession(state);
     },
+    setPreferences(state, action: PayloadAction<CrmProfilePreferences>) {
+      state.preferences = {
+        ...defaultCrmProfilePreferences,
+        ...action.payload,
+      };
+      if (!state.preferences.defaultLandingPage) {
+        state.preferences.defaultLandingPage = "dashboard";
+      }
+      persistCurrentSession(state);
+    },
     setToast(state, action: PayloadAction<string>) {
       state.toast = action.payload;
     },
@@ -1464,6 +1655,10 @@ const crmSessionSlice = createSlice({
       state.activeId = session.activeId ?? "dashboard";
       state.accessToken = session.accessToken;
       state.loggedInUser = session.loggedInUser;
+      state.preferences = {
+        ...defaultCrmProfilePreferences,
+        ...(session.preferences ?? {}),
+      };
       state.themeMode = session.themeMode ?? "system";
       state.toast = "Session restored";
       setCrmAccessToken(session.accessToken);
@@ -1477,7 +1672,7 @@ const crmSessionSlice = createSlice({
       })
       .addCase(loginWithCredentials.fulfilled, (state, action) => {
         state.activeContext = action.payload.contexts[0] ?? null;
-        state.activeId = "dashboard";
+        state.activeId = state.preferences.defaultLandingPage || "dashboard";
         state.accessToken = action.payload.accessToken;
         state.loggedInUser = action.payload;
         state.loginPassword = "";
@@ -1513,13 +1708,30 @@ const crmWorkspaceSlice = createSlice({
   name: "crmWorkspace",
   initialState: initialWorkspaceState,
   reducers: {
+    restorePersistedContext(state) {
+      const context = readPersistedWorkspaceContext();
+      if (typeof context.activeOrganizationId === "string") {
+        state.activeOrganizationId = context.activeOrganizationId;
+      }
+      if (typeof context.activeBranchId === "string") {
+        state.activeBranchId = context.activeBranchId;
+      }
+    },
     setActiveBranchId(state, action: PayloadAction<string>) {
       state.activeBranchId = action.payload;
+      writePersistedWorkspaceContext({
+        activeBranchId: state.activeBranchId,
+        activeOrganizationId: state.activeOrganizationId,
+      });
     },
     setActiveOrganizationId(state, action: PayloadAction<string>) {
       state.activeOrganizationId = action.payload;
       state.activeBranchId = "";
       state.branches = [];
+      writePersistedWorkspaceContext({
+        activeBranchId: state.activeBranchId,
+        activeOrganizationId: state.activeOrganizationId,
+      });
     },
     upsertLocalModuleRecord(state, action: PayloadAction<ModuleRecordDraft>) {
       const draft = action.payload;
