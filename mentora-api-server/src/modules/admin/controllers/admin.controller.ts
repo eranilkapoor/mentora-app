@@ -61,7 +61,7 @@ export class AdminController {
     );
   }
 
-  @Get('users')
+  @Get('customer-users')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR, Role.SUPPORT)
   async getUsers(@Query() query: AdminQueryDto) {
     return successResponse(
@@ -70,7 +70,7 @@ export class AdminController {
     );
   }
 
-  @Get('users/:userId')
+  @Get('customer-users/:userId')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR, Role.SUPPORT)
   async getUserById(@Param('userId') userId: string) {
     return successResponse(
@@ -79,7 +79,7 @@ export class AdminController {
     );
   }
 
-  @Post('users')
+  @Post('customer-users')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async createUser(
@@ -92,7 +92,7 @@ export class AdminController {
     );
   }
 
-  @Post('users/:userId/setup')
+  @Post('customer-users/:userId/setup')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
   @HttpCode(HttpStatus.OK)
   async completeUserSetup(
@@ -106,7 +106,7 @@ export class AdminController {
     );
   }
 
-  @Post('users/:userId/profile')
+  @Post('customer-users/:userId/profile')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
   @HttpCode(HttpStatus.CREATED)
   async createUserProfile(
@@ -120,7 +120,7 @@ export class AdminController {
     );
   }
 
-  @Patch('users/:userId/profile')
+  @Patch('customer-users/:userId/profile')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
   @HttpCode(HttpStatus.OK)
   async updateUserProfileSection(
@@ -139,7 +139,7 @@ export class AdminController {
     );
   }
 
-  @Post('users/:userId/subscription')
+  @Post('customer-users/:userId/subscription')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FINANCE)
   @HttpCode(HttpStatus.OK)
   async assignUserPlan(
@@ -153,7 +153,7 @@ export class AdminController {
     );
   }
 
-  @Post('users/:userId/subscription/cancel')
+  @Post('customer-users/:userId/subscription/cancel')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FINANCE)
   @HttpCode(HttpStatus.OK)
   async cancelUserPlan(
@@ -167,7 +167,7 @@ export class AdminController {
     );
   }
 
-  @Patch('users/:userId/settings')
+  @Patch('customer-users/:userId/settings')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
   @HttpCode(HttpStatus.OK)
   async updateUserSettings(
@@ -186,7 +186,7 @@ export class AdminController {
     );
   }
 
-  @Patch('users/status')
+  @Patch('customer-users/status')
   @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.MODERATOR, Role.SUPPORT)
   @HttpCode(HttpStatus.OK)
   async updateUserStatus(

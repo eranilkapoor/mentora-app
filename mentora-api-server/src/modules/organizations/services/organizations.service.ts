@@ -27,6 +27,7 @@ import {
   CreateTeamDto,
   CreateOrganizationUserDto,
   CreateOrganizationDto,
+  ListOrganizationStructureDto,
   ListOrganizationsDto,
   ListOrganizationUsersDto,
   UpdateOrganizationDto,
@@ -191,37 +192,34 @@ export class OrganizationsService {
     );
   }
 
-  async listBranches(organizationId: string) {
-    const organizationObjectId = toOrganizationObjectId(organizationId);
-    const branches = await this.branches
-      .find({ organizationId: organizationObjectId, status: 'active' })
-      .sort({ name: 1 })
-      .lean();
-
-    if (branches.length > 0) {
-      return branches;
+  async listBranches(query: ListOrganizationStructureDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveStructureSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const filter: FilterQuery<BranchDocument> = {
+      organizationId: toOrganizationObjectId(query.organizationId),
+      status: query.status ?? 'active',
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { city: { $regex: search, $options: 'i' } },
+        { state: { $regex: search, $options: 'i' } },
+      ];
     }
-
-    const organization = await this.organizations
-      .findById(organizationObjectId)
-      .select('name code')
-      .lean();
-    if (!organization) {
-      return [];
-    }
-
-    const branch = await this.branches.findOneAndUpdate(
-      { organizationId: organizationObjectId, code: 'MAIN' },
-      {
-        code: 'MAIN',
-        name: `${organization.name} Main Branch`,
-        status: 'active',
-        organizationId: organizationObjectId,
-      },
-      { new: true, setDefaultsOnInsert: true, upsert: true },
-    );
-
-    return [branch.toObject()];
+    const [items, total] = await Promise.all([
+      this.branches
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.branches.countDocuments(filter),
+    ]);
+    return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
   }
 
   async updateBranchStatus(id: string, organizationId: string, status: string) {
@@ -288,14 +286,36 @@ export class OrganizationsService {
     );
   }
 
-  async listDepartments(organizationId: string) {
-    return this.departments
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
-      })
-      .sort({ name: 1 })
-      .lean();
+  async listDepartments(query: ListOrganizationStructureDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveStructureSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const filter: FilterQuery<DepartmentDocument> = {
+      organizationId: toOrganizationObjectId(query.organizationId),
+      ...(query.branchId
+        ? { branchId: toRequiredObjectId(query.branchId) }
+        : {}),
+      status: query.status ?? 'active',
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { function: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.departments
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.departments.countDocuments(filter),
+    ]);
+    return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
   }
 
   async updateDepartmentStatus(
@@ -331,14 +351,35 @@ export class OrganizationsService {
     );
   }
 
-  async listTeams(organizationId: string) {
-    return this.teams
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
-      })
-      .sort({ name: 1 })
-      .lean();
+  async listTeams(query: ListOrganizationStructureDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveStructureSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const filter: FilterQuery<TeamDocument> = {
+      organizationId: toOrganizationObjectId(query.organizationId),
+      ...(query.departmentId
+        ? { departmentId: toRequiredObjectId(query.departmentId) }
+        : {}),
+      status: query.status ?? 'active',
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.teams
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.teams.countDocuments(filter),
+    ]);
+    return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
   }
 
   async updateTeamStatus(id: string, organizationId: string, status: string) {
@@ -540,17 +581,17 @@ export class OrganizationsService {
         this.organizations
           .findById(toOrganizationObjectId(organizationId))
           .lean(),
-        this.listBranches(organizationId),
-        this.listDepartments(organizationId),
-        this.listTeams(organizationId),
+        this.listBranches({ organizationId, limit: '100' }),
+        this.listDepartments({ organizationId, limit: '100' }),
+        this.listTeams({ organizationId, limit: '100' }),
         this.listOrganizationUsers({ organizationId, limit: '100' }),
       ]);
 
     return {
       organization,
-      branches,
-      departments,
-      teams,
+      branches: branches.items,
+      departments: departments.items,
+      teams: teams.items,
       users: users.items,
     };
   }
@@ -579,6 +620,37 @@ export class OrganizationsService {
   private resolveOrganizationUserSortBy(value?: string) {
     const allowed = new Set(['createdAt', 'role', 'status', 'updatedAt']);
     return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private resolveStructureSortBy(value?: string) {
+    const allowed = new Set([
+      'code',
+      'createdAt',
+      'name',
+      'status',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'name';
+  }
+
+  private toPaginatedResult<T>(
+    items: T[],
+    total: number,
+    page: number,
+    limit: number,
+    sortBy: string,
+    sortOrder: 1 | -1,
+  ) {
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   private toPositiveInt(value: string | undefined, fallback: number) {

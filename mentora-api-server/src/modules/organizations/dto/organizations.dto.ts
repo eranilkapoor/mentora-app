@@ -174,6 +174,43 @@ export class CreateBranchDto {
   state?: string;
 }
 
+export class ListOrganizationStructureDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive'])
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: string;
+}
+
 export class CreateLeadSourceDto {
   @IsMongoId()
   organizationId!: string;

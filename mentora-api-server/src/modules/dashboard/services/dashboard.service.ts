@@ -71,10 +71,14 @@ export class DashboardService {
             },
           ];
     const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
+    const isSuperAdmin = roles.includes(Role.SUPER_ADMIN);
+    const contextOrganizationId = this.getContextOrganizationId(
+      resolvedContexts[0],
+    );
     const activeOrganizationId =
       organizationId ??
-      this.getContextOrganizationId(resolvedContexts[0]) ??
-      this.getRecordId(organizations[0]);
+      contextOrganizationId ??
+      (isSuperAdmin ? '' : this.getRecordId(organizations[0]));
 
     return {
       activeOrganizationId,

@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowsRotate, faBuilding } from "@fortawesome/free-solid-svg-icons";
+import { faBuilding } from "@fortawesome/free-solid-svg-icons";
 import type { DemoContext } from "../store";
 import { AdminIcon as Icon } from "./AdminIcon";
 import { getUnknownRecordId } from "./adminUtils";
@@ -29,15 +29,33 @@ export function WorkspaceSwitcher({
   onOrganizationChange: (organizationId: string) => void;
   organizations: unknown[];
 }) {
-  const organizationOptions = getOrganizationOptions(organizations, contexts);
-  const branchOptions = getBranchOptions(
-    branches,
-    contexts.filter((context) => context.organization === activeContext.organization),
-  );
-  const selectedOrganizationValue =
-    activeOrganizationId || organizationOptions[0]?.value || activeContext.organization;
-  const selectedBranchValue =
-    activeBranchId || branchOptions[0]?.value || activeContext.branch;
+  const organizationOptions = canSwitchOrganization
+    ? [
+        { label: "All organizations", value: "" },
+        ...getOrganizationOptions(organizations, contexts),
+      ]
+    : getOrganizationOptions(organizations, contexts);
+  const branchOptions = canSwitchBranch
+    ? [
+        { label: "All branches", value: "" },
+        ...(activeOrganizationId
+          ? getBranchOptions(
+              branches,
+              contexts.filter(
+                (context) =>
+                  context.organization === activeContext.organization,
+              ),
+            )
+          : []),
+      ]
+    : getBranchOptions(
+        branches,
+        contexts.filter(
+          (context) => context.organization === activeContext.organization,
+        ),
+      );
+  const selectedOrganizationValue = activeOrganizationId;
+  const selectedBranchValue = activeBranchId;
 
   function selectContext(field: "organization" | "branch", value: string) {
     if (field === "organization" && organizations.length > 0) {
@@ -56,7 +74,8 @@ export function WorkspaceSwitcher({
         );
       }
       return (
-        context.organization === activeContext.organization && context.branch === value
+        context.organization === activeContext.organization &&
+        context.branch === value
       );
     });
     const fallbackMatch =
@@ -74,7 +93,9 @@ export function WorkspaceSwitcher({
           <Icon name="organization" />
           <select
             aria-label="Organization"
-            onChange={(event) => selectContext("organization", event.target.value)}
+            onChange={(event) =>
+              selectContext("organization", event.target.value)
+            }
             value={selectedOrganizationValue}
           >
             {organizationOptions.map((organization) => (
@@ -111,7 +132,10 @@ export function WorkspaceSwitcher({
   );
 }
 
-export function getOrganizationOptions(organizations: unknown[], contexts: DemoContext[]) {
+export function getOrganizationOptions(
+  organizations: unknown[],
+  contexts: DemoContext[],
+) {
   const apiOptions = organizations
     .map((organization) => {
       const object =
@@ -162,51 +186,3 @@ export function getRecordOptions(records: unknown[]) {
     })
     .filter((item): item is { label: string; value: string } => Boolean(item));
 }
-
-export function WorkspaceSyncAction({
-  apiSyncEnabled,
-  onSync,
-  workspace,
-}: {
-  apiSyncEnabled: boolean;
-  onSync: () => void;
-  workspace: {
-    coverage: unknown[];
-    activeOrganizationId: string;
-    error: string | null;
-    loading: boolean;
-    organizations: unknown[];
-  };
-}) {
-  const statusLabel = workspace.loading
-    ? "Syncing"
-    : workspace.error
-      ? "Sync issue"
-      : apiSyncEnabled
-        ? "Synced"
-        : "Sync";
-  const title = workspace.error
-    ? workspace.error
-    : apiSyncEnabled
-      ? `${workspace.organizations.length} organization${workspace.organizations.length === 1 ? "" : "s"} loaded / ${
-          workspace.coverage.length
-        } modules`
-      : "Load organization-scoped server records";
-
-  return (
-    <button
-      aria-label={title}
-      className={`sync-action ${workspace.error ? "has-error" : ""} ${
-        apiSyncEnabled ? "is-synced" : ""
-      }`}
-      disabled={workspace.loading}
-      onClick={onSync}
-      title={title}
-      type="button"
-    >
-      <FontAwesomeIcon icon={faArrowsRotate} />
-      <span>{statusLabel}</span>
-    </button>
-  );
-}
-

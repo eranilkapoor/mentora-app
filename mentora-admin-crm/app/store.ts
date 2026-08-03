@@ -66,6 +66,12 @@ export type LoginCredentials = {
   password: string;
 };
 
+export type ChangePasswordDraft = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
 export type OrganizationDraft = {
   branchCity?: string;
   branchCode?: string;
@@ -510,6 +516,17 @@ export const loginWithCredentials = createAsyncThunk(
         },
       ],
     } satisfies AuthenticatedCrmUser;
+  },
+);
+
+export const changeCrmPassword = createAsyncThunk(
+  "crmSession/changeCrmPassword",
+  async (draft: ChangePasswordDraft) => {
+    return sendJson("/auth/change-password", "POST", {
+      oldPassword: draft.currentPassword,
+      newPassword: draft.newPassword,
+      confirmPassword: draft.confirmPassword,
+    });
   },
 );
 
@@ -1475,6 +1492,12 @@ const crmSessionSlice = createSlice({
           "Login failed. Use seeded credentials or create a CRM user.";
         state.toast = state.loginError;
       })
+      .addCase(changeCrmPassword.fulfilled, (state) => {
+        state.toast = "Password changed";
+      })
+      .addCase(changeCrmPassword.rejected, (state, action) => {
+        state.toast = action.error.message ?? "Password change failed";
+      })
       .addMatcher(isRejected, (state, action) => {
         if (
           action.type !== loginWithCredentials.rejected.type &&
@@ -1536,7 +1559,7 @@ const crmWorkspaceSlice = createSlice({
         state.activeOrganizationId =
           typeof data.activeOrganizationId === "string"
             ? data.activeOrganizationId
-            : getRecordId(organizations[0]);
+            : state.activeOrganizationId;
         state.activeBranchId = "";
         state.branches = [];
         state.departments = [];
@@ -1550,9 +1573,6 @@ const crmWorkspaceSlice = createSlice({
       .addCase(loadOrganizations.fulfilled, (state, action) => {
         const organizations = normalizeApiData(action.payload);
         state.organizations = organizations;
-        if (!state.activeOrganizationId) {
-          state.activeOrganizationId = getRecordId(organizations[0]);
-        }
         state.error = null;
       })
       .addCase(loadCrmWorkspace.rejected, (state, action) => {
@@ -1562,7 +1582,6 @@ const crmWorkspaceSlice = createSlice({
       })
       .addCase(loadBranches.fulfilled, (state, action) => {
         state.branches = normalizeApiData(action.payload);
-        state.activeBranchId = getRecordId(state.branches[0]);
         state.error = null;
       })
       .addCase(loadIdentityHierarchy.fulfilled, (state, action) => {
@@ -1576,7 +1595,6 @@ const crmWorkspaceSlice = createSlice({
         state.departments = normalizeApiData(data.departments);
         state.teams = normalizeApiData(data.teams);
         state.moduleRecords.users = normalizeApiData(data.users);
-        state.activeBranchId = getRecordId(state.branches[0]);
         state.error = null;
       })
       .addCase(loadModuleRecords.fulfilled, (state, action) => {
@@ -1803,6 +1821,12 @@ const crmWorkspaceSlice = createSlice({
       .addCase(loadOrganizationUsers.fulfilled, (state, action) => {
         state.moduleRecords.users = normalizeApiData(action.payload);
         state.error = null;
+      })
+      .addCase(loadOrganizationUsers.rejected, (state, action) => {
+        state.moduleRecords.users = [];
+        state.error =
+          action.error.message ??
+          "Unable to load users. Check CRM permissions and API status.";
       })
       .addCase(loadRbacRecords.fulfilled, (state, action) => {
         state.moduleRecords[action.payload.moduleKey] = normalizeApiData(

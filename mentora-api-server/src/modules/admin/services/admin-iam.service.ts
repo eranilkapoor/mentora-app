@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { FilterQuery, Model, Types } from 'mongoose';
@@ -38,22 +38,43 @@ export class AdminIamService {
     private readonly memberships: Model<UserMembershipDocument>,
   ) {}
 
-  async listUsers(query: ListAdminUsersDto): Promise<AdminApiObject> {
+  async listUsers(
+    query: ListAdminUsersDto,
+    actorId?: string,
+  ): Promise<AdminApiObject> {
     const page = this.toPositiveInt(query.page, 1);
     const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
     const sortBy = this.resolveUserSortBy(query.sortBy);
     const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
+    const actorScope = await this.resolveActorScope(actorId);
+    const allowedOrganizationIds = actorScope.organizationIds;
+    const shouldRestrictOrganizations = !actorScope.isSuperAdmin;
+    if (shouldRestrictOrganizations && allowedOrganizationIds.length === 0) {
+      throw new ForbiddenException('No active organization access');
+    }
+    if (
+      query.organizationId &&
+      shouldRestrictOrganizations &&
+      !allowedOrganizationIds.some((id) => id.equals(query.organizationId))
+    ) {
+      throw new ForbiddenException('Organization access denied');
+    }
     const membershipFilter: FilterQuery<UserMembershipDocument> = {
       ...(query.organizationId
         ? { organizationId: toRequiredObjectId(query.organizationId) }
-        : {}),
+        : shouldRestrictOrganizations
+          ? { organizationId: { $in: allowedOrganizationIds } }
+          : {}),
       ...(query.branchId
         ? { branchIds: toRequiredObjectId(query.branchId) }
         : {}),
       ...(query.role ? { role: query.role } : {}),
     };
     const membershipUserIds =
-      query.organizationId || query.branchId || query.role
+      query.organizationId ||
+      query.branchId ||
+      query.role ||
+      shouldRestrictOrganizations
         ? (
             await this.memberships
               .find(membershipFilter)
@@ -330,5 +351,32 @@ export class AdminIamService {
     if (role === 'student') return Role.STUDENT;
     if (role === 'parent') return Role.PARENT;
     return Role.ADMIN;
+  }
+
+  private async resolveActorScope(actorId?: string): Promise<{
+    isSuperAdmin: boolean;
+    organizationIds: Types.ObjectId[];
+  }> {
+    if (!actorId) return { isSuperAdmin: false, organizationIds: [] };
+    const actor = await this.users
+      .findById(actorId)
+      .select('roles')
+      .lean()
+      .exec();
+    const roles = (actor?.roles ?? []).map(String);
+    if (roles.includes(Role.SUPER_ADMIN)) {
+      return { isSuperAdmin: true, organizationIds: [] };
+    }
+    const memberships = await this.memberships
+      .find({ userId: toRequiredObjectId(actorId), status: 'active' })
+      .select('organizationId')
+      .lean()
+      .exec();
+    return {
+      isSuperAdmin: false,
+      organizationIds: memberships.map((membership) =>
+        toRequiredObjectId(String(membership.organizationId)),
+      ),
+    };
   }
 }

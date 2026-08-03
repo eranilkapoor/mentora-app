@@ -7,7 +7,6 @@ import {
   faAnglesLeft,
   faAnglesRight,
   faArrowRightFromBracket,
-  faArrowsRotate,
   faBarsProgress,
   faBell,
   faBuilding,
@@ -15,10 +14,15 @@ import {
   faChevronRight,
   faGrip,
   faHouse,
+  faKey,
+  faMoon,
   faSort,
   faSortDown,
   faSortUp,
+  faSun,
   faTableList,
+  faUser,
+  faUserCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   crmSessionActions,
@@ -26,6 +30,7 @@ import {
   addLeadAttachment,
   bulkUpdateDedicatedCrmRecordStatus,
   bulkUpdateModuleRecordStatus,
+  changeCrmPassword,
   createBranch,
   createDepartment,
   createOrganization,
@@ -104,7 +109,6 @@ import {
   type ThemeMode,
 } from "./adminConfig";
 import {
-  extractFirstId,
   findModuleCoverage,
   findOrganizationIdByName,
   formatReadiness,
@@ -123,13 +127,12 @@ import {
 import { AdminIcon as Icon } from "./AdminIcon";
 import { Dashboard } from "./Dashboard";
 import { SecurityControlCenter } from "./SecurityControlCenter";
-import { LoginScreen, ThemeSelector } from "./shellAuth";
+import { LoginScreen } from "./shellAuth";
 import {
   getBranchOptions,
   getOrganizationOptions,
   getRecordOptions,
   WorkspaceSwitcher,
-  WorkspaceSyncAction,
 } from "./shellWorkspace";
 
 export default function AdminDashboardPage() {
@@ -181,6 +184,7 @@ export default function AdminDashboardPage() {
     kind: OrganizationSetupKind;
     title: string;
   } | null>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [organizationUserFormOpen, setOrganizationUserFormOpen] =
     useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
@@ -219,11 +223,13 @@ export default function AdminDashboardPage() {
     void dispatch(loadOrganizations());
   }, [accessToken, activeContext, dispatch, loggedInUser]);
 
-  const activeOrganizationId = useMemo(
-    () =>
-      workspace.activeOrganizationId || extractFirstId(workspace.organizations),
-    [workspace.activeOrganizationId, workspace.organizations],
-  );
+  const activeOrganizationId = workspace.activeOrganizationId;
+  const activeSessionRole =
+    activeContext?.role ?? loggedInUser?.contexts[0]?.role ?? "";
+  const userListOrganizationId =
+    activeSessionRole === "super_admin"
+      ? workspace.activeOrganizationId
+      : activeOrganizationId;
   const organizationDetailStats = useMemo(
     () => [
       { label: "Branches", value: workspace.branches.length },
@@ -266,7 +272,7 @@ export default function AdminDashboardPage() {
         loadOrganizationUsers({
           branchId: workspace.activeBranchId || undefined,
           limit: pageSize,
-          organizationId: activeOrganizationId || undefined,
+          organizationId: userListOrganizationId || undefined,
           page: currentPage,
           search: query.trim() || undefined,
           sortBy: toServerSortKey(moduleMap[activeId]?.columns[sort.column]),
@@ -284,7 +290,7 @@ export default function AdminDashboardPage() {
     if (activeId === "authentication") {
       void dispatch(
         loadAuthOverview({
-          organizationId: activeOrganizationId || undefined,
+          organizationId: userListOrganizationId || undefined,
         }),
       );
       return;
@@ -375,6 +381,7 @@ export default function AdminDashboardPage() {
     query,
     sort,
     workspace.activeBranchId,
+    userListOrganizationId,
   ]);
 
   const activeModule = moduleMap[activeId];
@@ -847,7 +854,7 @@ export default function AdminDashboardPage() {
             loadOrganizationUsers({
               branchId: workspace.activeBranchId || undefined,
               limit: pageSize,
-              organizationId: activeOrganizationId || undefined,
+              organizationId: userListOrganizationId || undefined,
               page: currentPage,
               search: query.trim() || undefined,
             }),
@@ -868,7 +875,7 @@ export default function AdminDashboardPage() {
           await dispatch(
             loadOrganizationUsers({
               limit: pageSize,
-              organizationId: activeOrganizationId || undefined,
+              organizationId: userListOrganizationId || undefined,
               page: currentPage,
             }),
           ).unwrap();
@@ -880,7 +887,7 @@ export default function AdminDashboardPage() {
           loadOrganizationUsers({
             branchId: workspace.activeBranchId || undefined,
             limit: pageSize,
-            organizationId: activeOrganizationId || undefined,
+            organizationId: userListOrganizationId || undefined,
             page: currentPage,
             search: query.trim() || undefined,
           }),
@@ -958,7 +965,7 @@ export default function AdminDashboardPage() {
         ) {
           const result = await dispatch(
             loadAuthOverview({
-              organizationId: activeOrganizationId || undefined,
+              organizationId: userListOrganizationId || undefined,
             }),
           ).unwrap();
           const data = normalizeResponseObject(result);
@@ -974,7 +981,7 @@ export default function AdminDashboardPage() {
 
         await dispatch(
           loadAuthOverview({
-            organizationId: activeOrganizationId || undefined,
+            organizationId: userListOrganizationId || undefined,
           }),
         ).unwrap();
         dispatch(crmSessionActions.setToast("Authentication overview loaded"));
@@ -2068,6 +2075,24 @@ export default function AdminDashboardPage() {
       dispatch(crmSessionActions.setToast("API record was not found"));
       return;
     }
+    if (activeModule.id === "users") {
+      await dispatch(
+        updateAdminUser({
+          id: recordId,
+          status: "suspended",
+        }),
+      ).unwrap();
+      await dispatch(
+        loadOrganizationUsers({
+          limit: pageSize,
+          organizationId: userListOrganizationId || undefined,
+          page: currentPage,
+          search: query.trim() || undefined,
+        }),
+      ).unwrap();
+      dispatch(crmSessionActions.setToast("User access suspended"));
+      return;
+    }
     if (activeModule.id === "roles" || activeModule.id === "permissions") {
       await dispatch(
         saveRbacRecord({
@@ -2124,6 +2149,24 @@ export default function AdminDashboardPage() {
     const recordId = findModuleRecordIdForRow(getActiveModuleApiRecords(), row);
     if (!recordId) {
       dispatch(crmSessionActions.setToast("API record was not found"));
+      return;
+    }
+    if (activeModule.id === "users") {
+      await dispatch(
+        updateAdminUser({
+          id: recordId,
+          status: "active",
+        }),
+      ).unwrap();
+      await dispatch(
+        loadOrganizationUsers({
+          limit: pageSize,
+          organizationId: userListOrganizationId || undefined,
+          page: currentPage,
+          search: query.trim() || undefined,
+        }),
+      ).unwrap();
+      dispatch(crmSessionActions.setToast("User access activated"));
       return;
     }
     if (activeModule.id === "roles" || activeModule.id === "permissions") {
@@ -2306,7 +2349,7 @@ export default function AdminDashboardPage() {
               <WorkspaceSwitcher
                 activeContext={currentContext}
                 activeBranchId={workspace.activeBranchId}
-                activeOrganizationId={activeOrganizationId}
+                activeOrganizationId={workspace.activeOrganizationId}
                 branches={workspace.branches}
                 canSwitchBranch={canSwitchBranch}
                 canSwitchOrganization={canSwitchOrganization}
@@ -2323,6 +2366,11 @@ export default function AdminDashboardPage() {
                   );
                   setApiSyncEnabled(true);
                   void (async () => {
+                    if (!organizationId) {
+                      await dispatch(loadCrmWorkspace());
+                      await dispatch(loadOrganizations());
+                      return;
+                    }
                     await dispatch(loadCrmWorkspace({ organizationId }));
                     await dispatch(loadBranches({ organizationId }));
                     await dispatch(loadIdentityHierarchy({ organizationId }));
@@ -2330,54 +2378,55 @@ export default function AdminDashboardPage() {
                 }}
                 organizations={workspace.organizations}
               />
-              <ThemeSelector
-                setThemeMode={(value) =>
-                  dispatch(crmSessionActions.setThemeMode(value))
+              <ThemeSwitch
+                onToggle={() =>
+                  dispatch(
+                    crmSessionActions.setThemeMode(
+                      themeMode === "dark" ? "light" : "dark",
+                    ),
+                  )
                 }
-                themeMode={themeMode}
-              />
-              <WorkspaceSyncAction
-                apiSyncEnabled={apiSyncEnabled}
-                onSync={() => {
-                  if (!accessToken) {
-                    dispatch(
-                      crmSessionActions.setToast(
-                        "Sign in with valid credentials before syncing API data",
-                      ),
-                    );
-                    return;
-                  }
-                  setApiSyncEnabled(true);
-                  void dispatch(loadCrmWorkspace());
-                  void dispatch(loadOrganizations());
-                }}
-                workspace={workspace}
+                themeMode={themeMode === "system" ? "light" : themeMode}
               />
               <button
                 aria-label="Open notifications"
-                className="icon-action"
+                className="topbar-icon-button"
                 onClick={() => {
                   openModule("notifications");
                 }}
                 type="button"
               >
                 <FontAwesomeIcon icon={faBell} />
-                <span>Notifications</span>
                 <em>3</em>
               </button>
-              <button
-                className="logout-action"
-                onClick={() => dispatch(crmSessionActions.logout())}
-                type="button"
-              >
-                <FontAwesomeIcon icon={faArrowRightFromBracket} />
-                <span>Logout</span>
-              </button>
+              <ProfileDropdown
+                isOpen={isProfileMenuOpen}
+                onChangePassword={() => {
+                  router.push(getModuleHref("change-password"));
+                  setIsProfileMenuOpen(false);
+                }}
+                onLogout={() => dispatch(crmSessionActions.logout())}
+                onMyProfile={() => {
+                  router.push(getModuleHref("my-profile"));
+                  setIsProfileMenuOpen(false);
+                }}
+                onToggle={() => setIsProfileMenuOpen((current) => !current)}
+                user={loggedInUser}
+              />
             </div>
           </div>
         </header>
 
-        {activeId === "dashboard" ? (
+        {activeId === "my-profile" ? (
+          <MyProfilePage activeContext={currentContext} user={loggedInUser} />
+        ) : activeId === "change-password" ? (
+          <ChangePasswordPage
+            onSubmit={async (draft) => {
+              await dispatch(changeCrmPassword(draft)).unwrap();
+              dispatch(crmSessionActions.setToast("Password changed"));
+            }}
+          />
+        ) : activeId === "dashboard" ? (
           <Dashboard
             canAccessModule={canAccessModule}
             openModule={openModule}
@@ -2753,6 +2802,243 @@ export default function AdminDashboardPage() {
   );
 }
 
+function MyProfilePage({
+  activeContext,
+  user,
+}: {
+  activeContext: DemoContext;
+  user: DemoUser;
+}) {
+  const profileRows = [
+    ["Name", user.name],
+    ["Email", user.email],
+    ["Active Role", activeContext.role.replaceAll("_", " ")],
+    ["Organization", activeContext.organization],
+    ["Branch", activeContext.branch],
+    ["Available Contexts", String(user.contexts.length)],
+  ];
+
+  return (
+    <section className="workspace account-page">
+      <div className="module-hero">
+        <div>
+          <span className="eyebrow">Account</span>
+          <h1>My Profile</h1>
+          <p>Your CRM identity, active context, and access scope.</p>
+        </div>
+      </div>
+      <div className="account-panel">
+        <div className="account-panel-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell">
+              <FontAwesomeIcon icon={faUser} />
+            </div>
+            <div>
+              <span className="eyebrow">Account</span>
+              <h3 id="my-profile-title">My Profile</h3>
+              <p>Your CRM identity, active context, and access scope.</p>
+            </div>
+          </div>
+        </div>
+        <dl className="detail-definition-list">
+          {profileRows.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>{formatStatus(value)}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+function ThemeSwitch({
+  onToggle,
+  themeMode,
+}: {
+  onToggle: () => void;
+  themeMode: "light" | "dark";
+}) {
+  const isDark = themeMode === "dark";
+  return (
+    <button
+      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      className={`theme-fancy-switch ${isDark ? "is-dark" : "is-light"}`}
+      onClick={onToggle}
+      title={isDark ? "Dark theme" : "Light theme"}
+      type="button"
+    >
+      <span className="theme-switch-track">
+        <span className="theme-switch-thumb">
+          <FontAwesomeIcon icon={isDark ? faMoon : faSun} />
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function ProfileDropdown({
+  isOpen,
+  onChangePassword,
+  onLogout,
+  onMyProfile,
+  onToggle,
+  user,
+}: {
+  isOpen: boolean;
+  onChangePassword: () => void;
+  onLogout: () => void;
+  onMyProfile: () => void;
+  onToggle: () => void;
+  user: DemoUser;
+}) {
+  return (
+    <div className="profile-menu">
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        className="profile-menu-trigger"
+        onClick={onToggle}
+        type="button"
+      >
+        <FontAwesomeIcon icon={faUserCircle} />
+        <span>{user.name}</span>
+      </button>
+      {isOpen ? (
+        <div className="profile-menu-dropdown" role="menu">
+          <button onClick={onMyProfile} role="menuitem" type="button">
+            <FontAwesomeIcon icon={faUser} />
+            My Profile
+          </button>
+          <button onClick={onChangePassword} role="menuitem" type="button">
+            <FontAwesomeIcon icon={faKey} />
+            Change Password
+          </button>
+          <button onClick={onLogout} role="menuitem" type="button">
+            <FontAwesomeIcon icon={faArrowRightFromBracket} />
+            Logout
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function ChangePasswordPage({
+  onSubmit,
+}: {
+  onSubmit: (draft: {
+    confirmPassword: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => Promise<void>;
+}) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit() {
+    setError("");
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("All password fields are required.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirmation must match.");
+      return;
+    }
+    if (newPassword.length < 12) {
+      setError("New password must be at least 12 characters.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await onSubmit({ confirmPassword, currentPassword, newPassword });
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to change password.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <section className="workspace account-page">
+      <div className="module-hero">
+        <div>
+          <span className="eyebrow">Security</span>
+          <h1>Change Password</h1>
+          <p>Update your CRM login password for this account.</p>
+        </div>
+      </div>
+      <form
+        className="account-panel"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit();
+        }}
+      >
+        <div className="account-panel-head">
+          <div className="modal-title-cluster">
+            <div className="modal-icon-shell">
+              <FontAwesomeIcon icon={faKey} />
+            </div>
+            <div>
+              <span className="eyebrow">Security</span>
+              <h3 id="change-password-title">Change Password</h3>
+              <p>Update your CRM login password for this account.</p>
+            </div>
+          </div>
+        </div>
+        <div className="modal-form-grid">
+          <label className="formrow wide">
+            <span className="label">Current password</span>
+            <input
+              autoComplete="current-password"
+              className="input form-control"
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              type="password"
+              value={currentPassword}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">New password</span>
+            <input
+              autoComplete="new-password"
+              className="input form-control"
+              onChange={(event) => setNewPassword(event.target.value)}
+              type="password"
+              value={newPassword}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">Confirm new password</span>
+            <input
+              autoComplete="new-password"
+              className="input form-control"
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              type="password"
+              value={confirmPassword}
+            />
+          </label>
+        </div>
+        {error ? <div className="auth-error modal-error">{error}</div> : null}
+        <div className="record-modal-actions">
+          <button className="btn btn-primary" disabled={isSaving} type="submit">
+            {isSaving ? "Updating" : "Update Password"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 function ModulePanel(props: {
   activeContext: DemoContext;
   coverage: ModuleCoverage | null;
@@ -2789,6 +3075,7 @@ function ModulePanel(props: {
 }) {
   const module = props.module;
   const isRbacModule = module.id === "roles" || module.id === "permissions";
+  const isUserAccessModule = module.id === "users";
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const readinessLabel = props.coverage
     ? formatReadiness(props.coverage)
@@ -2877,7 +3164,7 @@ function ModulePanel(props: {
       ) : null}
 
       {module.id === "users" ? (
-        <UsersCommandCenter runAction={props.runAction} total={props.total} />
+        <UsersCommandCenter total={props.total} />
       ) : null}
 
       <div className="navigationlist">
@@ -3128,11 +3415,22 @@ function ModulePanel(props: {
                 ) : (
                   props.rows.map((row, rowIndex) => {
                     const id = getVisibleRowId(row, rowIndex);
-                    const isArchived = row.some((value) =>
-                      isRbacModule
-                        ? value.toLowerCase() === "inactive"
-                        : value.toLowerCase() === "archived",
+                    const lifecycleState = getRowLifecycleState(
+                      row,
+                      isRbacModule,
+                      isUserAccessModule,
                     );
+                    const isArchived = lifecycleState.isInactive;
+                    const activateLabel = isUserAccessModule
+                      ? "Activate"
+                      : isRbacModule
+                        ? "Activate"
+                        : "Restore";
+                    const inactiveLabel = isUserAccessModule
+                      ? "Suspend"
+                      : isRbacModule
+                        ? "Inactivate"
+                        : "Archive";
                     return (
                       <tr
                         className={
@@ -3173,7 +3471,9 @@ function ModulePanel(props: {
                           {isArchived ? (
                             <button
                               className={
-                                isRbacModule ? "row-action-active" : undefined
+                                isRbacModule || isUserAccessModule
+                                  ? "row-action-active"
+                                  : undefined
                               }
                               onClick={() => {
                                 props.requestRestoreRow(row);
@@ -3181,12 +3481,14 @@ function ModulePanel(props: {
                               type="button"
                             >
                               <Icon name="check" />
-                              {isRbacModule ? "Activate" : "Restore"}
+                              {activateLabel}
                             </button>
                           ) : (
                             <button
                               className={
-                                isRbacModule ? "row-action-inactive" : undefined
+                                isRbacModule || isUserAccessModule
+                                  ? "row-action-inactive"
+                                  : undefined
                               }
                               onClick={() => {
                                 void props.archiveRow(row);
@@ -3194,7 +3496,7 @@ function ModulePanel(props: {
                               type="button"
                             >
                               <Icon name="shield" />
-                              {isRbacModule ? "Inactivate" : "Archive"}
+                              {inactiveLabel}
                             </button>
                           )}
                         </td>
@@ -3226,11 +3528,22 @@ function ModulePanel(props: {
             ) : (
               props.rows.map((row, rowIndex) => {
                 const id = getVisibleRowId(row, rowIndex);
-                const isArchived = row.some((value) =>
-                  isRbacModule
-                    ? value.toLowerCase() === "inactive"
-                    : value.toLowerCase() === "archived",
+                const lifecycleState = getRowLifecycleState(
+                  row,
+                  isRbacModule,
+                  isUserAccessModule,
                 );
+                const isArchived = lifecycleState.isInactive;
+                const activateLabel = isUserAccessModule
+                  ? "Activate"
+                  : isRbacModule
+                    ? "Activate"
+                    : "Restore";
+                const inactiveLabel = isUserAccessModule
+                  ? "Suspend"
+                  : isRbacModule
+                    ? "Inactivate"
+                    : "Archive";
                 return (
                   <article
                     className={`record-card ${
@@ -3274,7 +3587,9 @@ function ModulePanel(props: {
                       {isArchived ? (
                         <button
                           className={`btn btn-sm ${
-                            isRbacModule ? "row-action-active" : "btn-light"
+                            isRbacModule || isUserAccessModule
+                              ? "row-action-active"
+                              : "btn-light"
                           }`}
                           onClick={() => {
                             props.requestRestoreRow(row);
@@ -3282,12 +3597,14 @@ function ModulePanel(props: {
                           type="button"
                         >
                           <Icon name="check" />
-                          {isRbacModule ? "Activate" : "Restore"}
+                          {activateLabel}
                         </button>
                       ) : (
                         <button
                           className={`btn btn-sm ${
-                            isRbacModule ? "row-action-inactive" : "btn-light"
+                            isRbacModule || isUserAccessModule
+                              ? "row-action-inactive"
+                              : "btn-light"
                           }`}
                           onClick={() => {
                             void props.archiveRow(row);
@@ -3295,7 +3612,7 @@ function ModulePanel(props: {
                           type="button"
                         >
                           <Icon name="shield" />
-                          {isRbacModule ? "Inactivate" : "Archive"}
+                          {inactiveLabel}
                         </button>
                       )}
                     </div>
@@ -3408,6 +3725,23 @@ function getRecordStatus(row: string[]) {
   );
 }
 
+function getRowLifecycleState(
+  row: string[],
+  isRbacModule: boolean,
+  isUserAccessModule: boolean,
+) {
+  const inactiveValues = isRbacModule
+    ? ["inactive"]
+    : isUserAccessModule
+      ? ["inactive", "suspended", "blocked"]
+      : ["archived"];
+  return {
+    isInactive: row.some((value) =>
+      inactiveValues.includes(value.toLowerCase()),
+    ),
+  };
+}
+
 function AuthenticationCommandCenter(props: {
   runAction: (label: string) => Promise<void>;
 }) {
@@ -3465,10 +3799,7 @@ function AuthenticationCommandCenter(props: {
   );
 }
 
-function UsersCommandCenter(props: {
-  runAction: (label: string) => Promise<void>;
-  total: number;
-}) {
+function UsersCommandCenter(props: { total: number }) {
   const userScopes = [
     "Super admins operate the full platform.",
     "Organization admins manage one organization.",
@@ -3494,21 +3825,7 @@ function UsersCommandCenter(props: {
       </div>
       <div className="iam-action-strip">
         <strong>{props.total.toLocaleString()} live users</strong>
-        {["Create User", "Access review", "Revoke sessions"].map((label) => (
-          <button
-            className={
-              label === "Create User"
-                ? "btn btn-primary"
-                : "btn btn-light secondary"
-            }
-            key={label}
-            onClick={() => void props.runAction(label)}
-            type="button"
-          >
-            <Icon name={label.includes("User") ? "user" : "shield"} />
-            {label}
-          </button>
-        ))}
+        <span>Search, create, suspend, activate, and audit users below.</span>
       </div>
     </section>
   );
@@ -3792,7 +4109,9 @@ function RestoreConfirmModal({
 }) {
   const [isRestoring, setIsRestoring] = useState(false);
   const isRbacModule = module.id === "roles" || module.id === "permissions";
+  const isUserAccessModule = module.id === "users";
   const actionLabel = isRbacModule ? "Activate" : "Restore";
+  const effectiveActionLabel = isUserAccessModule ? "Activate" : actionLabel;
 
   async function confirmRestore() {
     setIsRestoring(true);
@@ -3814,13 +4133,18 @@ function RestoreConfirmModal({
               <Icon name="check" />
             </div>
             <div>
-              <span className="eyebrow">{actionLabel} Confirmation</span>
+              <span className="eyebrow">
+                {effectiveActionLabel} Confirmation
+              </span>
               <h3 id="restore-confirm-title">
-                {actionLabel} this {module.title} record?
+                {effectiveActionLabel} this {module.title} record?
               </h3>
               <p>
-                This will move the record back into the active RBAC catalogue
-                and make it available for access configuration.
+                {isRbacModule
+                  ? "This will move the record back into the active RBAC catalogue and make it available for access configuration."
+                  : isUserAccessModule
+                    ? "This will restore the user to active access and allow them to sign in according to their memberships and permissions."
+                    : "This will move the record back into active workflows."}
               </p>
             </div>
           </div>
@@ -3856,7 +4180,9 @@ function RestoreConfirmModal({
             }}
             type="button"
           >
-            {isRestoring ? `${actionLabel}...` : `${actionLabel} Record`}
+            {isRestoring
+              ? `${effectiveActionLabel}...`
+              : `${effectiveActionLabel} Record`}
           </button>
         </div>
       </section>
@@ -5114,6 +5440,8 @@ function renderCell(value: string) {
     [
       "inactive",
       "pending",
+      "inactive",
+      "suspended",
       "review",
       "draft",
       "open",
@@ -5123,7 +5451,7 @@ function renderCell(value: string) {
     ].includes(normalized)
   )
     return <span className="badge warn">{formatBadgeLabel(value)}</span>;
-  if (["urgent", "high", "hot"].includes(normalized))
+  if (["urgent", "high", "hot", "blocked"].includes(normalized))
     return <span className="badge danger">{formatBadgeLabel(value)}</span>;
   return value;
 }

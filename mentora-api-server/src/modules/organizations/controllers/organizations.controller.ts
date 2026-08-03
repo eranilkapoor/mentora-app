@@ -27,6 +27,7 @@ import {
   CreateTeamDto,
   CreateOrganizationUserDto,
   CreateOrganizationDto,
+  ListOrganizationStructureDto,
   ListOrganizationsDto,
   ListOrganizationUsersDto,
   UpdateOrganizationDto,
@@ -98,9 +99,9 @@ export class OrganizationsController {
 
   @Get('identity/hierarchy')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async getIdentityHierarchy(@Query('organizationId') organizationId: string) {
+  async getIdentityHierarchy(@Query() query: ListOrganizationStructureDto) {
     return successResponse(
-      await this.service.getIdentityHierarchy(organizationId),
+      await this.service.getIdentityHierarchy(query.organizationId),
       'EDUCATION_PLATFORM_IDENTITY_HIERARCHY_FETCHED',
       'CRM identity hierarchy fetched',
     );
@@ -108,9 +109,9 @@ export class OrganizationsController {
 
   @Get('branches')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listBranches(@Query('organizationId') organizationId: string) {
+  async listBranches(@Query() query: ListOrganizationStructureDto) {
     return successResponse(
-      await this.service.listBranches(organizationId),
+      await this.service.listBranches(query),
       'EDUCATION_PLATFORM_BRANCHES_FETCHED',
       'CRM branches fetched',
     );
@@ -197,9 +198,9 @@ export class OrganizationsController {
 
   @Get('departments')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listDepartments(@Query('organizationId') organizationId: string) {
+  async listDepartments(@Query() query: ListOrganizationStructureDto) {
     return successResponse(
-      await this.service.listDepartments(organizationId),
+      await this.service.listDepartments(query),
       'EDUCATION_PLATFORM_DEPARTMENTS_FETCHED',
       'CRM departments fetched',
     );
@@ -244,9 +245,9 @@ export class OrganizationsController {
 
   @Get('teams')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listTeams(@Query('organizationId') organizationId: string) {
+  async listTeams(@Query() query: ListOrganizationStructureDto) {
     return successResponse(
-      await this.service.listTeams(organizationId),
+      await this.service.listTeams(query),
       'EDUCATION_PLATFORM_TEAMS_FETCHED',
       'CRM teams fetched',
     );

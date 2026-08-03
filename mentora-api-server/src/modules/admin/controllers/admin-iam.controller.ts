@@ -31,9 +31,12 @@ export class AdminIamController {
 
   @Get('users')
   @Permissions(Permission.USER_VIEW)
-  async listUsers(@Query() query: ListAdminUsersDto): Promise<unknown> {
+  async listUsers(
+    @Query() query: ListAdminUsersDto,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<unknown> {
     return successResponse(
-      await this.iamService.listUsers(query),
+      await this.iamService.listUsers(query, req.user.sub),
       'ADMIN_USERS_FETCHED',
       'Admin users fetched',
     );

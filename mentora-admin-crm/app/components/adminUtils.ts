@@ -391,12 +391,32 @@ function userRecordsToRows(
           : branch,
       )
       .filter(Boolean);
+    const systemRoles = Array.isArray(object.roles) ? object.roles : [];
+    const membershipRoles = memberships
+      .map((membership) =>
+        membership && typeof membership === "object"
+          ? (membership as Record<string, unknown>).role
+          : undefined,
+      )
+      .filter(Boolean);
+    const userType =
+      membershipRoles.includes("student") || systemRoles.includes("student")
+        ? "Student"
+        : membershipRoles.includes("parent") || systemRoles.includes("parent")
+          ? "Parent"
+          : "CRM User";
     const values: Record<string, unknown> = {
       User: object.email,
-      Role: primaryMembership.role ?? object.roles,
+      "User Type": userType,
+      "System Roles": systemRoles.length ? systemRoles : "-",
+      "Access Role": primaryMembership.role ?? membershipRoles[0] ?? "-",
       Organization: organization.name ?? "-",
       Branch: branchNames.length ? branchNames : "All branches",
-      Status: object.status,
+      Status:
+        typeof object.status === "string"
+          ? object.status.charAt(0).toUpperCase() +
+            object.status.slice(1).toLowerCase()
+          : object.status,
       "Last Login": object.lastLoginAt,
       Sessions: object.activeSessions,
     };

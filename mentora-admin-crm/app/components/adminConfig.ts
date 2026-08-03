@@ -399,14 +399,7 @@ export const moduleActions: Record<string, string[]> = {
     "Auto Reply",
     "Follow-up Suggestion",
   ],
-  users: [
-    "Create CRM User",
-    "Refresh Users",
-    "Manage RBAC",
-    "Review Access",
-    "Export Users",
-    "Audit Access",
-  ],
+  users: ["Create User"],
   roles: ["Create Role"],
   permissions: ["Create Permission"],
 };
@@ -993,6 +986,26 @@ export function createLayerModule(
 }
 
 export const extraModules: AdminModule[] = [
+  {
+    id: "my-profile",
+    title: "My Profile",
+    group: "Account",
+    metric: "Account",
+    description: "Current CRM user identity, role, context, and access scope.",
+    filters: [],
+    columns: ["Field", "Value"],
+    rows: [],
+  },
+  {
+    id: "change-password",
+    title: "Change Password",
+    group: "Account",
+    metric: "Security",
+    description: "Update the current CRM account password.",
+    filters: [],
+    columns: ["Control", "Status"],
+    rows: [],
+  },
   createLayerModule(
     "platform-foundation",
     "Platform Foundation",
@@ -1059,7 +1072,9 @@ export const extraModules: AdminModule[] = [
     filters: ["Role", "Team", "Branch", "Status"],
     columns: [
       "User",
-      "Role",
+      "User Type",
+      "System Roles",
+      "Access Role",
       "Organization",
       "Branch",
       "Status",

@@ -38,7 +38,13 @@ export function LoginScreen({
 
   return (
     <main className={`auth-screen theme-${themeMode}`}>
-      <section className="auth-card card shadow-lg">
+      <form
+        className="auth-card card shadow-lg"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit();
+        }}
+      >
         <span className="brand-mark">M</span>
         <h1>Mentora CRM Login</h1>
         <p>Sign in with CRM created credentials.</p>
@@ -68,14 +74,11 @@ export function LoginScreen({
         <button
           className="btn btn-primary"
           disabled={!loginEmail.trim() || !loginPassword || isSubmitting}
-          onClick={() => {
-            void submit();
-          }}
-          type="button"
+          type="submit"
         >
           {isSubmitting ? "Signing In" : "Sign In"}
         </button>
-      </section>
+      </form>
     </main>
   );
 }
@@ -122,5 +125,3 @@ export function ThemeSelector({
     </fieldset>
   );
 }
-
-
