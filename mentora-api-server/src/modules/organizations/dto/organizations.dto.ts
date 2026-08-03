@@ -16,6 +16,10 @@ export class CreateOrganizationDto {
   @IsString()
   name!: string;
 
+  @IsOptional()
+  @IsString()
+  legalName?: string;
+
   @IsString()
   code!: string;
 
@@ -50,7 +54,78 @@ export class CreateOrganizationDto {
   primaryDomain?: string;
 
   @IsOptional()
-  @IsIn(['active', 'inactive', 'suspended'])
+  @IsString()
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @IsOptional()
+  @IsString()
+  registrationNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  taxNumber?: string;
+
+  @IsOptional()
+  @IsEmail()
+  primaryEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  primaryPhone?: string;
+
+  @IsOptional()
+  @IsObject()
+  address?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  subdomain?: string;
+
+  @IsOptional()
+  @IsString()
+  customDomain?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @IsOptional()
+  @IsString()
+  locale?: string;
+
+  @IsOptional()
+  @IsString()
+  dateFormat?: string;
+
+  @IsOptional()
+  @IsString()
+  financialYear?: string;
+
+  @IsOptional()
+  @IsString()
+  academicYear?: string;
+
+  @IsOptional()
+  @IsObject()
+  subscription?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn([
+    'active',
+    'trial',
+    'suspended',
+    'payment_overdue',
+    'cancelled',
+    'inactive',
+  ])
   status?: string;
 }
 
@@ -58,6 +133,10 @@ export class UpdateOrganizationDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
+  legalName?: string;
 
   @IsOptional()
   @IsString()
@@ -78,6 +157,81 @@ export class UpdateOrganizationDto {
   @IsOptional()
   @IsString()
   primaryDomain?: string;
+
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  website?: string;
+
+  @IsOptional()
+  @IsString()
+  registrationNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  taxNumber?: string;
+
+  @IsOptional()
+  @IsEmail()
+  primaryEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  primaryPhone?: string;
+
+  @IsOptional()
+  @IsObject()
+  address?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  subdomain?: string;
+
+  @IsOptional()
+  @IsString()
+  customDomain?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @IsOptional()
+  @IsString()
+  locale?: string;
+
+  @IsOptional()
+  @IsString()
+  dateFormat?: string;
+
+  @IsOptional()
+  @IsString()
+  financialYear?: string;
+
+  @IsOptional()
+  @IsString()
+  academicYear?: string;
+
+  @IsOptional()
+  @IsObject()
+  subscription?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn([
+    'active',
+    'trial',
+    'suspended',
+    'payment_overdue',
+    'cancelled',
+    'inactive',
+  ])
+  status?: string;
 }
 
 export class ListOrganizationsDto {
@@ -94,7 +248,14 @@ export class ListOrganizationsDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(['active', 'inactive', 'suspended'])
+  @IsIn([
+    'active',
+    'trial',
+    'suspended',
+    'payment_overdue',
+    'cancelled',
+    'inactive',
+  ])
   status?: string;
 
   @IsOptional()
@@ -224,18 +385,43 @@ export class CreateLeadSourceDto {
   @IsOptional()
   @IsIn([
     'website',
-    'landing_page',
-    'facebook',
-    'google',
-    'whatsapp',
-    'offline',
-    'walk_in',
+    'paid_advertisement',
+    'organic',
     'referral',
-    'import',
     'partner',
+    'walk_in',
+    'call_center',
+    'education_fair',
+    'import',
+    'social_media',
     'api',
+    'other',
   ])
   category?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  parentSourceId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsObject()
+  defaultAssignmentRule?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  defaultCampaign?: string;
+
+  @IsOptional()
+  @IsNumber()
+  cost?: number;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive'])
+  status?: string;
 }
 
 export class CreateLeadStageDto {
@@ -253,6 +439,14 @@ export class CreateLeadStageDto {
   order?: number;
 
   @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsIn(['new', 'contacted', 'qualified', 'application', 'converted', 'lost'])
+  category?: string;
+
+  @IsOptional()
   @IsBoolean()
   isInitial?: boolean;
 
@@ -263,6 +457,32 @@ export class CreateLeadStageDto {
   @IsOptional()
   @IsBoolean()
   isLost?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requiresRemarks?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mandatoryFieldsBeforeEntry?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  allowedNextStageIds?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  slaDurationHours?: number;
+
+  @IsOptional()
+  @IsObject()
+  escalationRule?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive'])
+  status?: string;
 }
 
 export class CreateDepartmentDto {

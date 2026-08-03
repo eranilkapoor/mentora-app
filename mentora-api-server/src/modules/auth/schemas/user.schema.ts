@@ -52,6 +52,12 @@ export class User {
   @Prop({ lowercase: true, trim: true })
   email?: string;
 
+  @Prop({ trim: true })
+  firstName?: string;
+
+  @Prop({ trim: true })
+  lastName?: string;
+
   @Prop({ type: PhoneNumber })
   phone?: PhoneNumber;
 
@@ -138,6 +144,12 @@ export class User {
 
   @Prop()
   lastLoginDevice?: string;
+
+  @Prop({ default: false })
+  mfaRequired!: boolean;
+
+  @Prop({ type: [String], default: [] })
+  ipRestrictions!: string[];
 
   @Prop({ default: () => new Date() })
   lastLoginAt!: Date;

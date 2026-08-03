@@ -15,6 +15,7 @@ import {
 } from '@/common/utils/organization-scope.util';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
+import { Lead, LeadDocument } from '@/modules/leads/schemas/leads.schema';
 import {
   UserMembership,
   UserMembershipDocument,
@@ -81,6 +82,8 @@ export class OrganizationsService {
     private readonly stages: Model<LeadStageDocument>,
     @InjectModel(User.name)
     private readonly users: Model<UserDocument>,
+    @InjectModel(Lead.name)
+    private readonly leads: Model<LeadDocument>,
     @InjectModel(UserMembership.name)
     private readonly memberships: Model<UserMembershipDocument>,
   ) {}
@@ -89,10 +92,8 @@ export class OrganizationsService {
     const organization = await this.organizations.findOneAndUpdate(
       { code: dto.code.toUpperCase() },
       {
+        ...this.toOrganizationUpdate(dto),
         code: dto.code.toUpperCase(),
-        name: dto.name,
-        primaryDomain: dto.primaryDomain,
-        type: dto.type,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
@@ -109,7 +110,7 @@ export class OrganizationsService {
   }
 
   async updateOrganization(id: string, dto: UpdateOrganizationDto) {
-    const update: Record<string, unknown> = { ...dto };
+    const update = this.toOrganizationUpdate(dto);
     if (dto.code) update.code = dto.code.toUpperCase();
     const organization = await this.organizations.findByIdAndUpdate(
       toRequiredObjectId(id),
@@ -129,7 +130,7 @@ export class OrganizationsService {
     });
   }
 
-  async listOrganizations(query: ListOrganizationsDto = {}) {
+  async listOrganizations(query: ListOrganizationsDto = {}): Promise<unknown> {
     const page = this.toPositiveInt(query.page, 1);
     const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
     const sortBy = this.resolveOrganizationSortBy(query.sortBy);
@@ -155,8 +156,32 @@ export class OrganizationsService {
         .lean(),
       this.organizations.countDocuments(filter),
     ]);
+    const organizationIds = items.map((item) => item._id);
+    const [userCounts, leadCounts] = await Promise.all([
+      this.memberships.aggregate<{ _id: unknown; count: number }>([
+        { $match: { organizationId: { $in: organizationIds } } },
+        { $group: { _id: '$organizationId', count: { $sum: 1 } } },
+      ]),
+      this.leads.aggregate<{ _id: unknown; count: number }>([
+        { $match: { organizationId: { $in: organizationIds } } },
+        { $group: { _id: '$organizationId', count: { $sum: 1 } } },
+      ]),
+    ]);
+    const userCountMap = new Map(
+      userCounts.map((item) => [String(item._id), item.count]),
+    );
+    const leadCountMap = new Map(
+      leadCounts.map((item) => [String(item._id), item.count]),
+    );
     return {
-      items,
+      items: items.map((item) => ({
+        ...item,
+        leadUsage: leadCountMap.get(String(item._id)) ?? 0,
+        storageUsage: this.getStorageUsage(item),
+        subscriptionStatus:
+          item.subscription?.status ?? item.status ?? 'active',
+        userCount: userCountMap.get(String(item._id)) ?? 0,
+      })),
       pagination: {
         limit,
         page,
@@ -238,38 +263,107 @@ export class OrganizationsService {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.sources.findOneAndUpdate(
       { organizationId, code: dto.code.toUpperCase() },
-      { ...dto, organizationId, code: dto.code.toUpperCase() },
+      {
+        ...dto,
+        organizationId,
+        code: dto.code.toUpperCase(),
+        parentSourceId: toOptionalObjectId(dto.parentSourceId),
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   }
 
-  async listLeadSources(organizationId: string) {
-    return this.sources
+  async listLeadSources(organizationId: string): Promise<unknown> {
+    const sources = await this.sources
       .find({
         organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
       })
       .sort({ name: 1 })
       .lean();
+    const sourceIds = sources.map((source) => source._id);
+    const counts = await this.leads.aggregate<{
+      _id: unknown;
+      active: number;
+      converted: number;
+      total: number;
+    }>([
+      {
+        $match: {
+          organizationId: toOrganizationObjectId(organizationId),
+          sourceId: { $in: sourceIds },
+        },
+      },
+      {
+        $group: {
+          _id: '$sourceId',
+          active: {
+            $sum: {
+              $cond: [{ $in: ['$status', ['new', 'open']] }, 1, 0],
+            },
+          },
+          converted: {
+            $sum: { $cond: [{ $eq: ['$status', 'won'] }, 1, 0] },
+          },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+    const countMap = new Map(counts.map((item) => [String(item._id), item]));
+    return sources.map((source) => {
+      const count = countMap.get(String(source._id));
+      const total = count?.total ?? 0;
+      return {
+        ...source,
+        activeLeads: count?.active ?? 0,
+        conversionRate:
+          total > 0 ? Math.round(((count?.converted ?? 0) / total) * 100) : 0,
+      };
+    });
   }
 
   async createLeadStage(dto: CreateLeadStageDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.stages.findOneAndUpdate(
       { organizationId, code: dto.code.toUpperCase() },
-      { ...dto, organizationId, code: dto.code.toUpperCase() },
+      {
+        ...dto,
+        organizationId,
+        allowedNextStageIds:
+          dto.allowedNextStageIds?.map((id) => toRequiredObjectId(id)) ?? [],
+        code: dto.code.toUpperCase(),
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   }
 
-  async listLeadStages(organizationId: string) {
-    return this.stages
+  async listLeadStages(organizationId: string): Promise<unknown> {
+    const stages = await this.stages
       .find({
         organizationId: toOrganizationObjectId(organizationId),
-        status: 'active',
       })
       .sort({ order: 1, name: 1 })
       .lean();
+    const stageIds = stages.map((stage) => stage._id);
+    const counts = await this.leads.aggregate<{ _id: unknown; count: number }>([
+      {
+        $match: {
+          organizationId: toOrganizationObjectId(organizationId),
+          stageId: { $in: stageIds },
+          status: { $in: ['new', 'open'] },
+        },
+      },
+      { $group: { _id: '$stageId', count: { $sum: 1 } } },
+    ]);
+    const countMap = new Map(
+      counts.map((item) => [String(item._id), item.count]),
+    );
+    return stages.map((stage) => ({
+      ...stage,
+      activeLeadCount: countMap.get(String(stage._id)) ?? 0,
+      conversionStage: stage.isConverted,
+      lostStage: stage.isLost,
+      sla: `${stage.slaDurationHours ?? 24}h`,
+    }));
   }
 
   async createDepartment(dto: CreateDepartmentDto) {
@@ -615,6 +709,48 @@ export class OrganizationsService {
       'updatedAt',
     ]);
     return value && allowed.has(value) ? value : 'name';
+  }
+
+  private toOrganizationUpdate(
+    dto: Partial<CreateOrganizationDto & UpdateOrganizationDto>,
+  ): Record<string, unknown> {
+    const update: Record<string, unknown> = {};
+    const directFields: Array<
+      keyof (CreateOrganizationDto & UpdateOrganizationDto)
+    > = [
+      'academicYear',
+      'currency',
+      'customDomain',
+      'dateFormat',
+      'financialYear',
+      'legalName',
+      'locale',
+      'logoUrl',
+      'name',
+      'primaryDomain',
+      'primaryEmail',
+      'primaryPhone',
+      'registrationNumber',
+      'status',
+      'subdomain',
+      'taxNumber',
+      'timezone',
+      'type',
+      'website',
+    ];
+    directFields.forEach((field) => {
+      if (dto[field] !== undefined) update[field] = dto[field];
+    });
+    if (dto.address) update.address = dto.address;
+    if (dto.subscription) update.subscription = dto.subscription;
+    return update;
+  }
+
+  private getStorageUsage(organization: {
+    settings?: Record<string, unknown>;
+  }): number {
+    const usage = organization.settings?.storageUsageGb;
+    return typeof usage === 'number' ? usage : 0;
   }
 
   private resolveOrganizationUserSortBy(value?: string) {

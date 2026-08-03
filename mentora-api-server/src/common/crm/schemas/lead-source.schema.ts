@@ -26,20 +26,36 @@ export class LeadSource {
   @Prop({
     enum: [
       'website',
-      'landing_page',
-      'facebook',
-      'google',
-      'whatsapp',
-      'offline',
-      'walk_in',
+      'paid_advertisement',
+      'organic',
       'referral',
-      'import',
       'partner',
+      'walk_in',
+      'call_center',
+      'education_fair',
+      'import',
+      'social_media',
       'api',
+      'other',
     ],
     default: 'website',
   })
   category!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'LeadSource' })
+  parentSourceId?: Types.ObjectId;
+
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({ type: Object, default: {} })
+  defaultAssignmentRule!: Record<string, unknown>;
+
+  @Prop({ trim: true })
+  defaultCampaign?: string;
+
+  @Prop({ default: 0 })
+  cost!: number;
 
   @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
   status!: string;

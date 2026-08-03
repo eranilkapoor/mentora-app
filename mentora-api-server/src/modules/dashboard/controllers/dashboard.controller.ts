@@ -18,7 +18,7 @@ export class DashboardController {
   async bootstrap(
     @Req() req: AuthenticatedRequest,
     @Query('organizationId') organizationId?: string,
-  ) {
+  ): Promise<unknown> {
     return successResponse(
       await this.service.getBootstrap(
         req.user.sub,

@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
-import { Role, Status } from '@/common/enums';
+import { Permission, Role, Status } from '@/common/enums';
 import {
   throwConflict,
   throwNotFound,
@@ -170,7 +170,12 @@ export class AdminIamService {
       ],
       createdBy: actorId,
       email,
+      firstName: dto.firstName,
       isEmailVerified: true,
+      ipRestrictions: dto.ipRestrictions ?? [],
+      lastName: dto.lastName,
+      mfaRequired: dto.mfaRequired ?? false,
+      permissions: dto.permissionOverrides ?? [],
       phone: dto.phone
         ? { countryCode: dto.countryCode ?? '+91', phone: dto.phone }
         : undefined,
@@ -209,6 +214,18 @@ export class AdminIamService {
 
     if (dto.status) user.status = dto.status;
     if (dto.role) user.roles = [this.toSystemRole(dto.role)];
+    if (dto.firstName !== undefined) user.firstName = dto.firstName;
+    if (dto.lastName !== undefined) user.lastName = dto.lastName;
+    if (dto.phone !== undefined) {
+      user.phone = dto.phone
+        ? { countryCode: '+91', phone: dto.phone }
+        : undefined;
+    }
+    if (dto.permissionOverrides) {
+      user.permissions = dto.permissionOverrides as Permission[];
+    }
+    if (dto.mfaRequired !== undefined) user.mfaRequired = dto.mfaRequired;
+    if (dto.ipRestrictions) user.ipRestrictions = dto.ipRestrictions;
     user.updatedBy = actorId;
     await user.save();
 

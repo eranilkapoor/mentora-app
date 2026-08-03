@@ -19,6 +19,7 @@ import {
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  ListLeadAssignmentsDto,
   ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
@@ -58,6 +59,11 @@ export class LeadsService {
       sourceId: toOptionalObjectId(dto.sourceId),
       stageId: toOptionalObjectId(dto.stageId),
       branchId: toOptionalObjectId(dto.branchId),
+      assignedTo: toOptionalObjectId(dto.assignedTo),
+      dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+      departmentId: toOptionalObjectId(dto.departmentId),
+      leadNumber: await this.generateLeadNumber(dto.organizationId),
+      teamId: toOptionalObjectId(dto.teamId),
       tags: this.normalizeTags(dto.tags),
       nextFollowUpAt: dto.nextFollowUpAt
         ? new Date(dto.nextFollowUpAt)
@@ -82,7 +88,7 @@ export class LeadsService {
     return lead;
   }
 
-  async listLeads(query: ListLeadsDto) {
+  async listLeads(query: ListLeadsDto): Promise<unknown> {
     const page = this.toPositiveInt(query.page, 1);
     const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
     const sortBy = this.resolveLeadSortBy(query.sortBy);
@@ -119,14 +125,26 @@ export class LeadsService {
     const [items, total] = await Promise.all([
       this.leads
         .find(filter)
+        .populate('sourceId', 'name code category')
+        .populate('stageId', 'name code order category')
+        .populate('assignedTo', 'firstName lastName email')
+        .populate('branchId', 'name code')
+        .populate('teamId', 'name code')
         .sort({ [sortBy]: sortOrder, _id: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
       this.leads.countDocuments(filter),
     ]);
+    const duplicateKeys = this.getDuplicateKeys(items);
     return {
-      items,
+      items: items.map((item) => ({
+        ...item,
+        ageOfLead: this.getAgeInDays(
+          (item as Record<string, unknown>).createdAt,
+        ),
+        duplicateIndicator: this.isDuplicateLead(item, duplicateKeys),
+      })),
       pagination: {
         limit,
         page,
@@ -137,15 +155,55 @@ export class LeadsService {
     };
   }
 
+  async listAssignments(query: ListLeadAssignmentsDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const filter = {
+      organizationId: toOrganizationObjectId(query.organizationId),
+    };
+    const [items, total] = await Promise.all([
+      this.assignments
+        .find(filter)
+        .populate(
+          'leadId',
+          'leadNumber firstName middleName lastName email phone',
+        )
+        .populate('previousOwner', 'firstName lastName email')
+        .populate('assignedTo', 'firstName lastName email')
+        .populate('teamId', 'name code')
+        .populate('assignedBy', 'firstName lastName email')
+        .sort({ assignedAt: -1, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.assignments.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy: 'assignedAt', sortOrder: 'desc' },
+    };
+  }
+
   async updateLead(userId: string, leadId: string, dto: UpdateLeadDto) {
     const update: Record<string, unknown> = {
       ...dto,
       ...(dto.branchId ? { branchId: toRequiredObjectId(dto.branchId) } : {}),
+      ...(dto.departmentId
+        ? { departmentId: toRequiredObjectId(dto.departmentId) }
+        : {}),
       ...(dto.sourceId ? { sourceId: toRequiredObjectId(dto.sourceId) } : {}),
       ...(dto.stageId ? { stageId: toRequiredObjectId(dto.stageId) } : {}),
+      ...(dto.teamId ? { teamId: toRequiredObjectId(dto.teamId) } : {}),
       ...(dto.assignedTo
         ? { assignedTo: toRequiredObjectId(dto.assignedTo) }
         : {}),
+      ...(dto.dateOfBirth ? { dateOfBirth: new Date(dto.dateOfBirth) } : {}),
       ...(dto.tags ? { tags: this.normalizeTags(dto.tags) } : {}),
       ...(dto.nextFollowUpAt
         ? { nextFollowUpAt: new Date(dto.nextFollowUpAt) }
@@ -340,6 +398,10 @@ export class LeadsService {
 
   async transferLead(userId: string, leadId: string, dto: TransferLeadDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
+    const previousLead = await this.leads
+      .findOne({ _id: toRequiredObjectId(leadId), organizationId })
+      .select('assignedTo')
+      .lean();
     const lead = await this.leads.findOneAndUpdate(
       { _id: toRequiredObjectId(leadId), organizationId },
       {
@@ -355,7 +417,9 @@ export class LeadsService {
       leadId: lead._id,
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
+      previousOwner: previousLead?.assignedTo,
       assignmentMethod: 'manual',
+      assignmentReason: dto.reason,
     });
     await this.addLeadActivity(userId, leadId, {
       organizationId: dto.organizationId,
@@ -391,9 +455,17 @@ export class LeadsService {
 
   async assignLead(userId: string, leadId: string, dto: AssignLeadDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
+    const previousLead = await this.leads
+      .findOne({ _id: toRequiredObjectId(leadId), organizationId })
+      .select('assignedTo')
+      .lean();
     const lead = await this.leads.findOneAndUpdate(
       { _id: toRequiredObjectId(leadId), organizationId },
-      { assignedTo: toRequiredObjectId(dto.assignedTo), status: 'open' },
+      {
+        assignedTo: toRequiredObjectId(dto.assignedTo),
+        status: 'open',
+        teamId: toOptionalObjectId(dto.teamId),
+      },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
@@ -402,7 +474,10 @@ export class LeadsService {
       leadId: lead._id,
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
+      assignmentReason: dto.assignmentReason,
       assignmentMethod: dto.assignmentMethod ?? 'manual',
+      previousOwner: previousLead?.assignedTo,
+      teamId: toOptionalObjectId(dto.teamId),
     });
     await this.addLeadActivity(userId, leadId, {
       organizationId: dto.organizationId,
@@ -648,9 +723,10 @@ export class LeadsService {
     return { totalRows: dto.rows.length, results };
   }
 
-  async exportLeads(userId: string, organizationId: string) {
+  async exportLeads(userId: string, organizationId: string): Promise<unknown> {
     const leadResult = await this.listLeads({ organizationId, limit: '1000' });
-    const leads = leadResult.items;
+    const leads =
+      (leadResult as { items?: Record<string, unknown>[] }).items ?? [];
     const headers = [
       'id',
       'firstName',
@@ -665,10 +741,8 @@ export class LeadsService {
     ];
     const csv = [
       headers.join(','),
-      ...leads.map((lead) =>
-        headers
-          .map((header) => this.csvValue(lead[header as keyof typeof lead]))
-          .join(','),
+      ...leads.map((lead: Record<string, unknown>) =>
+        headers.map((header) => this.csvValue(lead[header])).join(','),
       ),
     ].join('\n');
 
@@ -740,6 +814,45 @@ export class LeadsService {
           .filter((tag) => tag.length > 0),
       ),
     ];
+  }
+
+  private async generateLeadNumber(organizationId: string): Promise<string> {
+    const count = await this.leads.countDocuments({
+      organizationId: toOrganizationObjectId(organizationId),
+    });
+    return `LEAD-${String(count + 1).padStart(6, '0')}`;
+  }
+
+  private getAgeInDays(createdAt: unknown): number {
+    const created =
+      createdAt instanceof Date ? createdAt : new Date(String(createdAt));
+    if (Number.isNaN(created.getTime())) return 0;
+    return Math.max(
+      0,
+      Math.floor((Date.now() - created.getTime()) / (24 * 60 * 60 * 1000)),
+    );
+  }
+
+  private getDuplicateKeys(items: Array<Record<string, unknown>>) {
+    const counts = new Map<string, number>();
+    items.forEach((item) => {
+      [item.email, item.phone]
+        .filter(
+          (value): value is string =>
+            typeof value === 'string' && value.length > 0,
+        )
+        .forEach((value) => counts.set(value, (counts.get(value) ?? 0) + 1));
+    });
+    return counts;
+  }
+
+  private isDuplicateLead(
+    item: Record<string, unknown>,
+    counts: Map<string, number>,
+  ): boolean {
+    return [item.email, item.phone].some(
+      (value) => typeof value === 'string' && (counts.get(value) ?? 0) > 1,
+    );
   }
 
   private resolveLeadSortBy(value?: string) {

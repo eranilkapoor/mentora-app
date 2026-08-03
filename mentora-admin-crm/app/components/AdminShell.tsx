@@ -2789,8 +2789,14 @@ export default function AdminDashboardPage() {
                   updateAdminUser({
                     branchIds: draft.branchIds,
                     departmentIds: draft.departmentIds,
+                    firstName: draft.firstName,
                     id: draft.id,
+                    ipRestrictions: draft.ipRestrictions,
+                    lastName: draft.lastName,
+                    mfaRequired: draft.mfaRequired,
                     organizationId: draft.organizationId,
+                    permissionOverrides: draft.permissionOverrides,
+                    phone: draft.phone,
                     role: draft.role,
                     status: draft.status,
                     teamIds: draft.teamIds,
@@ -4654,14 +4660,46 @@ function OrganizationFormModal({
   onSubmit: (draft: OrganizationDraft) => Promise<void>;
 }) {
   const [draft, setDraft] = useState<OrganizationDraft>({
+    academicYear: "",
+    address: {
+      city: "",
+      country: "India",
+      line1: "",
+      line2: "",
+      postalCode: "",
+      state: "",
+    },
     branchCity: "",
     branchCode: "",
     branchName: "",
     branchState: "",
     code: "",
+    currency: "INR",
+    customDomain: "",
+    dateFormat: "DD/MM/YYYY",
+    financialYear: "",
+    legalName: "",
+    locale: "en-IN",
+    logoUrl: "",
     name: "",
+    primaryEmail: "",
     primaryDomain: "",
+    primaryPhone: "",
+    registrationNumber: "",
+    status: "trial",
+    subdomain: "",
+    subscription: {
+      billingCycle: "monthly",
+      enabledModules: [],
+      leadLimit: 1000,
+      plan: "starter",
+      storageLimitGb: 10,
+      userLimit: 25,
+    },
+    taxNumber: "",
+    timezone: "Asia/Kolkata",
     type: "coaching",
+    website: "",
   });
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -4681,8 +4719,17 @@ function OrganizationFormModal({
         branchName,
         branchState: draft.branchState?.trim() || undefined,
         code: code.toUpperCase(),
+        customDomain: draft.customDomain?.trim() || undefined,
+        legalName: draft.legalName?.trim() || undefined,
+        logoUrl: draft.logoUrl?.trim() || undefined,
         name: draft.name.trim(),
+        primaryEmail: draft.primaryEmail?.trim() || undefined,
         primaryDomain: draft.primaryDomain?.trim() || undefined,
+        primaryPhone: draft.primaryPhone?.trim() || undefined,
+        registrationNumber: draft.registrationNumber?.trim() || undefined,
+        subdomain: draft.subdomain?.trim() || undefined,
+        taxNumber: draft.taxNumber?.trim() || undefined,
+        website: draft.website?.trim() || undefined,
       });
     } catch (err) {
       setError(
@@ -4710,6 +4757,7 @@ function OrganizationFormModal({
           </button>
         </div>
         <div className="record-form-grid">
+          <div className="form-section-title wide">Basic information</div>
           <label className="formrow wide">
             <span className="label">Organization Name</span>
             <input
@@ -4718,6 +4766,16 @@ function OrganizationFormModal({
                 setDraft({ ...draft, name: event.target.value })
               }
               value={draft.name}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">Legal Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, legalName: event.target.value })
+              }
+              value={draft.legalName}
             />
           </label>
           <label className="formrow">
@@ -4749,6 +4807,94 @@ function OrganizationFormModal({
             </select>
           </label>
           <label className="formrow">
+            <span className="label">Logo URL</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, logoUrl: event.target.value })
+              }
+              value={draft.logoUrl}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Website</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, website: event.target.value })
+              }
+              value={draft.website}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Registration Number</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, registrationNumber: event.target.value })
+              }
+              value={draft.registrationNumber}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Tax Number</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, taxNumber: event.target.value })
+              }
+              value={draft.taxNumber}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Primary Email</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryEmail: event.target.value })
+              }
+              type="email"
+              value={draft.primaryEmail}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Primary Phone</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryPhone: event.target.value })
+              }
+              value={draft.primaryPhone}
+            />
+          </label>
+          <div className="form-section-title wide">Address</div>
+          {[
+            ["line1", "Address Line 1"],
+            ["line2", "Address Line 2"],
+            ["country", "Country"],
+            ["state", "State"],
+            ["city", "City"],
+            ["postalCode", "Postal Code"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    address: {
+                      ...(draft.address ?? {}),
+                      [key]: event.target.value,
+                    },
+                  })
+                }
+                value={draft.address?.[key] ?? ""}
+              />
+            </label>
+          ))}
+          <div className="form-section-title wide">Platform configuration</div>
+          <label className="formrow">
             <span className="label">Primary Domain</span>
             <input
               className="input form-control"
@@ -4759,6 +4905,98 @@ function OrganizationFormModal({
               value={draft.primaryDomain}
             />
           </label>
+          <label className="formrow">
+            <span className="label">Subdomain</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, subdomain: event.target.value })
+              }
+              value={draft.subdomain}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Custom Domain</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, customDomain: event.target.value })
+              }
+              value={draft.customDomain}
+            />
+          </label>
+          {[
+            ["timezone", "Timezone"],
+            ["currency", "Currency"],
+            ["locale", "Locale"],
+            ["dateFormat", "Date Format"],
+            ["financialYear", "Financial Year"],
+            ["academicYear", "Academic Year"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({ ...draft, [key]: event.target.value })
+                }
+                value={String(draft[key as keyof OrganizationDraft] ?? "")}
+              />
+            </label>
+          ))}
+          <div className="form-section-title wide">Subscription</div>
+          {[
+            ["plan", "Plan"],
+            ["billingCycle", "Billing Cycle"],
+            ["userLimit", "User Limit"],
+            ["leadLimit", "Lead Limit"],
+            ["storageLimitGb", "Storage Limit GB"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    subscription: {
+                      ...(draft.subscription ?? {}),
+                      [key]: [
+                        "userLimit",
+                        "leadLimit",
+                        "storageLimitGb",
+                      ].includes(key)
+                        ? Number(event.target.value)
+                        : event.target.value,
+                    },
+                  })
+                }
+                type={
+                  ["userLimit", "leadLimit", "storageLimitGb"].includes(key)
+                    ? "number"
+                    : "text"
+                }
+                value={String(draft.subscription?.[key] ?? "")}
+              />
+            </label>
+          ))}
+          <label className="formrow">
+            <span className="label">Status</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                setDraft({ ...draft, status: event.target.value })
+              }
+              value={draft.status}
+            >
+              <option value="active">Active</option>
+              <option value="trial">Trial</option>
+              <option value="suspended">Suspended</option>
+              <option value="payment_overdue">Payment overdue</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </label>
+          <div className="form-section-title wide">Default branch</div>
           <label className="formrow wide">
             <span className="label">Default Branch Name</span>
             <input
@@ -4847,15 +5085,42 @@ function OrganizationEditModal({
     ),
   );
   const [draft, setDraft] = useState<OrganizationDraft & { id: string }>({
+    address: normalizeResponseObject(source.address) as Record<string, string>,
+    academicYear:
+      typeof source.academicYear === "string" ? source.academicYear : "",
     code: typeof source.code === "string" ? source.code : "",
+    currency: typeof source.currency === "string" ? source.currency : "INR",
+    customDomain:
+      typeof source.customDomain === "string" ? source.customDomain : "",
+    dateFormat:
+      typeof source.dateFormat === "string" ? source.dateFormat : "DD/MM/YYYY",
+    financialYear:
+      typeof source.financialYear === "string" ? source.financialYear : "",
     id: organizationId,
-    name: row[0] ?? "",
+    legalName: typeof source.legalName === "string" ? source.legalName : "",
+    locale: typeof source.locale === "string" ? source.locale : "en-IN",
+    logoUrl: typeof source.logoUrl === "string" ? source.logoUrl : "",
+    name: typeof source.name === "string" ? source.name : (row[0] ?? ""),
+    primaryEmail:
+      typeof source.primaryEmail === "string" ? source.primaryEmail : "",
     primaryDomain:
       typeof source.primaryDomain === "string" ? source.primaryDomain : "",
+    primaryPhone:
+      typeof source.primaryPhone === "string" ? source.primaryPhone : "",
+    registrationNumber:
+      typeof source.registrationNumber === "string"
+        ? source.registrationNumber
+        : "",
+    subdomain: typeof source.subdomain === "string" ? source.subdomain : "",
+    subscription: normalizeResponseObject(source.subscription),
+    taxNumber: typeof source.taxNumber === "string" ? source.taxNumber : "",
+    timezone:
+      typeof source.timezone === "string" ? source.timezone : "Asia/Kolkata",
     type:
       typeof source.type === "string"
         ? source.type
-        : row[1]?.toLowerCase().replaceAll(" ", "_") || "coaching",
+        : row[2]?.toLowerCase().replaceAll(" ", "_") || "coaching",
+    website: typeof source.website === "string" ? source.website : "",
   });
   const [status, setStatus] = useState(
     typeof source.status === "string" ? source.status : row[3] || "active",
@@ -4873,10 +5138,19 @@ function OrganizationEditModal({
     try {
       await onSubmit({
         ...draft,
+        customDomain: draft.customDomain?.trim() || undefined,
+        legalName: draft.legalName?.trim() || undefined,
+        logoUrl: draft.logoUrl?.trim() || undefined,
         name: draft.name.trim(),
+        primaryEmail: draft.primaryEmail?.trim() || undefined,
         primaryDomain: draft.primaryDomain?.trim() || undefined,
+        primaryPhone: draft.primaryPhone?.trim() || undefined,
+        registrationNumber: draft.registrationNumber?.trim() || undefined,
         status,
+        subdomain: draft.subdomain?.trim() || undefined,
+        taxNumber: draft.taxNumber?.trim() || undefined,
         type: draft.type,
+        website: draft.website?.trim() || undefined,
       });
     } catch (err) {
       setError(
@@ -4913,6 +5187,7 @@ function OrganizationEditModal({
           </button>
         </div>
         <div className="record-form-grid">
+          <div className="form-section-title wide">Basic information</div>
           <label className="formrow wide">
             <span className="label">Organization Name</span>
             <input
@@ -4921,6 +5196,16 @@ function OrganizationEditModal({
                 setDraft({ ...draft, name: event.target.value })
               }
               value={draft.name}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">Legal Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, legalName: event.target.value })
+              }
+              value={draft.legalName ?? ""}
             />
           </label>
           <label className="formrow">
@@ -4950,6 +5235,67 @@ function OrganizationEditModal({
             </select>
           </label>
           <label className="formrow">
+            <span className="label">Logo URL</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, logoUrl: event.target.value })
+              }
+              value={draft.logoUrl ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Website</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, website: event.target.value })
+              }
+              value={draft.website ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Registration Number</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, registrationNumber: event.target.value })
+              }
+              value={draft.registrationNumber ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Tax Number</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, taxNumber: event.target.value })
+              }
+              value={draft.taxNumber ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Primary Email</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryEmail: event.target.value })
+              }
+              type="email"
+              value={draft.primaryEmail ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Primary Phone</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryPhone: event.target.value })
+              }
+              value={draft.primaryPhone ?? ""}
+            />
+          </label>
+          <label className="formrow">
             <span className="label">Status</span>
             <select
               className="form-select form-select-sm"
@@ -4957,10 +5303,39 @@ function OrganizationEditModal({
               value={status}
             >
               <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="trial">Trial</option>
               <option value="suspended">Suspended</option>
+              <option value="payment_overdue">Payment overdue</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </label>
+          <div className="form-section-title wide">Address</div>
+          {[
+            ["line1", "Address Line 1"],
+            ["line2", "Address Line 2"],
+            ["country", "Country"],
+            ["state", "State"],
+            ["city", "City"],
+            ["postalCode", "Postal Code"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    address: {
+                      ...(draft.address ?? {}),
+                      [key]: event.target.value,
+                    },
+                  })
+                }
+                value={draft.address?.[key] ?? ""}
+              />
+            </label>
+          ))}
+          <div className="form-section-title wide">Platform configuration</div>
           <label className="formrow wide">
             <span className="label">Primary Domain</span>
             <input
@@ -4972,6 +5347,63 @@ function OrganizationEditModal({
               value={draft.primaryDomain ?? ""}
             />
           </label>
+          {[
+            ["subdomain", "Subdomain"],
+            ["customDomain", "Custom Domain"],
+            ["timezone", "Timezone"],
+            ["currency", "Currency"],
+            ["locale", "Locale"],
+            ["dateFormat", "Date Format"],
+            ["financialYear", "Financial Year"],
+            ["academicYear", "Academic Year"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({ ...draft, [key]: event.target.value })
+                }
+                value={String(draft[key as keyof OrganizationDraft] ?? "")}
+              />
+            </label>
+          ))}
+          <div className="form-section-title wide">Subscription</div>
+          {[
+            ["plan", "Plan"],
+            ["billingCycle", "Billing Cycle"],
+            ["userLimit", "User Limit"],
+            ["leadLimit", "Lead Limit"],
+            ["storageLimitGb", "Storage Limit GB"],
+          ].map(([key, label]) => (
+            <label className="formrow" key={key}>
+              <span className="label">{label}</span>
+              <input
+                className="input form-control"
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    subscription: {
+                      ...(draft.subscription ?? {}),
+                      [key]: [
+                        "userLimit",
+                        "leadLimit",
+                        "storageLimitGb",
+                      ].includes(key)
+                        ? Number(event.target.value)
+                        : event.target.value,
+                    },
+                  })
+                }
+                type={
+                  ["userLimit", "leadLimit", "storageLimitGb"].includes(key)
+                    ? "number"
+                    : "text"
+                }
+                value={String(draft.subscription?.[key] ?? "")}
+              />
+            </label>
+          ))}
         </div>
         {error ? <div className="auth-error modal-error">{error}</div> : null}
         <div className="record-modal-actions">
@@ -5383,8 +5815,21 @@ function OrganizationUserFormModal({
     branchIds: sourceBranchIds.length ? sourceBranchIds : undefined,
     departmentIds: sourceDepartmentIds.length ? sourceDepartmentIds : undefined,
     email: typeof source.email === "string" ? source.email : (row?.[0] ?? ""),
+    firstName: typeof source.firstName === "string" ? source.firstName : "",
     id: getUnknownRecordId(source),
+    ipRestrictions: Array.isArray(source.ipRestrictions)
+      ? source.ipRestrictions.map(String)
+      : [],
+    lastName: typeof source.lastName === "string" ? source.lastName : "",
+    mfaRequired: Boolean(source.mfaRequired),
     password: "",
+    permissionOverrides: Array.isArray(source.permissions)
+      ? source.permissions.map(String)
+      : [],
+    phone:
+      source.phone && typeof source.phone === "object"
+        ? String((source.phone as Record<string, unknown>).phone ?? "")
+        : "",
     role: sourceRole,
     organizationId:
       sourceOrganizationId ||
@@ -5456,6 +5901,27 @@ function OrganizationUserFormModal({
           </button>
         </div>
         <div className="record-form-grid">
+          <div className="form-section-title wide">Profile</div>
+          <label className="formrow">
+            <span className="label">First Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, firstName: event.target.value })
+              }
+              value={draft.firstName ?? ""}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Last Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, lastName: event.target.value })
+              }
+              value={draft.lastName ?? ""}
+            />
+          </label>
           <label className="formrow wide">
             <span className="label">Organization</span>
             <select
@@ -5566,6 +6032,16 @@ function OrganizationUserFormModal({
               value={draft.email}
             />
           </label>
+          <label className="formrow">
+            <span className="label">Phone</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, phone: event.target.value })
+              }
+              value={draft.phone ?? ""}
+            />
+          </label>
           {!isEditMode ? (
             <label className="formrow">
               <span className="label">Temporary Password</span>
@@ -5616,6 +6092,57 @@ function OrganizationUserFormModal({
               </select>
             </label>
           ) : null}
+          <div className="form-section-title wide">Security</div>
+          <label className="formrow">
+            <span className="label">MFA Required</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  mfaRequired: event.target.value === "true",
+                })
+              }
+              value={draft.mfaRequired ? "true" : "false"}
+            >
+              <option value="false">Not required</option>
+              <option value="true">Required</option>
+            </select>
+          </label>
+          <label className="formrow wide">
+            <span className="label">Permission Overrides</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  permissionOverrides: event.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                })
+              }
+              placeholder="users:view, leads:update"
+              value={draft.permissionOverrides?.join(", ") ?? ""}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">IP Restrictions</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({
+                  ...draft,
+                  ipRestrictions: event.target.value
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                })
+              }
+              placeholder="203.0.113.10, 198.51.100.0/24"
+              value={draft.ipRestrictions?.join(", ") ?? ""}
+            />
+          </label>
         </div>
         {error ? <div className="auth-error modal-error">{error}</div> : null}
         <div className="record-modal-actions">

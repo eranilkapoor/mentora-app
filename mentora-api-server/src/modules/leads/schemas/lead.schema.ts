@@ -46,7 +46,13 @@ export class Lead {
   firstName!: string;
 
   @Prop({ trim: true })
+  middleName?: string;
+
+  @Prop({ trim: true })
   lastName?: string;
+
+  @Prop({ trim: true, index: true })
+  leadNumber?: string;
 
   @Prop({ lowercase: true, trim: true, index: true })
   email?: string;
@@ -55,10 +61,31 @@ export class Lead {
   phone?: string;
 
   @Prop({ trim: true })
+  alternatePhone?: string;
+
+  @Prop()
+  dateOfBirth?: Date;
+
+  @Prop({ trim: true })
+  gender?: string;
+
+  @Prop({ trim: true })
+  preferredLanguage?: string;
+
+  @Prop({ trim: true })
+  country?: string;
+
+  @Prop({ trim: true })
   city?: string;
 
   @Prop({ trim: true })
   state?: string;
+
+  @Prop({ trim: true })
+  postalCode?: string;
+
+  @Prop({ trim: true })
+  fullAddress?: string;
 
   @Prop({ type: Types.ObjectId, ref: LeadSource.name, index: true })
   sourceId?: Types.ObjectId;
@@ -72,8 +99,80 @@ export class Lead {
   @Prop({ type: Types.ObjectId, ref: Branch.name, index: true })
   branchId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
+  departmentId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
+
+  @Prop({ trim: true })
+  campus?: string;
+
+  @Prop({ trim: true })
+  campaign?: string;
+
+  @Prop({ trim: true })
+  subSource?: string;
+
+  @Prop({ trim: true })
+  referral?: string;
+
+  @Prop({ trim: true })
+  partner?: string;
+
+  @Prop({ trim: true })
+  landingPage?: string;
+
+  @Prop({ trim: true })
+  formSource?: string;
+
   @Prop({ type: [String], default: [] })
   interestedPrograms!: string[];
+
+  @Prop({ trim: true })
+  academicLevel?: string;
+
+  @Prop({ trim: true })
+  interestedCourse?: string;
+
+  @Prop({ trim: true })
+  specialization?: string;
+
+  @Prop({ trim: true })
+  academicSession?: string;
+
+  @Prop({ trim: true })
+  preferredMode?: string;
+
+  @Prop({ trim: true })
+  intake?: string;
+
+  @Prop({ trim: true })
+  assignmentMethod?: string;
+
+  @Prop({ trim: true })
+  currentQualification?: string;
+
+  @Prop({ trim: true })
+  percentageOrCgpa?: string;
+
+  @Prop()
+  graduationYear?: number;
+
+  @Prop({ trim: true })
+  entranceExam?: string;
+
+  @Prop({ trim: true })
+  examScore?: string;
+
+  @Prop({ trim: true })
+  workExperience?: string;
+
+  @Prop({ trim: true })
+  budgetRange?: string;
+
+  @Prop({ trim: true })
+  preferredLocation?: string;
 
   @Prop({ type: [String], default: [], index: true })
   tags!: string[];
@@ -86,6 +185,9 @@ export class Lead {
 
   @Prop({ default: 0, min: 0, max: 100 })
   score!: number;
+
+  @Prop({ enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' })
+  priority!: string;
 
   @Prop({ type: Object, default: {} })
   scoreBreakdown!: Record<string, unknown>;
@@ -102,6 +204,24 @@ export class Lead {
 
   @Prop()
   nextFollowUpAt?: Date;
+
+  @Prop({ trim: true })
+  followUpType?: string;
+
+  @Prop({ trim: true })
+  followUpNote?: string;
+
+  @Prop({ trim: true })
+  lostReason?: string;
+
+  @Prop({ trim: true })
+  disqualificationReason?: string;
+
+  @Prop({ default: false, index: true })
+  duplicateIndicator!: boolean;
+
+  @Prop({ trim: true })
+  consentStatus?: string;
 
   @Prop()
   lastContactedAt?: Date;

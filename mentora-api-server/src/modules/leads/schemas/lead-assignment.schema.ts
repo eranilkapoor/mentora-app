@@ -26,7 +26,13 @@ export class LeadAssignment {
   assignedTo!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  previousOwner?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   assignedBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
 
   @Prop({
     enum: [
@@ -35,6 +41,14 @@ export class LeadAssignment {
       'course_based',
       'branch_based',
       'location_based',
+      'campus_based',
+      'source_based',
+      'campaign_based',
+      'language_based',
+      'capacity_based',
+      'working_hours',
+      'lead_score_based',
+      'existing_relationship',
       'workflow',
     ],
     default: 'manual',
@@ -43,6 +57,9 @@ export class LeadAssignment {
 
   @Prop({ default: Date.now })
   assignedAt!: Date;
+
+  @Prop({ trim: true })
+  assignmentReason?: string;
 }
 
 export const LeadAssignmentSchema =

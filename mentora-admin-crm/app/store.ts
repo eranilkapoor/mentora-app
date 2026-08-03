@@ -83,16 +83,34 @@ export type ChangePasswordDraft = {
 };
 
 export type OrganizationDraft = {
+  academicYear?: string;
+  address?: Record<string, string>;
   branchCity?: string;
   branchCode?: string;
   branchName?: string;
   branchState?: string;
   code?: string;
+  currency?: string;
+  customDomain?: string;
+  dateFormat?: string;
+  enabledModules?: string[];
+  financialYear?: string;
   id?: string;
+  legalName?: string;
+  locale?: string;
+  logoUrl?: string;
   name: string;
+  primaryEmail?: string;
   primaryDomain?: string;
+  primaryPhone?: string;
+  registrationNumber?: string;
   status?: string;
+  subdomain?: string;
+  subscription?: Record<string, unknown>;
+  taxNumber?: string;
+  timezone?: string;
   type: string;
+  website?: string;
 };
 
 export type OrganizationUserDraft = {
@@ -100,8 +118,13 @@ export type OrganizationUserDraft = {
   departmentIds?: string[];
   teamIds?: string[];
   email: string;
+  firstName?: string;
   id?: string;
+  ipRestrictions?: string[];
+  lastName?: string;
+  mfaRequired?: boolean;
   password: string;
+  permissionOverrides?: string[];
   phone?: string;
   role: string;
   organizationId: string;
@@ -348,6 +371,7 @@ function adminPath(path: string) {
 const dedicatedCrmRoutes: Record<string, string> = {
   admissions: adminPath("/admissions"),
   applications: adminPath("/applications"),
+  assignments: adminPath("/leads/operations/assignments"),
   branches: adminPath("/branches"),
   "call-center": adminPath("/call-center"),
   campaigns: adminPath("/campaigns"),
@@ -360,6 +384,8 @@ const dedicatedCrmRoutes: Record<string, string> = {
   finance: adminPath("/finance-ledgers"),
   interview: adminPath("/interviews"),
   leads: adminPath("/leads"),
+  "lead-sources": adminPath("/lead-sources"),
+  "lead-stages": adminPath("/lead-stages"),
   automation: adminPath("/workflows/rules"),
   reports: adminPath("/reports/definitions"),
   scholarship: adminPath("/scholarships"),
@@ -438,15 +464,23 @@ const allAdminModuleIds = [
 
 const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   admissions: "POST",
+  applications: "PUT",
   "call-center": "POST",
+  campaigns: "PUT",
+  communications: "PUT",
+  documents: "PUT",
   events: "POST",
   "field-force": "POST",
   finance: "POST",
   interview: "POST",
+  "lead-sources": "POST",
+  "lead-stages": "POST",
   scholarship: "POST",
   support: "PATCH",
+  tasks: "PUT",
   whatsapp: "POST",
 };
+const upsertOnlyDedicatedModules = new Set(["lead-sources", "lead-stages"]);
 
 function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
   const body = {
@@ -460,18 +494,72 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
   };
 
   if (draft.moduleKey === "leads") {
-    const [firstName, ...lastNameParts] = draft.title.trim().split(/\s+/);
+    const payload = draft.payload ?? {};
+    const [fallbackFirstName, ...fallbackLastNameParts] = draft.title
+      .trim()
+      .split(/\s+/);
     return {
       organizationId: draft.organizationId,
-      firstName: firstName || "New",
-      lastName: lastNameParts.join(" ") || "Lead",
+      academicLevel: payload.academicLevel || undefined,
+      academicSession: payload.academicSession || undefined,
+      alternatePhone: payload.alternatePhone || undefined,
+      budgetRange: payload.budgetRange || undefined,
+      campaign: payload.campaign || undefined,
+      campus: payload.preferredCampus || payload.campus || undefined,
+      city: payload.city || undefined,
+      consentStatus: payload.consentStatus || undefined,
+      country: payload.country || undefined,
+      currentQualification: payload.currentQualification || undefined,
+      dateOfBirth: payload.dateOfBirth || undefined,
+      disqualificationReason: payload.disqualificationReason || undefined,
+      email: payload.email || undefined,
+      entranceExam: payload.entranceExam || undefined,
+      examScore: payload.examScore || undefined,
+      firstName: payload.firstName || fallbackFirstName || "New",
+      followUpNote: payload.followUpNote || undefined,
+      followUpType: payload.followUpType || undefined,
+      formSource: payload.formSource || undefined,
+      fullAddress: payload.fullAddress || undefined,
+      gender: payload.gender || undefined,
+      graduationYear: payload.graduationYear
+        ? Number(payload.graduationYear)
+        : undefined,
+      intake: payload.intake || undefined,
+      interestedCourse: payload.course || payload.interestedCourse || undefined,
+      interestedPrograms: payload.interestedProgram
+        ? [payload.interestedProgram]
+        : undefined,
+      landingPage: payload.landingPage || undefined,
+      lastName: payload.lastName || fallbackLastNameParts.join(" ") || "Lead",
+      lostReason: payload.lostReason || undefined,
+      middleName: payload.middleName || undefined,
+      partner: payload.partner || undefined,
+      percentageOrCgpa: payload.percentageCgpa || undefined,
+      phone: payload.phone || undefined,
+      postalCode: payload.postalCode || undefined,
+      preferredLanguage: payload.preferredLanguage || undefined,
+      preferredLocation: payload.preferredLocation || undefined,
+      preferredMode: payload.preferredMode || undefined,
+      priority: draft.priority,
+      referral: payload.referral || undefined,
+      specialization: payload.specialization || undefined,
+      state: payload.state || undefined,
+      subSource: payload.subSource || undefined,
+      tags: payload.tags
+        ? payload.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : undefined,
+      temperature: payload.temperature || undefined,
       customFields: {
         description: draft.description,
-        priority: draft.priority,
-        source: "admin-crm",
-        ...(draft.payload ?? {}),
+        notes: payload.notes,
+        source: payload.leadSource || "admin-crm",
+        ...payload,
       },
       nextFollowUpAt: draft.dueAt || undefined,
+      score: payload.leadScore ? Number(payload.leadScore) : undefined,
       status:
         draft.status === "archived"
           ? "archived"
@@ -506,6 +594,107 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
             : draft.status === "in_progress"
               ? "under_review"
               : "draft",
+    };
+  }
+
+  if (draft.moduleKey === "campaigns") {
+    return {
+      organizationId: draft.organizationId,
+      audience: draft.payload.audience
+        ? { segment: draft.payload.audience }
+        : undefined,
+      channel: draft.payload.channel || "email",
+      dripSteps: draft.payload.dripSteps
+        ? [{ name: draft.payload.dripSteps }]
+        : undefined,
+      metrics: {
+        applications: draft.payload.applications
+          ? Number(draft.payload.applications)
+          : undefined,
+        leads: draft.payload.leads ? Number(draft.payload.leads) : undefined,
+        spend: draft.payload.spend || undefined,
+      },
+      name: draft.title,
+      roi: draft.payload.roi ? { value: draft.payload.roi } : undefined,
+      scheduledAt: draft.dueAt || undefined,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "completed"
+            ? "completed"
+            : draft.status === "in_progress"
+              ? "running"
+              : draft.status === "blocked"
+                ? "paused"
+                : "draft",
+      utm: {
+        campaign: draft.payload.utmCampaign || draft.title,
+        content: draft.payload.utmContent || undefined,
+        medium: draft.payload.utmMedium || draft.payload.channel || undefined,
+        source: draft.payload.utmSource || undefined,
+        term: draft.payload.utmTerm || undefined,
+      },
+    };
+  }
+
+  if (draft.moduleKey === "lead-sources") {
+    return {
+      organizationId: draft.organizationId,
+      category: draft.payload.category || "website",
+      code:
+        draft.payload.code || draft.title.toUpperCase().replace(/\W+/g, "_"),
+      cost: draft.payload.cost ? Number(draft.payload.cost) : undefined,
+      defaultAssignmentRule: draft.payload.defaultAssignmentRule
+        ? { rule: draft.payload.defaultAssignmentRule }
+        : undefined,
+      defaultCampaign: draft.payload.defaultCampaign || undefined,
+      description: draft.description || draft.payload.description || undefined,
+      name: draft.payload.name || draft.title,
+      parentSourceId: draft.payload.parentSource || undefined,
+      status:
+        draft.status === "archived" || draft.payload.activeStatus === "inactive"
+          ? "inactive"
+          : "active",
+    };
+  }
+
+  if (draft.moduleKey === "lead-stages") {
+    return {
+      organizationId: draft.organizationId,
+      allowedNextStageIds: draft.payload.allowedNextStages
+        ? draft.payload.allowedNextStages
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean)
+        : undefined,
+      category: draft.payload.category || "new",
+      code:
+        draft.payload.code || draft.title.toUpperCase().replace(/\W+/g, "_"),
+      color: draft.payload.color || undefined,
+      escalationRule: draft.payload.escalationRule
+        ? { rule: draft.payload.escalationRule }
+        : undefined,
+      isConverted: draft.payload.isConvertedStage === "true",
+      isInitial: draft.payload.isInitialStage === "true",
+      isLost: draft.payload.isLostStage === "true",
+      mandatoryFieldsBeforeEntry: draft.payload.mandatoryFieldsBeforeEntry
+        ? draft.payload.mandatoryFieldsBeforeEntry
+            .split(",")
+            .map((field) => field.trim())
+            .filter(Boolean)
+        : undefined,
+      name: draft.payload.name || draft.title,
+      order: draft.payload.displayOrder
+        ? Number(draft.payload.displayOrder)
+        : undefined,
+      requiresRemarks: draft.payload.requiresRemarks === "true",
+      slaDurationHours: draft.payload.slaDuration
+        ? Number(draft.payload.slaDuration)
+        : undefined,
+      status:
+        draft.status === "archived" || draft.payload.status === "inactive"
+          ? "inactive"
+          : "active",
     };
   }
 
@@ -555,6 +744,88 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
               ? "failed"
               : "queued",
       subject: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "tasks") {
+    return {
+      organizationId: draft.organizationId,
+      assignedTo: draft.payload.assignedTo || "000000000000000000000000",
+      description: draft.description,
+      dueAt: draft.dueAt || undefined,
+      entityId: draft.payload.entityId || "000000000000000000000000",
+      entityType: draft.payload.entityType || "general",
+      priority: draft.priority,
+      recurringRule: draft.payload.recurringRule || undefined,
+      reminderAt: draft.payload.reminderAt || undefined,
+      status:
+        draft.status === "archived"
+          ? "cancelled"
+          : draft.status === "completed"
+            ? "completed"
+            : draft.status === "in_progress"
+              ? "in_progress"
+              : "open",
+      title: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "reports") {
+    return {
+      organizationId: draft.organizationId,
+      columns: draft.payload.columns
+        ? draft.payload.columns
+            .split(",")
+            .map((column) => column.trim())
+            .filter(Boolean)
+        : ["name", "status", "createdAt"],
+      filters: draft.payload.filters ? { value: draft.payload.filters } : {},
+      moduleKey: draft.payload.moduleKey || "leads",
+      name: draft.title,
+      reportType: draft.payload.reportType || "table",
+      schedule: draft.payload.schedule ? { value: draft.payload.schedule } : {},
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "completed"
+            ? "active"
+            : "draft",
+    };
+  }
+
+  if (draft.moduleKey === "automation") {
+    return {
+      organizationId: draft.organizationId,
+      actions: draft.payload.actions
+        ? [{ name: draft.payload.actions }]
+        : [{ name: "notify", channel: "in_app" }],
+      conditions: draft.payload.conditions
+        ? { value: draft.payload.conditions }
+        : {},
+      moduleKey: draft.payload.moduleKey || "leads",
+      name: draft.title,
+      priority: draft.payload.priority
+        ? Number(draft.payload.priority)
+        : draft.priority === "urgent"
+          ? 90
+          : draft.priority === "high"
+            ? 70
+            : 50,
+      retryPolicy: draft.payload.retryPolicy
+        ? { value: draft.payload.retryPolicy }
+        : undefined,
+      slaPolicy: draft.payload.slaPolicy
+        ? { value: draft.payload.slaPolicy }
+        : undefined,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "blocked"
+            ? "paused"
+            : draft.status === "completed"
+              ? "active"
+              : "draft",
+      trigger: draft.payload.trigger || "record_created",
     };
   }
 
@@ -1019,13 +1290,15 @@ export const saveDedicatedCrmRecord = createAsyncThunk(
     if (!route) throw new Error("Dedicated CRM route is not configured");
     const body = toDedicatedCrmPayload(draft);
     const response = draft.id
-      ? await sendJson(
-          draft.moduleKey === "support"
-            ? `${route}/${draft.id}/status`
-            : `${route}/${draft.id}`,
-          dedicatedCrmUpdateMethods[draft.moduleKey] ?? "PUT",
-          draft.moduleKey === "support" ? { status: draft.status } : body,
-        )
+      ? upsertOnlyDedicatedModules.has(draft.moduleKey)
+        ? await sendJson(route, "POST", body)
+        : await sendJson(
+            draft.moduleKey === "support"
+              ? `${route}/${draft.id}/status`
+              : `${route}/${draft.id}`,
+            dedicatedCrmUpdateMethods[draft.moduleKey] ?? "PUT",
+            draft.moduleKey === "support" ? { status: draft.status } : body,
+          )
       : await sendJson(route, "POST", body);
     return { draft, response };
   },

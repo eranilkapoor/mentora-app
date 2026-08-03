@@ -204,6 +204,12 @@ export function recordsToRows(
       object.payload && typeof object.payload === "object"
         ? (object.payload as Record<string, unknown>)
         : {};
+    const metrics = normalizeResponseObject(object.metrics);
+    const roi = normalizeResponseObject(object.roi);
+    const customFields = normalizeResponseObject(object.customFields);
+    const applicantName = [object.firstName, object.middleName, object.lastName]
+      .filter(Boolean)
+      .join(" ");
 
     return module.columns.map((column, index) => {
       const key = toPayloadKey(column);
@@ -212,6 +218,74 @@ export function recordsToRows(
         payload[column] ??
         object[key] ??
         object[column] ??
+        customFields[key] ??
+        metrics[key] ??
+        roi[key] ??
+        (key === "campaign" ? (object.name ?? object.title) : undefined) ??
+        (key === "leads" ? metrics.leads : undefined) ??
+        (key === "applications" ? metrics.applications : undefined) ??
+        (key === "spend" ? metrics.spend : undefined) ??
+        (key === "roi" ? (roi.value ?? object.roi) : undefined) ??
+        (key === "message" ? (object.subject ?? object.title) : undefined) ??
+        (key === "time" ? (object.createdAt ?? object.updatedAt) : undefined) ??
+        (key === "task" ? object.title : undefined) ??
+        (key === "document" ? (object.name ?? object.title) : undefined) ??
+        (key === "report" ? (object.name ?? object.title) : undefined) ??
+        (key === "workflow" ? (object.name ?? object.title) : undefined) ??
+        (key === "lastRun"
+          ? (object.lastRunAt ?? object.updatedAt)
+          : undefined) ??
+        (key === "leadNumber" ? object.leadNumber : undefined) ??
+        (key === "applicantName" ? applicantName || object.title : undefined) ??
+        (key === "interestedCourse"
+          ? (object.interestedCourse ?? object.interestedPrograms)
+          : undefined) ??
+        (key === "campus" ? object.campus : undefined) ??
+        (key === "leadStage" ? resolveRecordName(object.stageId) : undefined) ??
+        (key === "leadStatus" ? object.status : undefined) ??
+        (key === "source" ? resolveRecordName(object.sourceId) : undefined) ??
+        (key === "assignedCounselor"
+          ? resolvePersonName(object.assignedTo)
+          : undefined) ??
+        (key === "team" ? resolveRecordName(object.teamId) : undefined) ??
+        (key === "leadScore" ? object.score : undefined) ??
+        (key === "lastContacted" ? object.lastContactedAt : undefined) ??
+        (key === "nextFollowUp" ? object.nextFollowUpAt : undefined) ??
+        (key === "createdDate" ? object.createdAt : undefined) ??
+        (key === "ageOfLead" ? object.ageOfLead : undefined) ??
+        (key === "duplicateIndicator"
+          ? object.duplicateIndicator
+            ? "Duplicate"
+            : "Unique"
+          : undefined) ??
+        (key === "sourceName" ? object.name : undefined) ??
+        (key === "activeLeads" ? object.activeLeads : undefined) ??
+        (key === "conversionRate"
+          ? `${object.conversionRate ?? 0}%`
+          : undefined) ??
+        (key === "stageName" ? object.name : undefined) ??
+        (key === "activeLeadCount" ? object.activeLeadCount : undefined) ??
+        (key === "conversionStage"
+          ? (object.conversionStage ?? object.isConverted)
+          : undefined) ??
+        (key === "lostStage"
+          ? (object.lostStage ?? object.isLost)
+          : undefined) ??
+        (key === "sla" ? (object.sla ?? object.slaDurationHours) : undefined) ??
+        (key === "lead" ? resolveRecordName(object.leadId) : undefined) ??
+        (key === "previousOwner"
+          ? resolvePersonName(object.previousOwner)
+          : undefined) ??
+        (key === "newOwner"
+          ? resolvePersonName(object.assignedTo)
+          : undefined) ??
+        (key === "assignedBy"
+          ? resolvePersonName(object.assignedBy)
+          : undefined) ??
+        (key === "assignedDate"
+          ? (object.assignedAt ?? object.createdAt)
+          : undefined) ??
+        (key === "assignmentReason" ? object.assignmentReason : undefined) ??
         (key === "department"
           ? resolveRecordName(object.departmentId, workspace?.departments)
           : undefined) ??
@@ -234,6 +308,19 @@ export function recordsToRows(
       return stringifyCell(value);
     });
   });
+}
+
+function resolvePersonName(value: unknown) {
+  if (!value || typeof value !== "object") return stringifyCell(value);
+  const object = value as Record<string, unknown>;
+  return (
+    [object.firstName, object.lastName].filter(Boolean).join(" ") ||
+    object.name ||
+    object.email ||
+    object._id ||
+    object.id ||
+    "-"
+  );
 }
 
 function resolveRecordName(value: unknown, records?: unknown[]) {
@@ -348,10 +435,29 @@ function organizationRecordsToRows(
         ? (record as Record<string, unknown>)
         : {};
     const values: Record<string, unknown> = {
-      Plan: object.plan ?? object.planCode ?? object.subscriptionPlan,
+      Domain: object.customDomain ?? object.primaryDomain ?? object.subdomain,
+      Email: object.primaryEmail,
+      "Last Activity": object.lastActivityAt ?? object.updatedAt,
+      "Lead Usage": object.leadUsage,
+      "Organization Code": object.code,
+      "Organization Name": object.name ?? object.title,
+      "Organization Type": object.type,
+      Phone: object.primaryPhone,
+      Plan:
+        normalizeResponseObject(object.subscription).plan ??
+        object.plan ??
+        object.planCode ??
+        object.subscriptionPlan,
+      "Primary Contact": object.legalName ?? object.name,
       Status: object.status,
+      "Storage Usage": object.storageUsage,
+      "Subscription Status":
+        object.subscriptionStatus ??
+        normalizeResponseObject(object.subscription).status,
+      "User Count": object.userCount,
       Organization: object.name ?? object.title,
       Type: object.type,
+      "Created Date": object.createdAt,
     };
 
     return module.columns.map((column) => stringifyCell(values[column]));
@@ -381,6 +487,16 @@ function userRecordsToRows(
       typeof primaryMembership.organizationId === "object"
         ? (primaryMembership.organizationId as Record<string, unknown>)
         : {};
+    const departments = Array.isArray(primaryMembership.departmentIds)
+      ? primaryMembership.departmentIds
+      : [];
+    const departmentNames = departments
+      .map((department) =>
+        department && typeof department === "object"
+          ? (department as Record<string, unknown>).name
+          : department,
+      )
+      .filter(Boolean);
     const branches = Array.isArray(primaryMembership.branchIds)
       ? primaryMembership.branchIds
       : [];
@@ -406,6 +522,20 @@ function userRecordsToRows(
           ? "Parent"
           : "CRM User";
     const values: Record<string, unknown> = {
+      "Account Status":
+        typeof object.status === "string"
+          ? object.status.charAt(0).toUpperCase() +
+            object.status.slice(1).toLowerCase()
+          : object.status,
+      "Created Date": object.createdAt,
+      Department: departmentNames.length ? departmentNames : "-",
+      Email: object.email,
+      "Last Login": object.lastLoginAt,
+      "MFA Status": object.mfaRequired ? "Required" : "Not required",
+      Name:
+        [object.firstName, object.lastName].filter(Boolean).join(" ") ||
+        object.email,
+      Role: primaryMembership.role ?? membershipRoles[0] ?? "-",
       User: object.email,
       "User Type": userType,
       "System Roles": systemRoles.length ? systemRoles : "-",
@@ -417,7 +547,6 @@ function userRecordsToRows(
           ? object.status.charAt(0).toUpperCase() +
             object.status.slice(1).toLowerCase()
           : object.status,
-      "Last Login": object.lastLoginAt,
       Sessions: object.activeSessions,
     };
 

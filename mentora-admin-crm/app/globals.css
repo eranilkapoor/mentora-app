@@ -1954,6 +1954,16 @@ select:focus-visible {
   grid-column: span 3;
 }
 
+.form-section-title {
+  border-bottom: 1px solid var(--line);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  padding: 8px 0 4px;
+  text-transform: uppercase;
+}
+
 .record-textarea {
   min-height: 86px;
   resize: vertical;

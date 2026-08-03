@@ -26,6 +26,15 @@ export class LeadStage {
   @Prop({ default: 0 })
   order!: number;
 
+  @Prop({ trim: true })
+  color?: string;
+
+  @Prop({
+    enum: ['new', 'contacted', 'qualified', 'application', 'converted', 'lost'],
+    default: 'new',
+  })
+  category!: string;
+
   @Prop({ default: false })
   isInitial!: boolean;
 
@@ -34,6 +43,21 @@ export class LeadStage {
 
   @Prop({ default: false })
   isLost!: boolean;
+
+  @Prop({ default: false })
+  requiresRemarks!: boolean;
+
+  @Prop({ type: [String], default: [] })
+  mandatoryFieldsBeforeEntry!: string[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'LeadStage', default: [] })
+  allowedNextStageIds!: Types.ObjectId[];
+
+  @Prop({ default: 24 })
+  slaDurationHours!: number;
+
+  @Prop({ type: Object, default: {} })
+  escalationRule!: Record<string, unknown>;
 
   @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
   status!: string;

@@ -27,6 +27,7 @@ import {
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  ListLeadAssignmentsDto,
   ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
@@ -57,7 +58,7 @@ export class LeadsController {
 
   @Get()
   @Permissions(Permission.CRM_LEAD_VIEW)
-  async listLeads(@Query() query: ListLeadsDto) {
+  async listLeads(@Query() query: ListLeadsDto): Promise<unknown> {
     return successResponse(
       await this.service.listLeads(query),
       'EDUCATION_PLATFORM_LEADS_FETCHED',
@@ -98,11 +99,21 @@ export class LeadsController {
   async exportLeads(
     @Req() req: AuthenticatedRequest,
     @Query('organizationId') organizationId: string,
-  ) {
+  ): Promise<unknown> {
     return successResponse(
       await this.service.exportLeads(req.user.sub, organizationId),
       'EDUCATION_PLATFORM_LEADS_EXPORTED',
       'CRM leads exported',
+    );
+  }
+
+  @Get('operations/assignments')
+  @Permissions(Permission.CRM_LEAD_VIEW)
+  async listAssignments(@Query() query: ListLeadAssignmentsDto) {
+    return successResponse(
+      await this.service.listAssignments(query),
+      'EDUCATION_PLATFORM_LEAD_ASSIGNMENTS_FETCHED',
+      'CRM lead assignments fetched',
     );
   }
 

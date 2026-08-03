@@ -43,7 +43,7 @@ export class DashboardService {
     userId: string,
     organizationId?: string,
     roles: Role[] = [],
-  ) {
+  ): Promise<unknown> {
     const [contexts, organizationResult] = await Promise.all([
       this.contextsService.listUserContexts(userId),
       this.organizationsService.listOrganizations({
@@ -51,7 +51,8 @@ export class DashboardService {
         status: 'active',
       }),
     ]);
-    const organizations = organizationResult.items;
+    const organizations =
+      (organizationResult as { items?: Record<string, unknown>[] }).items ?? [];
     const resolvedContexts =
       contexts.length > 0 || !roles.includes(Role.SUPER_ADMIN)
         ? contexts

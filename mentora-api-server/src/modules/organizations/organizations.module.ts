@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContextsModule } from '../contexts/contexts.module';
 import { User, UserSchema } from '../auth/schemas/user.schema';
+import { Lead, LeadSchema } from '../leads/schemas/leads.schema';
 import {
   UserMembership,
   UserMembershipSchema,
@@ -45,6 +46,7 @@ import { OrganizationsService } from './services/organizations.service';
       { name: ChannelSetting.name, schema: ChannelSettingSchema },
       { name: LeadSource.name, schema: LeadSourceSchema },
       { name: LeadStage.name, schema: LeadStageSchema },
+      { name: Lead.name, schema: LeadSchema },
       { name: User.name, schema: UserSchema },
       { name: UserMembership.name, schema: UserMembershipSchema },
     ]),

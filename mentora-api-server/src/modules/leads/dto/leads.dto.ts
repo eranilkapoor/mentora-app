@@ -21,6 +21,10 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
+  middleName?: string;
+
+  @IsOptional()
+  @IsString()
   lastName?: string;
 
   @IsOptional()
@@ -33,11 +37,39 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
+  alternatePhone?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
+
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredLanguage?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
   city?: string;
 
   @IsOptional()
   @IsString()
   state?: string;
+
+  @IsOptional()
+  @IsString()
+  postalCode?: string;
+
+  @IsOptional()
+  @IsString()
+  fullAddress?: string;
 
   @IsOptional()
   @IsMongoId()
@@ -52,9 +84,109 @@ export class CreateLeadDto {
   branchId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsString()
+  campus?: string;
+
+  @IsOptional()
+  @IsString()
+  campaign?: string;
+
+  @IsOptional()
+  @IsString()
+  subSource?: string;
+
+  @IsOptional()
+  @IsString()
+  referral?: string;
+
+  @IsOptional()
+  @IsString()
+  partner?: string;
+
+  @IsOptional()
+  @IsString()
+  landingPage?: string;
+
+  @IsOptional()
+  @IsString()
+  formSource?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   interestedPrograms?: string[];
+
+  @IsOptional()
+  @IsString()
+  academicLevel?: string;
+
+  @IsOptional()
+  @IsString()
+  interestedCourse?: string;
+
+  @IsOptional()
+  @IsString()
+  specialization?: string;
+
+  @IsOptional()
+  @IsString()
+  academicSession?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredMode?: string;
+
+  @IsOptional()
+  @IsString()
+  intake?: string;
+
+  @IsOptional()
+  @IsString()
+  assignmentMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  currentQualification?: string;
+
+  @IsOptional()
+  @IsString()
+  percentageOrCgpa?: string;
+
+  @IsOptional()
+  @IsNumber()
+  graduationYear?: number;
+
+  @IsOptional()
+  @IsString()
+  entranceExam?: string;
+
+  @IsOptional()
+  @IsString()
+  examScore?: string;
+
+  @IsOptional()
+  @IsString()
+  workExperience?: string;
+
+  @IsOptional()
+  @IsString()
+  budgetRange?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredLocation?: string;
 
   @IsOptional()
   @IsArray()
@@ -76,12 +208,36 @@ export class CreateLeadDto {
   score?: number;
 
   @IsOptional()
+  @IsIn(['low', 'medium', 'high', 'urgent'])
+  priority?: string;
+
+  @IsOptional()
   @IsIn(['cold', 'warm', 'hot'])
   temperature?: string;
 
   @IsOptional()
   @IsDateString()
   nextFollowUpAt?: string;
+
+  @IsOptional()
+  @IsString()
+  followUpType?: string;
+
+  @IsOptional()
+  @IsString()
+  followUpNote?: string;
+
+  @IsOptional()
+  @IsString()
+  lostReason?: string;
+
+  @IsOptional()
+  @IsString()
+  disqualificationReason?: string;
+
+  @IsOptional()
+  @IsString()
+  consentStatus?: string;
 
   @IsOptional()
   @IsObject()
@@ -145,6 +301,19 @@ export class ListLeadsDto {
   sortOrder?: string;
 }
 
+export class ListLeadAssignmentsDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+}
+
 export class UpdateLeadDto {
   @IsMongoId()
   organizationId!: string;
@@ -152,6 +321,10 @@ export class UpdateLeadDto {
   @IsOptional()
   @IsString()
   firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  middleName?: string;
 
   @IsOptional()
   @IsString()
@@ -167,11 +340,39 @@ export class UpdateLeadDto {
 
   @IsOptional()
   @IsString()
+  alternatePhone?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: string;
+
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredLanguage?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
   city?: string;
 
   @IsOptional()
   @IsString()
   state?: string;
+
+  @IsOptional()
+  @IsString()
+  postalCode?: string;
+
+  @IsOptional()
+  @IsString()
+  fullAddress?: string;
 
   @IsOptional()
   @IsMongoId()
@@ -187,12 +388,108 @@ export class UpdateLeadDto {
 
   @IsOptional()
   @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
   assignedTo?: string;
+
+  @IsOptional()
+  @IsString()
+  campus?: string;
+
+  @IsOptional()
+  @IsString()
+  campaign?: string;
+
+  @IsOptional()
+  @IsString()
+  subSource?: string;
+
+  @IsOptional()
+  @IsString()
+  referral?: string;
+
+  @IsOptional()
+  @IsString()
+  partner?: string;
+
+  @IsOptional()
+  @IsString()
+  landingPage?: string;
+
+  @IsOptional()
+  @IsString()
+  formSource?: string;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   interestedPrograms?: string[];
+
+  @IsOptional()
+  @IsString()
+  academicLevel?: string;
+
+  @IsOptional()
+  @IsString()
+  interestedCourse?: string;
+
+  @IsOptional()
+  @IsString()
+  specialization?: string;
+
+  @IsOptional()
+  @IsString()
+  academicSession?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredMode?: string;
+
+  @IsOptional()
+  @IsString()
+  intake?: string;
+
+  @IsOptional()
+  @IsString()
+  assignmentMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  currentQualification?: string;
+
+  @IsOptional()
+  @IsString()
+  percentageOrCgpa?: string;
+
+  @IsOptional()
+  @IsNumber()
+  graduationYear?: number;
+
+  @IsOptional()
+  @IsString()
+  entranceExam?: string;
+
+  @IsOptional()
+  @IsString()
+  examScore?: string;
+
+  @IsOptional()
+  @IsString()
+  workExperience?: string;
+
+  @IsOptional()
+  @IsString()
+  budgetRange?: string;
+
+  @IsOptional()
+  @IsString()
+  preferredLocation?: string;
 
   @IsOptional()
   @IsArray()
@@ -206,6 +503,10 @@ export class UpdateLeadDto {
   score?: number;
 
   @IsOptional()
+  @IsIn(['low', 'medium', 'high', 'urgent'])
+  priority?: string;
+
+  @IsOptional()
   @IsIn(['cold', 'warm', 'hot'])
   temperature?: string;
 
@@ -216,6 +517,26 @@ export class UpdateLeadDto {
   @IsOptional()
   @IsDateString()
   nextFollowUpAt?: string;
+
+  @IsOptional()
+  @IsString()
+  followUpType?: string;
+
+  @IsOptional()
+  @IsString()
+  followUpNote?: string;
+
+  @IsOptional()
+  @IsString()
+  lostReason?: string;
+
+  @IsOptional()
+  @IsString()
+  disqualificationReason?: string;
+
+  @IsOptional()
+  @IsString()
+  consentStatus?: string;
 
   @IsOptional()
   @IsObject()
@@ -298,9 +619,25 @@ export class AssignLeadDto {
     'course_based',
     'branch_based',
     'location_based',
+    'campus_based',
+    'source_based',
+    'campaign_based',
+    'language_based',
+    'capacity_based',
+    'working_hours',
+    'lead_score_based',
+    'existing_relationship',
     'workflow',
   ])
   assignmentMethod?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsString()
+  assignmentReason?: string;
 }
 
 export class ChangeLeadStageDto {

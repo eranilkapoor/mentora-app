@@ -8,6 +8,7 @@ export type OrganizationSetupKind =
 export const dedicatedAdminModuleIds = new Set([
   "admissions",
   "applications",
+  "assignments",
   "automation",
   "call-center",
   "campaigns",
@@ -19,6 +20,8 @@ export const dedicatedAdminModuleIds = new Set([
   "finance",
   "interview",
   "leads",
+  "lead-sources",
+  "lead-stages",
   "reports",
   "scholarship",
   "support",
@@ -62,6 +65,149 @@ export const readonlyFormColumns = new Set([
 export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "roles") return ["Description", "Permissions"];
   if (module.id === "permissions") return ["Module", "Description"];
+  if (module.id === "leads") {
+    return [
+      "First Name",
+      "Middle Name",
+      "Last Name",
+      "Email",
+      "Phone",
+      "Alternate Phone",
+      "Date Of Birth",
+      "Gender",
+      "Preferred Language",
+      "Country",
+      "State",
+      "City",
+      "Postal Code",
+      "Full Address",
+      "Academic Level",
+      "Interested Program",
+      "Course",
+      "Specialization",
+      "Academic Session",
+      "Preferred Campus",
+      "Preferred Mode",
+      "Intake",
+      "Lead Source",
+      "Sub Source",
+      "Campaign",
+      "Referral",
+      "Partner",
+      "UTM Source",
+      "UTM Medium",
+      "UTM Campaign",
+      "UTM Term",
+      "UTM Content",
+      "Landing Page",
+      "Form Source",
+      "Branch",
+      "Department",
+      "Team",
+      "Assigned Counselor",
+      "Assignment Method",
+      "Current Qualification",
+      "Percentage/CGPA",
+      "Graduation Year",
+      "Entrance Exam",
+      "Exam Score",
+      "Work Experience",
+      "Budget Range",
+      "Preferred Location",
+      "Stage",
+      "Priority",
+      "Temperature",
+      "Lead Score",
+      "Lost Reason",
+      "Disqualification Reason",
+      "Next Follow-up Date",
+      "Follow-up Type",
+      "Follow-up Note",
+      "Tags",
+      "Notes",
+      "Consent Status",
+    ];
+  }
+  if (module.id === "lead-sources") {
+    return [
+      "Name",
+      "Code",
+      "Category",
+      "Parent Source",
+      "Description",
+      "Default Assignment Rule",
+      "Default Campaign",
+      "Cost",
+      "Active Status",
+    ];
+  }
+  if (module.id === "lead-stages") {
+    return [
+      "Name",
+      "Code",
+      "Display Order",
+      "Color",
+      "Category",
+      "Is Initial Stage",
+      "Is Converted Stage",
+      "Is Lost Stage",
+      "Requires Remarks",
+      "Mandatory Fields Before Entry",
+      "Allowed Next Stages",
+      "SLA Duration",
+      "Escalation Rule",
+      "Status",
+    ];
+  }
+  if (module.id === "campaigns") {
+    return [
+      "Channel",
+      "Audience",
+      "Leads",
+      "Applications",
+      "Spend",
+      "Roi",
+      "Utm Source",
+      "Utm Medium",
+      "Utm Campaign",
+      "Utm Term",
+      "Utm Content",
+      "Drip Steps",
+    ];
+  }
+  if (
+    module.id === "communications" ||
+    module.id === "emails" ||
+    module.id === "sms"
+  ) {
+    return ["Channel", "Direction", "Entity Type", "Entity Id", "Content"];
+  }
+  if (module.id === "tasks") {
+    return [
+      "Entity Type",
+      "Entity Id",
+      "Assigned To",
+      "Reminder At",
+      "Recurring Rule",
+    ];
+  }
+  if (module.id === "documents") {
+    return ["Entity Type", "Entity Id", "Category", "Url", "Mime Type", "Size"];
+  }
+  if (module.id === "reports") {
+    return ["Module Key", "Report Type", "Columns", "Filters", "Schedule"];
+  }
+  if (module.id === "automation") {
+    return [
+      "Module Key",
+      "Trigger",
+      "Conditions",
+      "Actions",
+      "Priority",
+      "Retry Policy",
+      "Sla Policy",
+    ];
+  }
   return module.columns.slice(1, 6).filter((column) => {
     const normalized = column.trim().toLowerCase().replaceAll("_", " ");
     return (
@@ -223,16 +369,27 @@ export const moduleActions: Record<string, string[]> = {
   ],
   leads: [
     "Create Lead",
+    "Assign",
+    "Transfer",
+    "Change Stage",
+    "Add Note",
+    "Schedule Follow-up",
+    "Add Task",
+    "Call",
+    "Email",
+    "SMS",
+    "WhatsApp",
+    "Start Application",
+    "Mark Lost",
+    "Merge Duplicate",
+    "Convert Contact",
+    "Add Document",
     "Check Duplicates",
     "Import Leads",
     "Export Leads",
     "Score Lead",
     "Update Tags",
     "Add Attachment",
-    "Assign",
-    "Change Stage",
-    "Log Activity",
-    "Nurture Lead",
   ],
   integrations: [
     "Check Providers",
@@ -617,8 +774,28 @@ export const modules: AdminModule[] = [
     metric: "428",
     description:
       "Capture, deduplicate, score, assign, nurture, and track every enquiry from website, ads, WhatsApp, walk-ins, imports, and APIs.",
-    filters: ["Source", "Stage", "Owner", "Branch"],
-    columns: ["Lead", "Program", "Source", "Stage", "Owner", "Follow-up"],
+    filters: ["Source", "Stage", "Counselor", "Priority"],
+    columns: [
+      "Lead Number",
+      "Applicant Name",
+      "Phone",
+      "Email",
+      "Interested Course",
+      "Campus",
+      "Lead Stage",
+      "Lead Status",
+      "Source",
+      "Campaign",
+      "Assigned Counselor",
+      "Team",
+      "Lead Score",
+      "Priority",
+      "Last Contacted",
+      "Next Follow-up",
+      "Created Date",
+      "Age Of Lead",
+      "Duplicate Indicator",
+    ],
     rows: [
       [
         "Aarav Sharma",
@@ -1071,15 +1248,14 @@ export const extraModules: AdminModule[] = [
       "Counselors, managers, branch admins, marketing, finance, call center, field agents, students, parents, roles, teams, and hierarchy.",
     filters: ["Role", "Team", "Branch", "Status"],
     columns: [
-      "User",
-      "User Type",
-      "System Roles",
-      "Access Role",
-      "Organization",
-      "Branch",
-      "Status",
-      "Sessions",
+      "Name",
+      "Email",
+      "Role",
+      "Department",
       "Last Login",
+      "MFA Status",
+      "Account Status",
+      "Created Date",
     ],
     rows: [],
   },
@@ -1113,7 +1289,23 @@ export const extraModules: AdminModule[] = [
     description:
       "Universities, colleges, institutes, schools, coaching brands, franchises, domains, branding, channel settings, and activation lifecycle.",
     filters: ["Type", "Plan", "Status"],
-    columns: ["Organization", "Type", "Plan", "Status"],
+    columns: [
+      "Organization Name",
+      "Organization Code",
+      "Organization Type",
+      "Primary Contact",
+      "Email",
+      "Phone",
+      "Plan",
+      "Subscription Status",
+      "User Count",
+      "Lead Usage",
+      "Storage Usage",
+      "Domain",
+      "Created Date",
+      "Last Activity",
+      "Status",
+    ],
     rows: [
       ["Webnza Coaching", "Coaching", "Enterprise", "Active"],
       ["North Branch College", "College", "Growth", "Active"],
@@ -1551,14 +1743,31 @@ export const extraModules: AdminModule[] = [
     "Lead Sources",
     "Generic CRM",
     "Website, ads, WhatsApp, walk-ins, referrals, imports, partners, API sources, and source ownership.",
-    ["Source", "Category", "Channel", "Owner", "Status", "Updated"],
+    [
+      "Source Name",
+      "Code",
+      "Category",
+      "Active Leads",
+      "Conversion Rate",
+      "Cost",
+      "Status",
+    ],
   ),
   createLayerModule(
     "lead-stages",
     "Lead Stages",
     "Generic CRM",
     "Configurable enquiry stages, order, conversion flags, lost reasons, SLA policy, and pipeline movement rules.",
-    ["Stage", "Order", "Initial", "Converted", "Lost", "Status"],
+    [
+      "Stage Name",
+      "Order",
+      "Category",
+      "Active Lead Count",
+      "Conversion Stage",
+      "Lost Stage",
+      "SLA",
+      "Status",
+    ],
   ),
   createLayerModule(
     "activities",
@@ -1593,7 +1802,16 @@ export const extraModules: AdminModule[] = [
     "Assignments",
     "Generic CRM",
     "Lead, task, application, and case assignment rules using users, teams, departments, branches, and capacity.",
-    ["Assignment", "Entity", "Assignee", "Rule", "Status", "Updated"],
+    [
+      "Lead",
+      "Previous Owner",
+      "New Owner",
+      "Team",
+      "Assignment Method",
+      "Assigned By",
+      "Assigned Date",
+      "Assignment Reason",
+    ],
   ),
   createLayerModule(
     "tags",

@@ -68,7 +68,9 @@ export class OrganizationsController {
 
   @Get('organizations')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listOrganizations(@Query() query: ListOrganizationsDto) {
+  async listOrganizations(
+    @Query() query: ListOrganizationsDto,
+  ): Promise<unknown> {
     return successResponse(
       await this.service.listOrganizations(query),
       'EDUCATION_PLATFORM_ORGANIZATIONS_FETCHED',
@@ -156,7 +158,9 @@ export class OrganizationsController {
 
   @Get('lead-sources')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listLeadSources(@Query('organizationId') organizationId: string) {
+  async listLeadSources(
+    @Query('organizationId') organizationId: string,
+  ): Promise<unknown> {
     return successResponse(
       await this.service.listLeadSources(organizationId),
       'EDUCATION_PLATFORM_LEAD_SOURCES_FETCHED',
@@ -177,7 +181,9 @@ export class OrganizationsController {
 
   @Get('lead-stages')
   @Permissions(Permission.CRM_ORGANIZATION_VIEW)
-  async listLeadStages(@Query('organizationId') organizationId: string) {
+  async listLeadStages(
+    @Query('organizationId') organizationId: string,
+  ): Promise<unknown> {
     return successResponse(
       await this.service.listLeadStages(organizationId),
       'EDUCATION_PLATFORM_LEAD_STAGES_FETCHED',

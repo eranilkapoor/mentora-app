@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsEmail,
   IsIn,
   IsMongoId,
@@ -49,6 +50,14 @@ export class ListAdminUsersDto {
 }
 
 export class CreateAdminUserDto {
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
   @IsEmail()
   email!: string;
 
@@ -84,9 +93,35 @@ export class CreateAdminUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  permissionOverrides?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  mfaRequired?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  ipRestrictions?: string[];
 }
 
 export class UpdateAdminUserDto {
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
   @IsOptional()
   @IsIn([Status.ACTIVE, Status.PENDING, Status.SUSPENDED, Status.BLOCKED])
   status?: Status;
@@ -113,4 +148,18 @@ export class UpdateAdminUserDto {
   @IsArray()
   @IsMongoId({ each: true })
   teamIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  permissionOverrides?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  mfaRequired?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  ipRestrictions?: string[];
 }
