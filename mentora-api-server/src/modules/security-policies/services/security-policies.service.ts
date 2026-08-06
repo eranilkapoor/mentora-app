@@ -43,8 +43,8 @@ export class SecurityPoliciesService {
 
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_security_policy.updated',
-      resource: 'crm_security_policy',
+      action: 'security_policy.updated',
+      resource: 'security_policy',
       targetId: String(policy._id),
       after: JSON.parse(JSON.stringify(policy.toObject())) as Record<
         string,

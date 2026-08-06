@@ -33,7 +33,7 @@ export class ReportsController {
 
   @Post('definitions')
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_REPORT_VIEW)
+  @Permissions(Permission.REPORT_VIEW)
   async createDefinition(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReportDefinitionDto,
@@ -41,12 +41,12 @@ export class ReportsController {
     return successResponse(
       await this.service.createDefinition(req.user.sub, dto),
       'EDUCATION_PLATFORM_REPORT_DEFINITION_CREATED',
-      'CRM report definition created',
+      'Report definition created',
     );
   }
 
   @Get('definitions')
-  @Permissions(Permission.CRM_REPORT_VIEW)
+  @Permissions(Permission.REPORT_VIEW)
   async listDefinitions(
     @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -69,12 +69,12 @@ export class ReportsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_REPORT_DEFINITIONS_FETCHED',
-      'CRM report definitions fetched',
+      'Report definitions fetched',
     );
   }
 
   @Put('definitions/:definitionId')
-  @Permissions(Permission.CRM_REPORT_VIEW)
+  @Permissions(Permission.REPORT_VIEW)
   async updateDefinition(
     @Req() req: AuthenticatedRequest,
     @Param('definitionId') definitionId: string,
@@ -83,12 +83,12 @@ export class ReportsController {
     return successResponse(
       await this.service.updateDefinition(req.user.sub, definitionId, dto),
       'EDUCATION_PLATFORM_REPORT_DEFINITION_UPDATED',
-      'CRM report definition updated',
+      'Report definition updated',
     );
   }
 
   @Delete('definitions/:definitionId')
-  @Permissions(Permission.CRM_REPORT_VIEW)
+  @Permissions(Permission.REPORT_VIEW)
   async archiveDefinition(
     @Req() req: AuthenticatedRequest,
     @Param('definitionId') definitionId: string,
@@ -101,13 +101,13 @@ export class ReportsController {
         organizationId,
       ),
       'EDUCATION_PLATFORM_REPORT_DEFINITION_ARCHIVED',
-      'CRM report definition archived',
+      'Report definition archived',
     );
   }
 
   @Post('exports')
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_REPORT_EXPORT)
+  @Permissions(Permission.REPORT_EXPORT)
   async createExportJob(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReportExportJobDto,
@@ -115,12 +115,12 @@ export class ReportsController {
     return successResponse(
       await this.service.createExportJob(req.user.sub, dto),
       'EDUCATION_PLATFORM_REPORT_EXPORT_CREATED',
-      'CRM report export created',
+      'Report export created',
     );
   }
 
   @Get('exports')
-  @Permissions(Permission.CRM_REPORT_EXPORT)
+  @Permissions(Permission.REPORT_EXPORT)
   async listExportJobs(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -139,7 +139,7 @@ export class ReportsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_REPORT_EXPORTS_FETCHED',
-      'CRM report exports fetched',
+      'Report exports fetched',
     );
   }
 }

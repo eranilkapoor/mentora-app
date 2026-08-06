@@ -49,8 +49,8 @@ export class WorkflowsService {
     });
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_workflow_rule.created',
-      resource: 'crm_workflow_rule',
+      action: 'workflow_rule.created',
+      resource: 'workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
       metadata: {
@@ -102,8 +102,8 @@ export class WorkflowsService {
     if (!rule) throw new NotFoundException('Workflow rule not found');
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_workflow_rule.updated',
-      resource: 'crm_workflow_rule',
+      action: 'workflow_rule.updated',
+      resource: 'workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
       metadata: {
@@ -126,8 +126,8 @@ export class WorkflowsService {
     if (!rule) throw new NotFoundException('Workflow rule not found');
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_workflow_rule.archived',
-      resource: 'crm_workflow_rule',
+      action: 'workflow_rule.archived',
+      resource: 'workflow_rule',
       targetId: String(rule._id),
       after: this.toAuditRecord(rule.toObject()),
       metadata: { organizationId, moduleKey: rule.moduleKey },
@@ -172,8 +172,8 @@ export class WorkflowsService {
 
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_workflow.executed',
-      resource: 'crm_workflow',
+      action: 'workflow.executed',
+      resource: 'workflow',
       targetId: dto.targetId,
       after: { executions: executions.map((item) => String(item._id)) },
       metadata: {
@@ -237,8 +237,8 @@ export class WorkflowsService {
     await execution.save();
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_workflow_execution.retried',
-      resource: 'crm_workflow_execution',
+      action: 'workflow_execution.retried',
+      resource: 'workflow_execution',
       targetId: String(execution._id),
       after: this.toAuditRecord(execution.toObject()),
       metadata: { organizationId: dto.organizationId },

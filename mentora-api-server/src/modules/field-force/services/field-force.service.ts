@@ -11,6 +11,6 @@ export class FieldForceService extends CrmDomainRecordService<FieldVisitDocument
     @InjectModel(FieldVisit.name) model: Model<FieldVisitDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_field_force');
+    super(model, auditService, 'field_force');
   }
 }

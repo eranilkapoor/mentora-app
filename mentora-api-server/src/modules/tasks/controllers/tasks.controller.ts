@@ -33,7 +33,7 @@ export class TasksController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_TASK_MANAGE)
+  @Permissions(Permission.TASK_MANAGE)
   async createTask(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateTaskDto,
@@ -46,7 +46,7 @@ export class TasksController {
   }
 
   @Get()
-  @Permissions(Permission.CRM_TASK_VIEW)
+  @Permissions(Permission.TASK_VIEW)
   async listTasks(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -76,7 +76,7 @@ export class TasksController {
   }
 
   @Put(':taskId')
-  @Permissions(Permission.CRM_TASK_MANAGE)
+  @Permissions(Permission.TASK_MANAGE)
   async updateTask(
     @Param('taskId') taskId: string,
     @Body() dto: UpdateTaskDto,
@@ -89,7 +89,7 @@ export class TasksController {
   }
 
   @Delete(':taskId')
-  @Permissions(Permission.CRM_TASK_MANAGE)
+  @Permissions(Permission.TASK_MANAGE)
   async archiveTask(
     @Param('taskId') taskId: string,
     @Query('organizationId') organizationId: string,
@@ -102,7 +102,7 @@ export class TasksController {
   }
 
   @Get('board')
-  @Permissions(Permission.CRM_TASK_VIEW)
+  @Permissions(Permission.TASK_VIEW)
   async listTaskBoard(@Query('organizationId') organizationId: string) {
     return successResponse(
       await this.service.listTaskBoard(organizationId),
@@ -112,7 +112,7 @@ export class TasksController {
   }
 
   @Post(':taskId/workflow')
-  @Permissions(Permission.CRM_TASK_MANAGE)
+  @Permissions(Permission.TASK_MANAGE)
   async updateWorkflow(
     @Req() req: AuthenticatedRequest,
     @Param('taskId') taskId: string,

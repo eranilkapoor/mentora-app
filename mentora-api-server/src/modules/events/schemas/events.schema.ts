@@ -5,7 +5,7 @@ import { Organization } from '@/modules/organizations/schemas/organizations.sche
 
 export type CrmEventDocument = HydratedDocument<CrmEvent>;
 
-@Schema({ collection: COLLECTION_NAMES.CRM_EVENT, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.EVENT, timestamps: true })
 export class CrmEvent {
   @Prop({
     type: Types.ObjectId,

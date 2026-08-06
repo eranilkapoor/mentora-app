@@ -15,6 +15,6 @@ export class WhatsappService extends CrmDomainRecordService<WhatsappConversation
     model: Model<WhatsappConversationDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_whatsapp');
+    super(model, auditService, 'whatsapp');
   }
 }

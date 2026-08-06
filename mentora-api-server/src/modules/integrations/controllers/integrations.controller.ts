@@ -24,17 +24,17 @@ export class IntegrationsController {
   constructor(private readonly service: IntegrationsService) {}
 
   @Get('providers')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async listProviders(@Query('organizationId') organizationId: string) {
     return successResponse(
       await this.service.listProviders(organizationId),
-      'CRM_INTEGRATION_PROVIDERS_FETCHED',
-      'CRM integration providers fetched',
+      'INTEGRATION_PROVIDERS_FETCHED',
+      'Integration providers fetched',
     );
   }
 
   @Put('providers/:providerKey')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async upsertProvider(
     @Req() req: AuthenticatedRequest,
     @Param('providerKey') providerKey: string,
@@ -42,21 +42,21 @@ export class IntegrationsController {
   ) {
     return successResponse(
       await this.service.upsertProvider(req.user.sub, providerKey, dto),
-      'CRM_INTEGRATION_PROVIDER_UPDATED',
-      'CRM integration provider updated',
+      'INTEGRATION_PROVIDER_UPDATED',
+      'Integration provider updated',
     );
   }
 
   @Get('providers/:providerKey/test')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   testProvider(
     @Param('providerKey') providerKey: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       this.service.testProvider(organizationId, providerKey),
-      'CRM_INTEGRATION_PROVIDER_TESTED',
-      'CRM integration provider tested',
+      'INTEGRATION_PROVIDER_TESTED',
+      'Integration provider tested',
     );
   }
 }

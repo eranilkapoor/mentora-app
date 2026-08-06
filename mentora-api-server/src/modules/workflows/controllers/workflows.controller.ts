@@ -34,7 +34,7 @@ export class WorkflowsController {
 
   @Post('rules')
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async createRule(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateWorkflowRuleDto,
@@ -47,7 +47,7 @@ export class WorkflowsController {
   }
 
   @Get('rules')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async listRules(
     @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -77,7 +77,7 @@ export class WorkflowsController {
   }
 
   @Put('rules/:ruleId')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async updateRule(
     @Req() req: AuthenticatedRequest,
     @Param('ruleId') ruleId: string,
@@ -91,7 +91,7 @@ export class WorkflowsController {
   }
 
   @Delete('rules/:ruleId')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async archiveRule(
     @Req() req: AuthenticatedRequest,
     @Param('ruleId') ruleId: string,
@@ -105,7 +105,7 @@ export class WorkflowsController {
   }
 
   @Post('execute')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async execute(
     @Req() req: AuthenticatedRequest,
     @Body() dto: ExecuteWorkflowDto,
@@ -118,7 +118,7 @@ export class WorkflowsController {
   }
 
   @Get('executions')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async listExecutions(
     @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -148,7 +148,7 @@ export class WorkflowsController {
   }
 
   @Post('executions/:executionId/retry')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async retryExecution(
     @Req() req: AuthenticatedRequest,
     @Param('executionId') executionId: string,

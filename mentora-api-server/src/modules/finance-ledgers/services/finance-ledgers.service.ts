@@ -23,7 +23,7 @@ export class FinanceLedgersService extends CrmDomainRecordService<FinanceLedgerE
     model: Model<FinanceLedgerEntryDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_finance_ledger');
+    super(model, auditService, 'finance_ledger');
   }
 
   async reconcile(userId: string, recordId: string, dto: ReconcileLedgerDto) {

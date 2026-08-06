@@ -78,7 +78,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.created',
+      'lead.created',
       dto.organizationId,
       lead._id,
       {
@@ -227,7 +227,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.updated',
+      'lead.updated',
       dto.organizationId,
       lead._id,
       {
@@ -253,15 +253,9 @@ export class LeadsService {
       type: 'note_added',
       subject: 'Lead archived',
     });
-    await this.writeAudit(
-      userId,
-      'crm_lead.archived',
-      organizationId,
-      lead._id,
-      {
-        after: this.toAuditRecord(lead.toObject()),
-      },
-    );
+    await this.writeAudit(userId, 'lead.archived', organizationId, lead._id, {
+      after: this.toAuditRecord(lead.toObject()),
+    });
     return lead;
   }
 
@@ -283,7 +277,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.tags_updated',
+      'lead.tags_updated',
       dto.organizationId,
       lead._id,
       {
@@ -328,7 +322,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.attachment_added',
+      'lead.attachment_added',
       dto.organizationId,
       lead._id,
       {
@@ -383,16 +377,10 @@ export class LeadsService {
       subject: 'Lead score recalculated',
       metadata: { score, temperature },
     });
-    await this.writeAudit(
-      userId,
-      'crm_lead.scored',
-      dto.organizationId,
-      lead._id,
-      {
-        after: this.toAuditRecord(lead.toObject()),
-        metadata: { score, temperature },
-      },
-    );
+    await this.writeAudit(userId, 'lead.scored', dto.organizationId, lead._id, {
+      after: this.toAuditRecord(lead.toObject()),
+      metadata: { score, temperature },
+    });
     return lead;
   }
 
@@ -430,7 +418,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.transferred',
+      'lead.transferred',
       dto.organizationId,
       lead._id,
       {
@@ -487,7 +475,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.assigned',
+      'lead.assigned',
       dto.organizationId,
       lead._id,
       {
@@ -519,7 +507,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.stage_changed',
+      'lead.stage_changed',
       dto.organizationId,
       lead._id,
       {
@@ -661,7 +649,7 @@ export class LeadsService {
     });
     await this.writeAudit(
       userId,
-      'crm_lead.merged',
+      'lead.merged',
       dto.organizationId,
       masterLead._id,
       {
@@ -707,7 +695,7 @@ export class LeadsService {
 
     await this.writeAudit(
       userId,
-      'crm_lead.imported',
+      'lead.imported',
       dto.organizationId,
       undefined,
       {
@@ -746,15 +734,9 @@ export class LeadsService {
       ),
     ].join('\n');
 
-    await this.writeAudit(
-      userId,
-      'crm_lead.exported',
-      organizationId,
-      undefined,
-      {
-        metadata: { exportedRows: leads.length },
-      },
-    );
+    await this.writeAudit(userId, 'lead.exported', organizationId, undefined, {
+      metadata: { exportedRows: leads.length },
+    });
 
     return {
       filename: `mentora-leads-${new Date().toISOString().slice(0, 10)}.csv`,
@@ -783,7 +765,7 @@ export class LeadsService {
     await this.auditService.write({
       actorId: userId,
       action,
-      resource: 'crm_lead',
+      resource: 'lead',
       targetId: targetId ? String(targetId) : undefined,
       reason: details.reason,
       before: details.before,

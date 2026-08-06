@@ -14,6 +14,6 @@ export class CallCenterService extends CrmDomainRecordService<CallCenterCallDocu
     @InjectModel(CallCenterCall.name) model: Model<CallCenterCallDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_call_center');
+    super(model, auditService, 'call_center');
   }
 }

@@ -32,17 +32,17 @@ export class ApplicationsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  @Permissions(Permission.APPLICATION_MANAGE)
   async createApplication(@Body() dto: CreateApplicationDto) {
     return successResponse(
       await this.service.createApplication(dto),
       'EDUCATION_PLATFORM_APPLICATION_CREATED',
-      'CRM application created',
+      'Application created',
     );
   }
 
   @Get()
-  @Permissions(Permission.CRM_APPLICATION_VIEW)
+  @Permissions(Permission.APPLICATION_VIEW)
   async listApplications(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -67,12 +67,12 @@ export class ApplicationsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_APPLICATIONS_FETCHED',
-      'CRM applications fetched',
+      'Applications fetched',
     );
   }
 
   @Put(':applicationId')
-  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  @Permissions(Permission.APPLICATION_MANAGE)
   async updateApplication(
     @Param('applicationId') applicationId: string,
     @Body() dto: UpdateApplicationDto,
@@ -80,12 +80,12 @@ export class ApplicationsController {
     return successResponse(
       await this.service.updateApplication(applicationId, dto),
       'EDUCATION_PLATFORM_APPLICATION_UPDATED',
-      'CRM application updated',
+      'Application updated',
     );
   }
 
   @Delete(':applicationId')
-  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  @Permissions(Permission.APPLICATION_MANAGE)
   async archiveApplication(
     @Param('applicationId') applicationId: string,
     @Query('organizationId') organizationId: string,
@@ -93,12 +93,12 @@ export class ApplicationsController {
     return successResponse(
       await this.service.archiveApplication(applicationId, organizationId),
       'EDUCATION_PLATFORM_APPLICATION_ARCHIVED',
-      'CRM application archived',
+      'Application archived',
     );
   }
 
   @Post(':applicationId/review')
-  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  @Permissions(Permission.APPLICATION_MANAGE)
   async updateReview(
     @Param('applicationId') applicationId: string,
     @Body() dto: UpdateApplicationReviewDto,
@@ -106,12 +106,12 @@ export class ApplicationsController {
     return successResponse(
       await this.service.updateReview(applicationId, dto),
       'EDUCATION_PLATFORM_APPLICATION_REVIEW_UPDATED',
-      'CRM application review updated',
+      'Application review updated',
     );
   }
 
   @Post(':applicationId/decision')
-  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  @Permissions(Permission.APPLICATION_MANAGE)
   async decideApplication(
     @Param('applicationId') applicationId: string,
     @Body() dto: ApproveApplicationDto,
@@ -119,7 +119,7 @@ export class ApplicationsController {
     return successResponse(
       await this.service.decideApplication(applicationId, dto),
       'EDUCATION_PLATFORM_APPLICATION_DECIDED',
-      'CRM application decision saved',
+      'Application decision saved',
     );
   }
 }

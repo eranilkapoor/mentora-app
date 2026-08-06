@@ -310,8 +310,8 @@ export class IntegrationsService {
 
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_integration_provider.upserted',
-      resource: 'crm_integration_provider',
+      action: 'integration_provider.upserted',
+      resource: 'integration_provider',
       targetId: String(record._id),
       after: JSON.parse(JSON.stringify(record.toObject())) as Record<
         string,

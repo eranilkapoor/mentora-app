@@ -23,7 +23,7 @@ export class ScholarshipsService extends CrmDomainRecordService<ScholarshipAppli
     model: Model<ScholarshipApplicationDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_scholarship');
+    super(model, auditService, 'scholarship');
   }
 
   async evaluate(recordId: string, dto: EvaluateScholarshipDto) {

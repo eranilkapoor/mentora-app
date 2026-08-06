@@ -47,8 +47,8 @@ export class ReportsService {
     });
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_report_definition.created',
-      resource: 'crm_report_definition',
+      action: 'report_definition.created',
+      resource: 'report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
       metadata: {
@@ -117,8 +117,8 @@ export class ReportsService {
       throw new NotFoundException('CRM report definition not found');
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_report_definition.updated',
-      resource: 'crm_report_definition',
+      action: 'report_definition.updated',
+      resource: 'report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
       metadata: { organizationId: dto.organizationId },
@@ -143,8 +143,8 @@ export class ReportsService {
       throw new NotFoundException('CRM report definition not found');
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_report_definition.archived',
-      resource: 'crm_report_definition',
+      action: 'report_definition.archived',
+      resource: 'report_definition',
       targetId: String(definition._id),
       after: this.toAuditRecord(definition.toObject()),
       metadata: { organizationId },
@@ -184,8 +184,8 @@ export class ReportsService {
 
     await this.auditService.write({
       actorId: userId,
-      action: 'crm_report.exported',
-      resource: 'crm_report_export_job',
+      action: 'report.exported',
+      resource: 'report_export_job',
       targetId: String(job._id),
       after: this.toAuditRecord(job.toObject()),
       metadata: {

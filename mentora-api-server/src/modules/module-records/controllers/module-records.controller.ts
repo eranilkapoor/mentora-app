@@ -36,7 +36,7 @@ export class ModuleRecordsController {
   ) {}
 
   @Get('coverage')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   moduleCoverage() {
     return successResponse(
       this.moduleCoverageService.getModuleCoverage(),
@@ -47,7 +47,7 @@ export class ModuleRecordsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async createModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateModuleRecordDto,
@@ -55,12 +55,12 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.createModuleRecord(req.user.sub, dto),
       'EDUCATION_PLATFORM_MODULE_RECORD_CREATED',
-      'CRM module record created',
+      'Module record created',
     );
   }
 
   @Get()
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async listModuleRecords(
     @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -85,12 +85,12 @@ export class ModuleRecordsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_MODULE_RECORDS_FETCHED',
-      'CRM module records fetched',
+      'Module records fetched',
     );
   }
 
   @Get('operations/export')
-  @Permissions(Permission.CRM_REPORT_EXPORT)
+  @Permissions(Permission.REPORT_EXPORT)
   async exportModuleRecords(
     @Query('organizationId') organizationId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -98,12 +98,12 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.exportModuleRecords(organizationId, moduleKey),
       'EDUCATION_PLATFORM_MODULE_RECORDS_EXPORTED',
-      'CRM module records exported',
+      'Module records exported',
     );
   }
 
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateModuleRecordStatusDto,
@@ -111,12 +111,12 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
       'EDUCATION_PLATFORM_MODULE_RECORDS_BULK_STATUS_UPDATED',
-      'CRM module records bulk status updated',
+      'Module records bulk status updated',
     );
   }
 
   @Get(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async getModuleRecord(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
@@ -124,12 +124,12 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.getModuleRecord(recordId, organizationId),
       'EDUCATION_PLATFORM_MODULE_RECORD_FETCHED',
-      'CRM module record fetched',
+      'Module record fetched',
     );
   }
 
   @Delete(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async deleteModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -142,12 +142,12 @@ export class ModuleRecordsController {
         organizationId,
       ),
       'EDUCATION_PLATFORM_MODULE_RECORD_ARCHIVED',
-      'CRM module record archived',
+      'Module record archived',
     );
   }
 
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async restoreModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -160,12 +160,12 @@ export class ModuleRecordsController {
         organizationId,
       ),
       'EDUCATION_PLATFORM_MODULE_RECORD_RESTORED',
-      'CRM module record restored',
+      'Module record restored',
     );
   }
 
   @Post(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async updateModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -174,12 +174,12 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.updateModuleRecord(req.user.sub, recordId, dto),
       'EDUCATION_PLATFORM_MODULE_RECORD_UPDATED',
-      'CRM module record updated',
+      'Module record updated',
     );
   }
 
   @Post(':recordId/execute')
-  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  @Permissions(Permission.WORKFLOW_MANAGE)
   async executeModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -188,7 +188,7 @@ export class ModuleRecordsController {
     return successResponse(
       await this.service.executeModuleRecord(req.user.sub, recordId, dto),
       'EDUCATION_PLATFORM_MODULE_RECORD_EXECUTED',
-      'CRM module record executed',
+      'Module record executed',
     );
   }
 }

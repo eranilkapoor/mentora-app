@@ -11,6 +11,6 @@ export class EventsService extends CrmDomainRecordService<CrmEventDocument> {
     @InjectModel(CrmEvent.name) model: Model<CrmEventDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_event');
+    super(model, auditService, 'event');
   }
 }

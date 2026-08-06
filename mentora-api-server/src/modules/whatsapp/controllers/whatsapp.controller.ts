@@ -28,17 +28,17 @@ import { WhatsappService } from '../services/whatsapp.service';
 @Controller('admin/whatsapp')
 export class WhatsappController {
   constructor(private readonly service: WhatsappService) {}
-  @Post() @Permissions(Permission.CRM_COMMUNICATION_MANAGE) async create(
+  @Post() @Permissions(Permission.COMMUNICATION_MANAGE) async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCrmDomainRecordDto,
   ) {
     return successResponse(
       await this.service.create(req.user.sub, dto),
-      'CRM_WHATSAPP_CREATED',
-      'CRM WhatsApp conversation created',
+      'WHATSAPP_CREATED',
+      'WhatsApp conversation created',
     );
   }
-  @Get() @Permissions(Permission.CRM_COMMUNICATION_VIEW) async list(
+  @Get() @Permissions(Permission.COMMUNICATION_VIEW) async list(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,36 +59,36 @@ export class WhatsappController {
         status,
         organizationId,
       }),
-      'CRM_WHATSAPP_FETCHED',
-      'CRM WhatsApp conversations fetched',
+      'WHATSAPP_FETCHED',
+      'WhatsApp conversations fetched',
     );
   }
   @Get(':recordId')
-  @Permissions(Permission.CRM_COMMUNICATION_VIEW)
+  @Permissions(Permission.COMMUNICATION_VIEW)
   async getById(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.getById(recordId, organizationId),
-      'CRM_WHATSAPP_RECORD_FETCHED',
-      'CRM WhatsApp conversation fetched',
+      'WHATSAPP_RECORD_FETCHED',
+      'WhatsApp conversation fetched',
     );
   }
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
   ) {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
-      'CRM_WHATSAPP_BULK_STATUS_UPDATED',
-      'CRM WhatsApp conversations bulk status updated',
+      'WHATSAPP_BULK_STATUS_UPDATED',
+      'WhatsApp conversations bulk status updated',
     );
   }
   @Delete(':recordId')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -96,12 +96,12 @@ export class WhatsappController {
   ) {
     return successResponse(
       await this.service.archive(req.user.sub, recordId, organizationId),
-      'CRM_WHATSAPP_ARCHIVED',
-      'CRM WhatsApp conversation archived',
+      'WHATSAPP_ARCHIVED',
+      'WhatsApp conversation archived',
     );
   }
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -109,12 +109,12 @@ export class WhatsappController {
   ) {
     return successResponse(
       await this.service.restore(req.user.sub, recordId, organizationId),
-      'CRM_WHATSAPP_RESTORED',
-      'CRM WhatsApp conversation restored',
+      'WHATSAPP_RESTORED',
+      'WhatsApp conversation restored',
     );
   }
   @Post(':recordId')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -122,12 +122,12 @@ export class WhatsappController {
   ) {
     return successResponse(
       await this.service.update(req.user.sub, recordId, dto),
-      'CRM_WHATSAPP_UPDATED',
-      'CRM WhatsApp conversation updated',
+      'WHATSAPP_UPDATED',
+      'WhatsApp conversation updated',
     );
   }
   @Post(':recordId/complete')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -135,8 +135,8 @@ export class WhatsappController {
   ) {
     return successResponse(
       await this.service.complete(req.user.sub, recordId, dto),
-      'CRM_WHATSAPP_COMPLETED',
-      'CRM WhatsApp conversation completed',
+      'WHATSAPP_COMPLETED',
+      'WhatsApp conversation completed',
     );
   }
 }

@@ -28,17 +28,17 @@ import { CallCenterService } from '../services/call-center.service';
 @Controller('admin/call-center')
 export class CallCenterController {
   constructor(private readonly service: CallCenterService) {}
-  @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(
+  @Post() @Permissions(Permission.MODULE_RECORD_MANAGE) async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCrmDomainRecordDto,
   ) {
     return successResponse(
       await this.service.create(req.user.sub, dto),
-      'CRM_CALL_CREATED',
-      'CRM call created',
+      'CALL_CREATED',
+      'Call created',
     );
   }
-  @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
+  @Get() @Permissions(Permission.MODULE_RECORD_VIEW) async list(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,36 +59,36 @@ export class CallCenterController {
         status,
         organizationId,
       }),
-      'CRM_CALLS_FETCHED',
-      'CRM calls fetched',
+      'CALLS_FETCHED',
+      'Calls fetched',
     );
   }
   @Get(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.getById(recordId, organizationId),
-      'CRM_CALL_FETCHED',
-      'CRM call fetched',
+      'CALL_FETCHED',
+      'Call fetched',
     );
   }
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
   ) {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
-      'CRM_CALLS_BULK_STATUS_UPDATED',
-      'CRM calls bulk status updated',
+      'CALLS_BULK_STATUS_UPDATED',
+      'Calls bulk status updated',
     );
   }
   @Delete(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -96,12 +96,12 @@ export class CallCenterController {
   ) {
     return successResponse(
       await this.service.archive(req.user.sub, recordId, organizationId),
-      'CRM_CALL_ARCHIVED',
-      'CRM call archived',
+      'CALL_ARCHIVED',
+      'Call archived',
     );
   }
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -109,12 +109,12 @@ export class CallCenterController {
   ) {
     return successResponse(
       await this.service.restore(req.user.sub, recordId, organizationId),
-      'CRM_CALL_RESTORED',
-      'CRM call restored',
+      'CALL_RESTORED',
+      'Call restored',
     );
   }
   @Post(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -122,12 +122,12 @@ export class CallCenterController {
   ) {
     return successResponse(
       await this.service.update(req.user.sub, recordId, dto),
-      'CRM_CALL_UPDATED',
-      'CRM call updated',
+      'CALL_UPDATED',
+      'Call updated',
     );
   }
   @Post(':recordId/complete')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -135,8 +135,8 @@ export class CallCenterController {
   ) {
     return successResponse(
       await this.service.complete(req.user.sub, recordId, dto),
-      'CRM_CALL_COMPLETED',
-      'CRM call completed',
+      'CALL_COMPLETED',
+      'Call completed',
     );
   }
 }

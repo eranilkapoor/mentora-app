@@ -19,7 +19,7 @@ export class AdmissionsService extends CrmDomainRecordService<AdmissionDocument>
     @InjectModel(Admission.name) model: Model<AdmissionDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_admission');
+    super(model, auditService, 'admission');
   }
 
   allocate(recordId: string, dto: AllocateAdmissionDto) {

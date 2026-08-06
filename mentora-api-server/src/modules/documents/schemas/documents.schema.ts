@@ -5,7 +5,7 @@ import { Organization } from '@/modules/organizations/schemas/organizations.sche
 
 export type CrmDocumentDocument = HydratedDocument<CrmDocument>;
 
-@Schema({ collection: COLLECTION_NAMES.CRM_DOCUMENT, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.DOCUMENT, timestamps: true })
 export class CrmDocument {
   @Prop({
     type: Types.ObjectId,

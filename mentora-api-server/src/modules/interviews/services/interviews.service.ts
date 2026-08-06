@@ -11,6 +11,6 @@ export class InterviewsService extends CrmDomainRecordService<InterviewDocument>
     @InjectModel(Interview.name) model: Model<InterviewDocument>,
     auditService: AdminAuditService,
   ) {
-    super(model, auditService, 'crm_interview');
+    super(model, auditService, 'interview');
   }
 }

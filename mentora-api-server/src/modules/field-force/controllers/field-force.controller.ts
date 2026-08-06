@@ -28,17 +28,17 @@ import { FieldForceService } from '../services/field-force.service';
 @Controller('admin/field-force')
 export class FieldForceController {
   constructor(private readonly service: FieldForceService) {}
-  @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(
+  @Post() @Permissions(Permission.MODULE_RECORD_MANAGE) async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCrmDomainRecordDto,
   ) {
     return successResponse(
       await this.service.create(req.user.sub, dto),
-      'CRM_FIELD_VISIT_CREATED',
-      'CRM field visit created',
+      'FIELD_VISIT_CREATED',
+      'Field visit created',
     );
   }
-  @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
+  @Get() @Permissions(Permission.MODULE_RECORD_VIEW) async list(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,36 +59,36 @@ export class FieldForceController {
         status,
         organizationId,
       }),
-      'CRM_FIELD_VISITS_FETCHED',
-      'CRM field visits fetched',
+      'FIELD_VISITS_FETCHED',
+      'Field visits fetched',
     );
   }
   @Get(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.getById(recordId, organizationId),
-      'CRM_FIELD_VISIT_FETCHED',
-      'CRM field visit fetched',
+      'FIELD_VISIT_FETCHED',
+      'Field visit fetched',
     );
   }
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
   ) {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
-      'CRM_FIELD_VISITS_BULK_STATUS_UPDATED',
-      'CRM field visits bulk status updated',
+      'FIELD_VISITS_BULK_STATUS_UPDATED',
+      'Field visits bulk status updated',
     );
   }
   @Post(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -96,12 +96,12 @@ export class FieldForceController {
   ) {
     return successResponse(
       await this.service.update(req.user.sub, recordId, dto),
-      'CRM_FIELD_VISIT_UPDATED',
-      'CRM field visit updated',
+      'FIELD_VISIT_UPDATED',
+      'Field visit updated',
     );
   }
   @Delete(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -109,12 +109,12 @@ export class FieldForceController {
   ) {
     return successResponse(
       await this.service.archive(req.user.sub, recordId, organizationId),
-      'CRM_FIELD_VISIT_ARCHIVED',
-      'CRM field visit archived',
+      'FIELD_VISIT_ARCHIVED',
+      'Field visit archived',
     );
   }
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -122,12 +122,12 @@ export class FieldForceController {
   ) {
     return successResponse(
       await this.service.restore(req.user.sub, recordId, organizationId),
-      'CRM_FIELD_VISIT_RESTORED',
-      'CRM field visit restored',
+      'FIELD_VISIT_RESTORED',
+      'Field visit restored',
     );
   }
   @Post(':recordId/complete')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -135,8 +135,8 @@ export class FieldForceController {
   ) {
     return successResponse(
       await this.service.complete(req.user.sub, recordId, dto),
-      'CRM_FIELD_VISIT_COMPLETED',
-      'CRM field visit completed',
+      'FIELD_VISIT_COMPLETED',
+      'Field visit completed',
     );
   }
 }

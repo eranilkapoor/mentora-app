@@ -28,17 +28,17 @@ import { InterviewsService } from '../services/interviews.service';
 @Controller('admin/interviews')
 export class InterviewsController {
   constructor(private readonly service: InterviewsService) {}
-  @Post() @Permissions(Permission.CRM_MODULE_RECORD_MANAGE) async create(
+  @Post() @Permissions(Permission.MODULE_RECORD_MANAGE) async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCrmDomainRecordDto,
   ) {
     return successResponse(
       await this.service.create(req.user.sub, dto),
-      'CRM_INTERVIEW_CREATED',
-      'CRM interview created',
+      'INTERVIEW_CREATED',
+      'Interview created',
     );
   }
-  @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
+  @Get() @Permissions(Permission.MODULE_RECORD_VIEW) async list(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,36 +59,36 @@ export class InterviewsController {
         status,
         organizationId,
       }),
-      'CRM_INTERVIEWS_FETCHED',
-      'CRM interviews fetched',
+      'INTERVIEWS_FETCHED',
+      'Interviews fetched',
     );
   }
   @Get(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.getById(recordId, organizationId),
-      'CRM_INTERVIEW_FETCHED',
-      'CRM interview fetched',
+      'INTERVIEW_FETCHED',
+      'Interview fetched',
     );
   }
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
   ) {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
-      'CRM_INTERVIEWS_BULK_STATUS_UPDATED',
-      'CRM interviews bulk status updated',
+      'INTERVIEWS_BULK_STATUS_UPDATED',
+      'Interviews bulk status updated',
     );
   }
   @Post(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -96,12 +96,12 @@ export class InterviewsController {
   ) {
     return successResponse(
       await this.service.update(req.user.sub, recordId, dto),
-      'CRM_INTERVIEW_UPDATED',
-      'CRM interview updated',
+      'INTERVIEW_UPDATED',
+      'Interview updated',
     );
   }
   @Delete(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -109,12 +109,12 @@ export class InterviewsController {
   ) {
     return successResponse(
       await this.service.archive(req.user.sub, recordId, organizationId),
-      'CRM_INTERVIEW_ARCHIVED',
-      'CRM interview archived',
+      'INTERVIEW_ARCHIVED',
+      'Interview archived',
     );
   }
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -122,12 +122,12 @@ export class InterviewsController {
   ) {
     return successResponse(
       await this.service.restore(req.user.sub, recordId, organizationId),
-      'CRM_INTERVIEW_RESTORED',
-      'CRM interview restored',
+      'INTERVIEW_RESTORED',
+      'Interview restored',
     );
   }
   @Post(':recordId/complete')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -135,8 +135,8 @@ export class InterviewsController {
   ) {
     return successResponse(
       await this.service.complete(req.user.sub, recordId, dto),
-      'CRM_INTERVIEW_COMPLETED',
-      'CRM interview completed',
+      'INTERVIEW_COMPLETED',
+      'Interview completed',
     );
   }
 }

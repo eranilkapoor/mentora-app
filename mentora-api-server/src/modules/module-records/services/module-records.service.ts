@@ -55,7 +55,7 @@ export class ModuleRecordsService {
     });
     await this.writeAudit(
       userId,
-      'crm_module_record.created',
+      'module_record.created',
       dto.organizationId,
       record._id,
       {
@@ -133,7 +133,7 @@ export class ModuleRecordsService {
     }
     await this.writeAudit(
       userId,
-      'crm_module_record.updated',
+      'module_record.updated',
       dto.organizationId,
       record._id,
       {
@@ -183,7 +183,7 @@ export class ModuleRecordsService {
 
     await this.writeAudit(
       userId,
-      'crm_module_record.executed',
+      'module_record.executed',
       dto.organizationId,
       record._id,
       {
@@ -211,7 +211,7 @@ export class ModuleRecordsService {
     );
     await this.writeAudit(
       userId,
-      'crm_module_record.bulk_status_updated',
+      'module_record.bulk_status_updated',
       dto.organizationId,
       toRequiredObjectId(dto.recordIds[0]),
       {
@@ -282,7 +282,7 @@ export class ModuleRecordsService {
     }
     await this.writeAudit(
       userId,
-      'crm_module_record.archived',
+      'module_record.archived',
       organizationId,
       record._id,
       {
@@ -311,7 +311,7 @@ export class ModuleRecordsService {
     }
     await this.writeAudit(
       userId,
-      'crm_module_record.restored',
+      'module_record.restored',
       organizationId,
       record._id,
       {
@@ -353,7 +353,7 @@ export class ModuleRecordsService {
     await this.auditService.write({
       actorId: userId,
       action,
-      resource: 'crm_module_record',
+      resource: 'module_record',
       targetId: String(targetId),
       after: details.after,
       metadata: { organizationId, ...(details.metadata ?? {}) },

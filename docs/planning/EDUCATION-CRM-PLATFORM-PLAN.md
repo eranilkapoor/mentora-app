@@ -94,8 +94,8 @@ Initial collections:
 - `communications`
 - `admissions`
 - `call_center_calls`
-- `crm_documents`
-- `crm_events`
+- `documents`
+- `events`
 - `field_visits`
 - `finance_ledger_entries`
 - `integration_provider_configs`

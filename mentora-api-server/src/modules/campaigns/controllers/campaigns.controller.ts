@@ -31,17 +31,17 @@ export class CampaignsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  @Permissions(Permission.CAMPAIGN_MANAGE)
   async createCampaign(@Body() dto: CreateCampaignDto) {
     return successResponse(
       await this.service.createCampaign(dto),
       'EDUCATION_PLATFORM_CAMPAIGN_CREATED',
-      'CRM campaign created',
+      'Campaign created',
     );
   }
 
   @Get()
-  @Permissions(Permission.CRM_CAMPAIGN_VIEW)
+  @Permissions(Permission.CAMPAIGN_VIEW)
   async listCampaigns(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -64,12 +64,12 @@ export class CampaignsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_CAMPAIGNS_FETCHED',
-      'CRM campaigns fetched',
+      'Campaigns fetched',
     );
   }
 
   @Put(':campaignId')
-  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  @Permissions(Permission.CAMPAIGN_MANAGE)
   async updateCampaign(
     @Param('campaignId') campaignId: string,
     @Body() dto: UpdateCampaignDto,
@@ -77,12 +77,12 @@ export class CampaignsController {
     return successResponse(
       await this.service.updateCampaign(campaignId, dto),
       'EDUCATION_PLATFORM_CAMPAIGN_UPDATED',
-      'CRM campaign updated',
+      'Campaign updated',
     );
   }
 
   @Delete(':campaignId')
-  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  @Permissions(Permission.CAMPAIGN_MANAGE)
   async archiveCampaign(
     @Param('campaignId') campaignId: string,
     @Query('organizationId') organizationId: string,
@@ -90,12 +90,12 @@ export class CampaignsController {
     return successResponse(
       await this.service.archiveCampaign(campaignId, organizationId),
       'EDUCATION_PLATFORM_CAMPAIGN_ARCHIVED',
-      'CRM campaign archived',
+      'Campaign archived',
     );
   }
 
   @Post(':campaignId/metrics')
-  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  @Permissions(Permission.CAMPAIGN_MANAGE)
   async updateMetrics(
     @Param('campaignId') campaignId: string,
     @Body() dto: UpdateCampaignMetricsDto,
@@ -103,7 +103,7 @@ export class CampaignsController {
     return successResponse(
       await this.service.updateMetrics(campaignId, dto),
       'EDUCATION_PLATFORM_CAMPAIGN_METRICS_UPDATED',
-      'CRM campaign metrics updated',
+      'Campaign metrics updated',
     );
   }
 }

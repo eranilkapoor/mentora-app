@@ -30,17 +30,17 @@ export class CommunicationsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async createCommunication(@Body() dto: CreateCommunicationDto) {
     return successResponse(
       await this.service.createCommunication(dto),
       'EDUCATION_PLATFORM_COMMUNICATION_CREATED',
-      'CRM communication created',
+      'Communication created',
     );
   }
 
   @Get()
-  @Permissions(Permission.CRM_COMMUNICATION_VIEW)
+  @Permissions(Permission.COMMUNICATION_VIEW)
   async listCommunications(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -69,12 +69,12 @@ export class CommunicationsController {
         organizationId,
       }),
       'EDUCATION_PLATFORM_COMMUNICATIONS_FETCHED',
-      'CRM communications fetched',
+      'Communications fetched',
     );
   }
 
   @Put(':communicationId')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async updateCommunication(
     @Param('communicationId') communicationId: string,
     @Body() dto: UpdateCommunicationDto,
@@ -82,12 +82,12 @@ export class CommunicationsController {
     return successResponse(
       await this.service.updateCommunication(communicationId, dto),
       'EDUCATION_PLATFORM_COMMUNICATION_UPDATED',
-      'CRM communication updated',
+      'Communication updated',
     );
   }
 
   @Delete(':communicationId')
-  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  @Permissions(Permission.COMMUNICATION_MANAGE)
   async archiveCommunication(
     @Param('communicationId') communicationId: string,
     @Query('organizationId') organizationId: string,
@@ -95,7 +95,7 @@ export class CommunicationsController {
     return successResponse(
       await this.service.archiveCommunication(communicationId, organizationId),
       'EDUCATION_PLATFORM_COMMUNICATION_ARCHIVED',
-      'CRM communication archived',
+      'Communication archived',
     );
   }
 }

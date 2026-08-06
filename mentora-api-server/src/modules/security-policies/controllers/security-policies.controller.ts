@@ -23,25 +23,25 @@ export class SecurityPoliciesController {
   constructor(private readonly service: SecurityPoliciesService) {}
 
   @Get()
-  @Permissions(Permission.CRM_ORGANIZATION_VIEW)
+  @Permissions(Permission.ORGANIZATION_VIEW)
   async getPolicy(@Query('organizationId') organizationId: string) {
     return successResponse(
       await this.service.getPolicy(organizationId),
-      'CRM_SECURITY_POLICY_FETCHED',
-      'CRM security policy fetched',
+      'SECURITY_POLICY_FETCHED',
+      'security policy fetched',
     );
   }
 
   @Put()
-  @Permissions(Permission.CRM_ORGANIZATION_MANAGE)
+  @Permissions(Permission.ORGANIZATION_MANAGE)
   async updatePolicy(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateOrganizationSecurityPolicyDto,
   ) {
     return successResponse(
       await this.service.updatePolicy(req.user.sub, dto),
-      'CRM_SECURITY_POLICY_UPDATED',
-      'CRM security policy updated',
+      'SECURITY_POLICY_UPDATED',
+      'security policy updated',
     );
   }
 }

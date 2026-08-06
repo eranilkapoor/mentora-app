@@ -300,7 +300,7 @@ const readinessByModule: Partial<
     layer: 'generic_crm',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'crm_events,interviews,learning_schedules',
+    storage: 'events,interviews,learning_schedules',
     apiSurface: ['events', 'interviews', 'learning/schedules'],
     productionBlockers: ['live_calendar_provider_sync'],
   },
@@ -348,7 +348,7 @@ const readinessByModule: Partial<
     storage:
       'student-profiles,student_academic_records,parent_student_relationships',
     apiSurface: ['students', 'learning'],
-    productionBlockers: ['crm_admission_conversion_timeline'],
+    productionBlockers: ['admission_conversion_timeline'],
   },
   'academic-sessions': {
     layer: 'education_specific',
@@ -386,7 +386,7 @@ const readinessByModule: Partial<
     layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'applications,crm_documents,interviews,admin_audit_logs',
+    storage: 'applications,documents,interviews,admin_audit_logs',
     apiSurface: [
       'applications',
       'applications/:id/review',
@@ -601,7 +601,7 @@ const readinessByModule: Partial<
   calendar: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'learning_schedules,tasks,interviews,crm_events,module_records',
+    storage: 'learning_schedules,tasks,interviews,events,module_records',
     apiSurface: [
       'learning/schedules',
       'tasks',
@@ -644,7 +644,7 @@ const readinessByModule: Partial<
   events: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'crm_events',
+    storage: 'events',
     apiSurface: ['events', 'events/:id', 'events/:id/complete'],
     productionBlockers: [
       'external_registration_form_hosting',
@@ -693,7 +693,7 @@ const readinessByModule: Partial<
   documents: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'crm_documents',
+    storage: 'documents',
     apiSurface: ['documents', 'documents/:id/verify'],
     productionBlockers: ['live_ocr_provider'],
   },
@@ -723,7 +723,7 @@ const readinessByModule: Partial<
     frontendStatus: 'product_ready',
     storage: 'ai_tutor_sessions,ai_tutor_messages,ai_settings',
     apiSurface: ['ai tutor', 'learning'],
-    productionBlockers: ['external_crm_ai_model_metering'],
+    productionBlockers: ['external_ai_model_metering'],
   },
   security: {
     backendStatus: 'product_ready',

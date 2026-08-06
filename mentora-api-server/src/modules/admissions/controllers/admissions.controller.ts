@@ -33,19 +33,19 @@ import { AdmissionsService } from '../services/admissions.service';
 export class AdmissionsController {
   constructor(private readonly service: AdmissionsService) {}
   @Post()
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async create(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateCrmDomainRecordDto,
   ) {
     return successResponse(
       await this.service.create(req.user.sub, dto),
-      'CRM_ADMISSION_CREATED',
-      'CRM admission created',
+      'ADMISSION_CREATED',
+      'Admission created',
     );
   }
   @Get()
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async list(
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
@@ -67,36 +67,36 @@ export class AdmissionsController {
         status,
         organizationId,
       }),
-      'CRM_ADMISSIONS_FETCHED',
-      'CRM admissions fetched',
+      'ADMISSIONS_FETCHED',
+      'Admissions fetched',
     );
   }
   @Get(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(
     @Param('recordId') recordId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
       await this.service.getById(recordId, organizationId),
-      'CRM_ADMISSION_FETCHED',
-      'CRM admission fetched',
+      'ADMISSION_FETCHED',
+      'Admission fetched',
     );
   }
   @Post('operations/bulk-status')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(
     @Req() req: AuthenticatedRequest,
     @Body() dto: BulkUpdateCrmDomainRecordStatusDto,
   ) {
     return successResponse(
       await this.service.bulkUpdateStatus(req.user.sub, dto),
-      'CRM_ADMISSIONS_BULK_STATUS_UPDATED',
-      'CRM admissions bulk status updated',
+      'ADMISSIONS_BULK_STATUS_UPDATED',
+      'Admissions bulk status updated',
     );
   }
   @Post(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -104,12 +104,12 @@ export class AdmissionsController {
   ) {
     return successResponse(
       await this.service.update(req.user.sub, recordId, dto),
-      'CRM_ADMISSION_UPDATED',
-      'CRM admission updated',
+      'ADMISSION_UPDATED',
+      'Admission updated',
     );
   }
   @Delete(':recordId')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async archive(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -117,12 +117,12 @@ export class AdmissionsController {
   ) {
     return successResponse(
       await this.service.archive(req.user.sub, recordId, organizationId),
-      'CRM_ADMISSION_ARCHIVED',
-      'CRM admission archived',
+      'ADMISSION_ARCHIVED',
+      'Admission archived',
     );
   }
   @Post(':recordId/restore')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async restore(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -130,12 +130,12 @@ export class AdmissionsController {
   ) {
     return successResponse(
       await this.service.restore(req.user.sub, recordId, organizationId),
-      'CRM_ADMISSION_RESTORED',
-      'CRM admission restored',
+      'ADMISSION_RESTORED',
+      'Admission restored',
     );
   }
   @Post(':recordId/complete')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
@@ -143,34 +143,34 @@ export class AdmissionsController {
   ) {
     return successResponse(
       await this.service.complete(req.user.sub, recordId, dto),
-      'CRM_ADMISSION_COMPLETED',
-      'CRM admission completed',
+      'ADMISSION_COMPLETED',
+      'Admission completed',
     );
   }
 
   @Post(':recordId/allocate')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async allocate(
     @Param('recordId') recordId: string,
     @Body() dto: AllocateAdmissionDto,
   ) {
     return successResponse(
       await this.service.allocate(recordId, dto),
-      'CRM_ADMISSION_ALLOCATED',
-      'CRM admission allocated',
+      'ADMISSION_ALLOCATED',
+      'Admission allocated',
     );
   }
 
   @Post(':recordId/handoff')
-  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  @Permissions(Permission.MODULE_RECORD_MANAGE)
   async handoff(
     @Param('recordId') recordId: string,
     @Body() dto: HandoffAdmissionDto,
   ) {
     return successResponse(
       await this.service.handoff(recordId, dto),
-      'CRM_ADMISSION_HANDOFF_QUEUED',
-      'CRM admission handoff queued',
+      'ADMISSION_HANDOFF_QUEUED',
+      'Admission handoff queued',
     );
   }
 }
