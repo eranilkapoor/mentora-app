@@ -62,6 +62,11 @@ export class CreateStudentDto {
   learningGoals?: string[];
 }
 
+export class CreateStudentBulkDto {
+  @IsArray()
+  students!: CreateStudentDto[];
+}
+
 export class UpdateStudentDto {
   @IsOptional()
   @IsString()

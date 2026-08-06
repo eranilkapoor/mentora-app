@@ -326,6 +326,30 @@ export class LearningController {
     );
   }
 
+  @Get('students/:studentId/attendance')
+  async listStudentAttendance(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.listStudentAttendance(req.user.sub, studentId),
+      'STUDENT_ATTENDANCE_FETCHED',
+      'Student attendance fetched',
+    );
+  }
+
+  @Get('classrooms/:classroomId/transcript')
+  async getClassroomTranscript(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+  ) {
+    return successResponse(
+      await this.service.getClassroomTranscript(req.user.sub, classroomId),
+      'CLASSROOM_TRANSCRIPT_FETCHED',
+      'Classroom transcript fetched',
+    );
+  }
+
   @Get('question-banks')
   async listQuestionBanks(@Query('subjectId') subjectId?: string) {
     return successResponse(

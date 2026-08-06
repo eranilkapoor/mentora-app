@@ -49,12 +49,16 @@ Important routes include:
 
 ```text
 POST   /api/v1/students
+POST   /api/v1/students/bulk
 GET    /api/v1/students
+GET    /api/v1/students/:studentId
 PATCH  /api/v1/students/:studentId/profile-sections/:section
 POST   /api/v1/students/:studentId/schedules
 GET    /api/v1/students/:studentId/progress
 GET    /api/v1/students/:studentId/topic-progress
 GET    /api/v1/students/:studentId/recommendations
+GET    /api/v1/students/:studentId/attendance
+GET    /api/v1/classrooms/:classroomId/transcript
 POST   /api/v1/ai-tutor/sessions
 GET    /api/v1/ai-tutor/sessions/:sessionId/context
 POST   /api/v1/ai-tutor/sessions/:sessionId/messages

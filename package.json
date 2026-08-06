@@ -40,6 +40,16 @@
     "verify": "npm run lint && npm run typecheck:api && npm run typecheck:mobile && npm run contracts:check && npm run db:audit:ci && npm run build:api",
     "ci": "npm run verify && npm run test:coverage && npm run test:e2e && npm run i18n:check"
   },
+  "keywords": [
+    "education",
+    "stdents",
+    "crm",
+    "b2b",
+    "b2c",
+    "saas",
+    "multi-organization"
+  ],
+  "license": "UNLICENSED",
   "devDependencies": {
     "husky": "^9.1.7",
     "openapi-typescript": "^7.13.0"

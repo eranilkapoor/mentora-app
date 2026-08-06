@@ -16,6 +16,7 @@ import {
   AddParentDto,
   CreateAcademicRecordDto,
   CreateScheduleDto,
+  CreateStudentBulkDto,
   CreateStudentDto,
   CreateStudentInvitationDto,
   EnrollSubjectDto,
@@ -42,6 +43,19 @@ export class StudentsController {
       await this.service.createStudent(req.user.sub, dto),
       'STUDENT_CREATED',
       'Student profile created',
+    );
+  }
+
+  @Post('bulk')
+  @HttpCode(HttpStatus.CREATED)
+  async createBulk(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateStudentBulkDto,
+  ) {
+    return successResponse(
+      await this.service.createStudentsBulk(req.user.sub, dto),
+      'STUDENTS_BULK_CREATED',
+      'Bulk student import completed',
     );
   }
 

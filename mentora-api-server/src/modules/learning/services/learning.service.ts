@@ -27,6 +27,7 @@ import {
   CreateQuestionBankDto,
   CreateQuestionDto,
   CreateScheduleDto,
+  CreateStudentBulkDto,
   CreateStudentDto,
   CreateStudentInvitationDto,
   CreateStudyPlanDto,
@@ -288,6 +289,64 @@ export class LearningService {
     }
 
     return student;
+  }
+
+  async createStudentsBulk(userId: string, dto: CreateStudentBulkDto) {
+    const created: StudentProfileDocument[] = [];
+    const errors: Array<{ index: number; reason: string }> = [];
+
+    for (let index = 0; index < dto.students.length; index += 1) {
+      const studentDto = dto.students[index];
+      try {
+        const student = await this.createStudent(userId, studentDto);
+        created.push(student);
+      } catch (error) {
+        const reason =
+          error instanceof Error
+            ? error.message
+            : 'Unknown student import error';
+        errors.push({
+          index,
+          reason,
+        });
+      }
+    }
+
+    return {
+      total: dto.students.length,
+      createdCount: created.length,
+      failedCount: errors.length,
+      created,
+      errors,
+    };
+  }
+
+  async listStudentAttendance(userId: string, studentId: string) {
+    await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
+    return this.tutorSessionNotes
+      .find({ studentProfileId: new Types.ObjectId(studentId) })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async getClassroomTranscript(userId: string, classroomId: string) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    if (!classroom.transcriptEnabled) {
+      throw new ForbiddenException(
+        'Transcript is not enabled for this classroom',
+      );
+    }
+
+    const messages = await this.classroomMessages
+      .find({ classroomId: classroom._id })
+      .sort({ createdAt: 1 })
+      .lean();
+
+    return {
+      classroom,
+      transcriptAvailable: true,
+      messages,
+    };
   }
 
   async listStudents(userId: string) {
