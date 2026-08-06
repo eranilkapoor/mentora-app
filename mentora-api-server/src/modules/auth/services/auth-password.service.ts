@@ -159,7 +159,7 @@ export class AuthPasswordService {
         );
       }
 
-      const user = await this.userRepo.findById(payload.userId);
+      const user = await this.userRepo.findByIdWithPasswordHash(payload.userId);
       const emailAccount = this.findEmailAuthAccount(user);
 
       if (!user || !emailAccount?.passwordHash) {
@@ -262,7 +262,7 @@ export class AuthPasswordService {
         );
       }
 
-      const user = await this.userRepo.findById(userId);
+      const user = await this.userRepo.findByIdWithPasswordHash(userId);
       const emailAccount = this.findEmailAuthAccount(user);
 
       if (!user || !emailAccount?.passwordHash) {

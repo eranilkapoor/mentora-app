@@ -29,6 +29,7 @@ describe('AuthPasswordService', () => {
   const userRepo = {
     findByProvider: jest.fn(),
     findById: jest.fn(),
+    findByIdWithPasswordHash: jest.fn(),
   };
   const jwtService = {
     sign: jest.fn(),
@@ -236,7 +237,7 @@ describe('AuthPasswordService', () => {
       type: 'password-reset',
       jti: 'reset-jti',
     });
-    userRepo.findById.mockResolvedValue(user);
+    userRepo.findByIdWithPasswordHash.mockResolvedValue(user);
 
     await expect(
       service.resetPassword(request(), {
@@ -254,7 +255,7 @@ describe('AuthPasswordService', () => {
       type: 'password-reset',
       jti: 'reset-jti',
     });
-    userRepo.findById.mockResolvedValue(user);
+    userRepo.findByIdWithPasswordHash.mockResolvedValue(user);
 
     await expect(
       service.resetPassword(
@@ -338,7 +339,7 @@ describe('AuthPasswordService', () => {
     [null],
     [{ _id: 'user-1', authAccounts: [{ provider: AuthProvider.GOOGLE }] }],
   ])('rejects password changes without an email password', async (user) => {
-    userRepo.findById.mockResolvedValue(user);
+    userRepo.findByIdWithPasswordHash.mockResolvedValue(user);
 
     await expect(
       service.changePassword(request(), 'user-1', {
@@ -351,7 +352,7 @@ describe('AuthPasswordService', () => {
 
   it('rejects changePassword when old password is incorrect', async () => {
     const oldHash = await bcrypt.hash('OldPassword@123', 4);
-    userRepo.findById.mockResolvedValue(createUser(oldHash));
+    userRepo.findByIdWithPasswordHash.mockResolvedValue(createUser(oldHash));
 
     await expect(
       service.changePassword(request(), 'user-1', {
@@ -365,7 +366,7 @@ describe('AuthPasswordService', () => {
   it('changes a password and defaults invalid headers and platform to web', async () => {
     const oldHash = await bcrypt.hash('OldPassword@123', 4);
     const user = createUser(oldHash);
-    userRepo.findById.mockResolvedValue(user);
+    userRepo.findByIdWithPasswordHash.mockResolvedValue(user);
 
     await expect(
       service.changePassword(
@@ -418,7 +419,9 @@ describe('AuthPasswordService', () => {
   });
 
   it('maps unexpected password-change failures to invalid password', async () => {
-    userRepo.findById.mockRejectedValue(new Error('database unavailable'));
+    userRepo.findByIdWithPasswordHash.mockRejectedValue(
+      new Error('database unavailable'),
+    );
 
     await expect(
       service.changePassword(request(), 'user-1', {

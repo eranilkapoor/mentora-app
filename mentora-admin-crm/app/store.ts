@@ -413,11 +413,9 @@ const allAdminModuleIds = [
   "global-settings",
   "audit-logs",
   "leads",
-  "contacts",
   "lead-sources",
   "lead-stages",
   "activities",
-  "notes",
   "tasks",
   "follow-ups",
   "meetings",
@@ -914,13 +912,25 @@ export const loginWithCredentials = createAsyncThunk(
 
     const accessToken =
       typeof data.accessToken === "string" ? data.accessToken : "";
+    if (accessToken) {
+      setCrmAccessToken(accessToken);
+    }
+
     const roles = Array.isArray(user.roles) ? user.roles.map(String) : [];
     const role = resolvePrimaryCrmRole(roles);
-    return {
-      accessToken,
-      email,
-      name,
-      contexts: [
+
+    let contexts: DemoContext[] = [];
+    if (accessToken) {
+      try {
+        const contextResponse = await getJson(adminPath("/me/contexts"));
+        contexts = normalizeBackendCrmContexts(contextResponse);
+      } catch {
+        contexts = [];
+      }
+    }
+
+    if (contexts.length === 0) {
+      contexts = [
         {
           branch: role === "super_admin" ? "All Branches" : "Assigned Branches",
           label: "Authenticated CRM Workspace",
@@ -931,7 +941,14 @@ export const loginWithCredentials = createAsyncThunk(
               ? "All Organizations"
               : "Assigned Organization",
         },
-      ],
+      ];
+    }
+
+    return {
+      accessToken,
+      email,
+      name,
+      contexts,
     } satisfies AuthenticatedCrmUser;
   },
 );

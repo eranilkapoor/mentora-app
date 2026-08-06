@@ -22,6 +22,13 @@ export class UserRepository {
     return this.userModel.findById(userId).exec();
   }
 
+  async findByIdWithPasswordHash(userId: string): Promise<UserDocument | null> {
+    return this.userModel
+      .findById(userId)
+      .select('+authAccounts.passwordHash')
+      .exec();
+  }
+
   async findByProvider(
     provider: string,
     providerId: string,
