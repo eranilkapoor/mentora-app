@@ -8,8 +8,12 @@ const apiBaseUrl =
   "http://localhost:3000";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
   outputFileTracingRoot: appDir,
   poweredByHeader: false,
+  typescript: {
+    ignoreBuildErrors: false,
+  },
   async rewrites() {
     return [
       {
