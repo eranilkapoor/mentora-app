@@ -2,7 +2,7 @@
   "name": "mentora-admin-crm",
   "version": "1.0.0",
   "private": true,
-  "description": "Next.js admin CRM portal for Mentora multi-tenant education CRM.",
+  "description": "Next.js admin CRM portal for Mentora multi-organization education CRM.",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",

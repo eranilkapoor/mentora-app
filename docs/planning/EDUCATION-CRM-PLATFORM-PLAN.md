@@ -206,7 +206,7 @@ The admin portal now follows the existing Juaaree/Match Mate admin interaction m
 
 - fixed left navigation groups
 - top welcome/logout bar
-- system, light, and dark theme selector
+- light, and dark theme selector
 - Bootstrap-based control foundation for forms, buttons, tables, cards, alerts, and responsive behavior
 - Font Awesome React icons for module navigation, actions, status, and dashboard surfaces
 - Redux Toolkit state management for CRM login state, context selection, theme mode, active module, toast state, and server workspace loading

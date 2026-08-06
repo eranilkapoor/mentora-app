@@ -95,7 +95,6 @@ export function ThemeSelector({
     label: string;
     value: ThemeMode;
   }> = [
-    { icon: faDesktop, label: "System", value: "system" },
     { icon: faSun, label: "Light", value: "light" },
     { icon: faMoon, label: "Dark", value: "dark" },
   ];

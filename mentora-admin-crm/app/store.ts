@@ -49,7 +49,7 @@ type CrmSessionState = {
   loginPassword: string;
   loggedInUser: DemoUser | null;
   preferences: CrmProfilePreferences;
-  themeMode: "system" | "light" | "dark";
+  themeMode: "light" | "dark";
   toast: string;
 };
 
@@ -1759,7 +1759,7 @@ const initialSessionState: CrmSessionState = {
   loginPassword: "",
   loggedInUser: null,
   preferences: defaultCrmProfilePreferences,
-  themeMode: "system",
+  themeMode: "light",
   toast: "Ready",
 };
 
@@ -1932,7 +1932,7 @@ const crmSessionSlice = createSlice({
         ...defaultCrmProfilePreferences,
         ...(session.preferences ?? {}),
       };
-      state.themeMode = session.themeMode ?? "system";
+      state.themeMode = session.themeMode ?? "light";
       state.toast = "Session restored";
       setCrmAccessToken(session.accessToken);
     },

@@ -10,7 +10,7 @@ type DemoRequestPayload = {
 };
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
-const tenantCode = process.env.NEXT_PUBLIC_DEMO_TENANT_CODE ?? "MENTORA-DEMO";
+const organizationCode = process.env.NEXT_PUBLIC_DEMO_ORGANIZATION_CODE ?? "MENTORA-DEMO";
 
 export async function POST(request: Request) {
   const payload = (await request.json()) as DemoRequestPayload;
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   const response = await fetch(`${apiBaseUrl}/api/v1/leads/capture`, {
     body: JSON.stringify({
-      tenantCode,
+      organizationCode,
       firstName,
       lastName: payload.lastName?.trim(),
       email,

@@ -1,7 +1,7 @@
 import type { DemoUser } from "../store";
 import type { AdminModule, IconName, ModuleStatus } from "./adminTypes";
 
-export type ThemeMode = "system" | "light" | "dark";
+export type ThemeMode = "light" | "dark";
 export type OrganizationSetupKind =
   "branch" | "department" | "team" | "branding" | "channel";
 

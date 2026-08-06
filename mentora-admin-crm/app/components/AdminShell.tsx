@@ -2422,7 +2422,7 @@ export default function AdminDashboardPage() {
                     ),
                   )
                 }
-                themeMode={themeMode === "system" ? "light" : themeMode}
+                themeMode={themeMode === "light" ? "light" : themeMode}
               />
               <button
                 aria-label="Open notifications"

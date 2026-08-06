@@ -40,7 +40,7 @@ const plans = [
   ],
   [
     "Enterprise",
-    "Multi-tenant controls, SSO, data masking, API keys, integrations, and audit exports.",
+    "Multi-organization controls, SSO, data masking, API keys, integrations, and audit exports.",
   ],
 ];
 
@@ -107,7 +107,7 @@ export default function HomePage() {
             <p className="eyebrow">Education CRM + AI learning platform</p>
             <h1>Mentora Enrollment Cloud</h1>
             <p>
-              A multi-tenant platform for education teams to attract, engage,
+              A multi-organization platform for education teams to attract, engage,
               enroll, collect payments, and continue student learning with AI
               tutors, online tutors, assessments, and parent visibility.
             </p>

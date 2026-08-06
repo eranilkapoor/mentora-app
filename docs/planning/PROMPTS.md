@@ -11,7 +11,7 @@ Mentora is a B2C AI tutoring and mentorship app for students and parents. Build 
 - complete student profile sections;
 - academic catalogue, subjects, schedules, AI tutor sessions, entitlements, and progress;
 - parent controls, device/session controls, billing controls, and safety controls;
-- English/Hindi localization and system/light/dark themes.
+- English/Hindi localization and light/dark themes.
 
 ## Student Profile Prompt
 
