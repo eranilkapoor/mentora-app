@@ -188,9 +188,9 @@ describe('AnalyticsService', () => {
       totals: { totalEvents: 20, uniqueUsers: 2 },
       conversion: {
         impressionToViewRate: 50,
-        viewToInterestRate: 0,
-        interestToMatchRate: 0,
-        matchToChatRate: 40,
+        viewToSessionRequestRate: 0,
+        sessionRequestToStartRate: 0,
+        sessionStartToChatRate: 40,
       },
       dimensions: {
         byPlatform: [{ key: 'WEB', count: 20, uniqueUsers: 2 }],

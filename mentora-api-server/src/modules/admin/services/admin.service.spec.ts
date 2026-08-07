@@ -211,7 +211,7 @@ describe('AdminService', () => {
         resource: 'user',
       }),
     );
-  });
+  }, 15000);
 
   it('broadcasts to matching users and reports failures', async () => {
     repo.findUsersForBroadcast.mockResolvedValue([

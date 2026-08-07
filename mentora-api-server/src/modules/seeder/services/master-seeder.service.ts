@@ -1087,17 +1087,17 @@ export class MasterSeederService {
 
     await this.userModel.bulkWrite(
       profiles.map((profile) => {
-        const isPhoneReviewer = profile.emails === PLAY_PHONE_REVIEWER_EMAIL;
-        const isPlatinumReviewer = this.isPlayReviewerEmail(profile.emails);
+        const isPhoneReviewer = profile.email === PLAY_PHONE_REVIEWER_EMAIL;
+        const isPlatinumReviewer = this.isPlayReviewerEmail(profile.email);
         const phoneOwner = phoneOwnerByNumber.get(profile.phone);
-        const canUsePhone = !phoneOwner || phoneOwner === profile.emails;
+        const canUsePhone = !phoneOwner || phoneOwner === profile.email;
 
         return {
           updateOne: {
-            filter: { email: profile.emails },
+            filter: { email: profile.email },
             update: {
               $set: {
-                email: profile.emails,
+                email: profile.email,
                 ...(canUsePhone
                   ? { phone: { countryCode: '91', phone: profile.phone } }
                   : {}),
@@ -1120,9 +1120,9 @@ export class MasterSeederService {
                   : [
                       {
                         provider: AuthProvider.EMAIL,
-                        providerId: profile.emails,
+                        providerId: profile.email,
                         passwordHash:
-                          profile.emails === PLAY_REVIEWER_EMAIL
+                          profile.email === PLAY_REVIEWER_EMAIL
                             ? reviewerPasswordHash
                             : passwordHash,
                         isVerified: true,
@@ -1165,7 +1165,7 @@ export class MasterSeederService {
     );
 
     const users = await this.userModel
-      .find({ email: { $in: profiles.map((profile) => profile.emails) } })
+      .find({ email: { $in: profiles.map((profile) => profile.email) } })
       .select('_id email')
       .lean();
     const userByEmail = new Map(users.map((user) => [user.email, user._id]));
@@ -1184,7 +1184,7 @@ export class MasterSeederService {
     const verificationWrites = [];
 
     for (const profile of profiles) {
-      const userId = userByEmail.get(profile.emails);
+      const userId = userByEmail.get(profile.email);
       if (!userId) continue;
 
       const imageFilename = `seed-profile-${profile.gender}-${profile.index}.jpg`;
@@ -1344,12 +1344,12 @@ export class MasterSeederService {
     return students.map(
       ([firstName, lastName, gender, city, state, lat, lng, age], index) => {
         const birthYear = new Date().getFullYear() - age;
-        const emails = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
+        const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
         const phone = String(9876543211 + index);
 
         return {
           index,
-          emails,
+          email,
           phone,
           gender,
           age,
@@ -1423,7 +1423,7 @@ export class MasterSeederService {
     return {
       ...base,
       index: 1020,
-      emails: PLAY_REVIEWER_EMAIL,
+      email: PLAY_REVIEWER_EMAIL,
       phone: '9899999001',
       personal: {
         ...base.personal,
@@ -1445,7 +1445,7 @@ export class MasterSeederService {
     return {
       ...base,
       index: 1050,
-      emails: PLAY_PHONE_REVIEWER_EMAIL,
+      email: PLAY_PHONE_REVIEWER_EMAIL,
       phone: PLAY_PHONE_REVIEWER_PHONE,
       personal: {
         ...base.personal,
@@ -1458,10 +1458,8 @@ export class MasterSeederService {
     };
   }
 
-  private isPlayReviewerEmail(emails?: string): boolean {
-    return (
-      emails === PLAY_REVIEWER_EMAIL || emails === PLAY_PHONE_REVIEWER_EMAIL
-    );
+  private isPlayReviewerEmail(email?: string): boolean {
+    return email === PLAY_REVIEWER_EMAIL || email === PLAY_PHONE_REVIEWER_EMAIL;
   }
 
   private async seedUserSubscriptions(): Promise<void> {
@@ -1487,7 +1485,7 @@ export class MasterSeederService {
 
     const seededEmails = [
       ...Object.values(AppRole).map((role) => `${role}@mentora.test`),
-      ...this.buildIndianDummyProfiles().map((profile) => profile.emails),
+      ...this.buildIndianDummyProfiles().map((profile) => profile.email),
       PLAY_REVIEWER_EMAIL,
       PLAY_PHONE_REVIEWER_EMAIL,
     ];

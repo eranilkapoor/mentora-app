@@ -970,8 +970,17 @@ export class LearningService {
       .select('startAt endAt')
       .lean();
 
+    // Occurrences accumulate here as they pass validation so that later
+    // occurrences in the same recurring-schedule request are checked
+    // against their siblings, not just against schedules already in the
+    // database (a batch of 7 daily occurrences must not bypass a
+    // sessionsPerWeek limit just because none of them exist yet).
+    const consideredSchedules: Array<{ startAt: Date; endAt: Date }> = [
+      ...existingSchedules,
+    ];
+
     for (const occurrence of occurrences) {
-      const overlapping = existingSchedules.filter(
+      const overlapping = consideredSchedules.filter(
         (existing) =>
           existing.startAt < occurrence.endAt &&
           existing.endAt > occurrence.startAt,
@@ -985,7 +994,7 @@ export class LearningService {
       const weekStart = this.startOfWeek(occurrence.startAt);
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 7);
-      const sessionsThisWeek = existingSchedules.filter(
+      const sessionsThisWeek = consideredSchedules.filter(
         (existing) =>
           existing.startAt >= weekStart && existing.startAt < weekEnd,
       ).length;
@@ -994,6 +1003,8 @@ export class LearningService {
           `This study plan allows at most ${studyPlan.sessionsPerWeek} session(s) per week`,
         );
       }
+
+      consideredSchedules.push(occurrence);
     }
   }
 

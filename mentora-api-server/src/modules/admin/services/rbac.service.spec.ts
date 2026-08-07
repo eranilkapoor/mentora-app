@@ -177,7 +177,7 @@ describe('RbacService', () => {
   it('lists and fetches permissions with module/not-found paths', async () => {
     permissionModel.find.mockReturnValue(createQueryChain([{ name: 'VIEW' }]));
     await expect(service.getPermissions()).resolves.toEqual([{ name: 'VIEW' }]);
-    expect(permissionModel.find).toHaveBeenLastCalledWith({ isActive: true });
+    expect(permissionModel.find).toHaveBeenLastCalledWith({});
     await service.getPermissions('admin');
     expect(permissionModel.find).toHaveBeenLastCalledWith({
       module: 'admin',

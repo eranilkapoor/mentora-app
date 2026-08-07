@@ -73,10 +73,6 @@ const createFixture = () => {
     getVideos: jest.fn(),
     addImages: jest.fn(),
   };
-  const preferenceService = {
-    createPreference: jest.fn(),
-    upsertPreference: jest.fn(),
-  };
   const profileScoringService = { calculate: jest.fn() };
   const settingsService = { getOrCreateAllUserSettings: jest.fn() };
   const referralsService = { awardProfileCompletionReward: jest.fn() };
@@ -113,8 +109,6 @@ const createFixture = () => {
   mediaService.getImages.mockResolvedValue([]);
   mediaService.getVideos.mockResolvedValue([]);
   mediaService.addImages.mockResolvedValue([]);
-  preferenceService.createPreference.mockResolvedValue({});
-  preferenceService.upsertPreference.mockResolvedValue({});
   settingsService.getOrCreateAllUserSettings.mockResolvedValue({});
   profileScoringService.calculate.mockReturnValue({
     missingFields: [],
@@ -130,7 +124,6 @@ const createFixture = () => {
     logger,
     mediaService,
     notificationsService,
-    preferenceService,
     profileRepo,
     profileScoringService,
     service,
@@ -226,18 +219,18 @@ describe('ProfilesService', () => {
       expect.objectContaining({
         status: ProfileStatus.ACTIVE,
         profileCompletionPercentage: 75,
-        searchTags: expect.arrayContaining(['self', 'hindu', 'nri', 'hindi']),
+        searchTags: expect.arrayContaining(['hindu', 'nri', 'hindi']),
       }),
     );
   });
 
-  it('rejects profile creation for users under 18', async () => {
+  it('rejects profile creation for students below the minimum age', async () => {
     const { profileRepo, service } = createFixture();
     const dto = baseProfileDto() as unknown as {
       personal: { dateOfBirth: string };
     };
     const underageDate = new Date();
-    underageDate.setFullYear(underageDate.getFullYear() - 17);
+    underageDate.setFullYear(underageDate.getFullYear() - 3);
     dto.personal.dateOfBirth = underageDate.toISOString().slice(0, 10);
 
     await expect(
@@ -245,8 +238,8 @@ describe('ProfilesService', () => {
     ).rejects.toMatchObject({
       code: ErrorCode.INVALID_REQUEST,
       meta: expect.objectContaining({
-        reason: 'minimum_age_required',
-        minimumAge: 18,
+        reason: 'student_age_not_allowed',
+        minimumAge: 5,
       }),
     });
     expect(profileRepo.create).not.toHaveBeenCalled();
@@ -299,8 +292,13 @@ describe('ProfilesService', () => {
         personalityBadges: ['one', 'two', 'three'],
       },
       physical: { height: 165 },
-      education: { qualification: 'bachelors', occupation: 'Engineer' },
-      family: {},
+      education: {
+        qualification: 'bachelors',
+        field: 'Grade 11',
+        university: 'Mentora Test School',
+        occupation: 'Engineer',
+      },
+      family: { fatherName: 'Ravi Sharma' },
       profileCompletionPercentage: 90,
       profileScore: 85,
       visibilityScore: 80,
@@ -327,9 +325,8 @@ describe('ProfilesService', () => {
       summary: { hasAboutMe: true, profileScore: 85 },
       sections: {
         personal: { completed: true },
-        physical: { completed: true },
-        education: { completed: true },
-        family: { completed: true },
+        academic: { completed: true },
+        parents: { completed: true },
       },
     });
     expect(fixture.cache.set).toHaveBeenCalledWith(
@@ -590,9 +587,8 @@ describe('ProfilesService', () => {
       },
       sections: {
         personal: { completed: false },
-        physical: { completed: false },
-        education: { completed: false },
-        family: { completed: false },
+        academic: { completed: false },
+        parents: { completed: false },
       },
     });
   });
@@ -706,7 +702,7 @@ describe('ProfilesService', () => {
     const privateService = testable(service);
 
     expect(privateService.buildSearchTags(baseProfileDto())).toEqual(
-      expect.arrayContaining(['self', 'hindu', 'nri', 'hindi', 'travel']),
+      expect.arrayContaining(['hindu', 'nri', 'hindi', 'travel']),
     );
     expect(
       privateService.buildSearchTagsFromMerged({
@@ -745,7 +741,7 @@ describe('ProfilesService', () => {
     delete dto.personal.personalityBadges;
 
     expect(privateService.buildSearchTags(dto as never)).toEqual(
-      expect.arrayContaining(['self', 'hindu', 'nri']),
+      expect.arrayContaining(['hindu', 'nri']),
     );
     expect(
       privateService.buildSearchTagsFromMerged({
@@ -932,7 +928,6 @@ describe('ProfilesService', () => {
       profileImages,
       1,
     );
-    expect(fixture.preferenceService.upsertPreference).toHaveBeenCalled();
     expect(
       fixture.settingsService.getOrCreateAllUserSettings,
     ).toHaveBeenCalled();
@@ -1025,7 +1020,6 @@ describe('ProfilesService', () => {
       expect.objectContaining({ status: ProfileStatus.ACTIVE }),
     );
     expect(fixture.cache.del).toHaveBeenCalledWith(`profile:${USER_ID}`);
-    expect(fixture.preferenceService.upsertPreference).toHaveBeenCalled();
   });
 
   it('rejects onboarding for missing users and maps unexpected failures', async () => {
@@ -1091,9 +1085,8 @@ describe('ProfilesService', () => {
     expect(privateService.enrichProfile({})).toMatchObject({
       sections: {
         personal: { completed: false },
-        physical: { completed: false },
-        education: { completed: false },
-        family: { completed: false },
+        academic: { completed: false },
+        parents: { completed: false },
       },
     });
   });

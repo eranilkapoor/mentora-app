@@ -11,7 +11,7 @@ describe('ProfileScoringService', () => {
 
     expect(result.profileCompletionPercentage).toBeLessThan(20);
     expect(result.missingFields).toEqual(
-      expect.arrayContaining(['gender', 'dateOfBirth', 'profilePhoto']),
+      expect.arrayContaining(['personal', 'academic', 'profilePhoto']),
     );
     expect(result.profileScore).toBeGreaterThanOrEqual(0);
     expect(result.visibilityScore).toBeGreaterThanOrEqual(0);
@@ -43,7 +43,15 @@ describe('ProfileScoringService', () => {
           field: 'Grade 11',
           university: 'Mentora Test School',
           occupation: 'Exam preparation',
+          previousEducationSummary: 'Completed Grade 10 at Mentora Test School',
+          examScoreSummary: '92% aggregate in Grade 10 board exams',
+          preferredSubjects: ['Physics', 'Chemistry', 'Mathematics'],
         },
+        family: { fatherName: 'Ravi Sharma' },
+        documents: ['transcript.pdf'],
+        learningEntitlements: ['ai_minutes'],
+        communicationHistory: ['welcome_email'],
+        activityTimeline: ['profile_created'],
         verificationStatus: VerificationStatus.APPROVED,
         isPremium: true,
         lastActiveAt: new Date(),
