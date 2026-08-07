@@ -56,6 +56,7 @@ import {
   loadOrganizations,
   loadSecurityPolicy,
   loadAnalyticsOverview,
+  loadAuditLogs,
   loadNotificationAnalytics,
   loadNotificationDlq,
   loadOrganizationUsers,
@@ -1013,11 +1014,19 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        if (
-          normalized.includes("audit") ||
-          normalized.includes("session") ||
-          normalized.includes("device")
-        ) {
+        if (normalized.includes("audit")) {
+          const result = await dispatch(loadAuditLogs()).unwrap();
+          const data = normalizeResponseObject(result);
+          const items = normalizeResponseArray(data.items ?? data);
+          dispatch(
+            crmSessionActions.setToast(
+              `${items.length} audit log entr${items.length === 1 ? "y" : "ies"} loaded`,
+            ),
+          );
+          return;
+        }
+
+        if (normalized.includes("session") || normalized.includes("device")) {
           const result = await dispatch(
             loadAuthOverview({
               organizationId: userListOrganizationId || undefined,
@@ -2074,17 +2083,12 @@ export default function AdminDashboardPage() {
         }
 
         if (normalized.includes("export") || normalized.includes("audit")) {
-          const result = await dispatch(
-            exportModuleRecords({
-              moduleKey: activeId,
-              organizationId: activeOrganizationId,
-            }),
-          ).unwrap();
+          const result = await dispatch(loadAuditLogs()).unwrap();
           const data = normalizeResponseObject(result);
-          const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+          const items = normalizeResponseArray(data.items ?? data);
           dispatch(
             crmSessionActions.setToast(
-              `${rowCount} security rows prepared for audit export`,
+              `${items.length} audit log entr${items.length === 1 ? "y" : "ies"} loaded`,
             ),
           );
           return;
@@ -2781,6 +2785,69 @@ export default function AdminDashboardPage() {
                     ).unwrap();
                   }
                   dispatch(crmSessionActions.setToast("RBAC record saved"));
+                  setRecordForm(null);
+                  return;
+                }
+                if (
+                  organizationStructureModuleIds.has(activeModule.id) &&
+                  recordForm.row
+                ) {
+                  const existing = normalizeResponseObject(
+                    findModuleRecordForRow(
+                      getActiveModuleApiRecords(),
+                      recordForm.row,
+                    ),
+                  );
+                  const existingCode =
+                    typeof existing.code === "string"
+                      ? existing.code
+                      : undefined;
+                  if (!existingCode) {
+                    dispatch(
+                      crmSessionActions.setToast(
+                        "Existing record code was not found; cannot save changes",
+                      ),
+                    );
+                    return;
+                  }
+                  const existingRelationId = (value: unknown) =>
+                    typeof value === "string"
+                      ? value
+                      : getUnknownRecordId(value) || undefined;
+                  if (activeModule.id === "branches") {
+                    await dispatch(
+                      createBranch({
+                        organizationId: activeOrganizationId,
+                        name: finalDraft.title,
+                        code: existingCode,
+                        city: finalDraft.payload.city || undefined,
+                        state: finalDraft.payload.state || undefined,
+                      }),
+                    ).unwrap();
+                  } else if (activeModule.id === "departments") {
+                    await dispatch(
+                      createDepartment({
+                        organizationId: activeOrganizationId,
+                        name: finalDraft.title,
+                        code: existingCode,
+                        branchId: existingRelationId(existing.branchId),
+                        function: finalDraft.payload.function || undefined,
+                      }),
+                    ).unwrap();
+                  } else {
+                    await dispatch(
+                      createTeam({
+                        organizationId: activeOrganizationId,
+                        name: finalDraft.title,
+                        code: existingCode,
+                        departmentId: existingRelationId(existing.departmentId),
+                      }),
+                    ).unwrap();
+                  }
+                  await dispatch(
+                    loadIdentityHierarchy({ organizationId: activeOrganizationId }),
+                  ).unwrap();
+                  dispatch(crmSessionActions.setToast("Record saved to API"));
                   setRecordForm(null);
                   return;
                 }
@@ -6066,26 +6133,36 @@ function getRolePermissions(record: unknown) {
     .filter((permission) => permission.name);
 }
 
+function recordMatchesRowTitle(item: unknown, title: string): boolean {
+  if (!item || typeof item !== "object") return false;
+  const object = item as {
+    name?: unknown;
+    title?: unknown;
+    firstName?: unknown;
+    lastName?: unknown;
+    email?: unknown;
+  };
+  if (object.title === title || object.name === title) return true;
+  // User documents (e.g. the "users" module) have neither `name` nor
+  // `title` — they render as "First Last" (falling back to email) via
+  // userRecordsToRows, so match the same derived value here.
+  const fullName = [object.firstName, object.lastName]
+    .filter(Boolean)
+    .join(" ");
+  if (fullName && fullName === title) return true;
+  return typeof object.email === "string" && object.email === title;
+}
+
 function findModuleRecordIdForRow(
   records: unknown[] | undefined,
   row: string[],
 ) {
   if (!records?.length) return "";
-  const title = row[0];
-  const record = records.find((item) => {
-    if (!item || typeof item !== "object") return false;
-    const object = item as { name?: unknown; title?: unknown };
-    return object.title === title || object.name === title;
-  });
+  const record = records.find((item) => recordMatchesRowTitle(item, row[0]));
   return getUnknownRecordId(record);
 }
 
 function findModuleRecordForRow(records: unknown[] | undefined, row: string[]) {
   if (!records?.length) return undefined;
-  const title = row[0];
-  return records.find((item) => {
-    if (!item || typeof item !== "object") return false;
-    const object = item as { name?: unknown; title?: unknown };
-    return object.title === title || object.name === title;
-  });
+  return records.find((item) => recordMatchesRowTitle(item, row[0]));
 }

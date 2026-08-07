@@ -1755,6 +1755,13 @@ export const testIntegrationProvider = createAsyncThunk(
   },
 );
 
+export const loadAuditLogs = createAsyncThunk(
+  "crmWorkspace/loadAuditLogs",
+  async () => {
+    return getJson(adminPath("/audit-logs?limit=20"));
+  },
+);
+
 export const loadNotificationDlq = createAsyncThunk(
   "crmWorkspace/loadNotificationDlq",
   async () => {
@@ -2471,6 +2478,9 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(loadAnalyticsOverview.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadAuditLogs.fulfilled, (state) => {
         state.error = null;
       })
       .addCase(loadNotificationDlq.fulfilled, (state) => {

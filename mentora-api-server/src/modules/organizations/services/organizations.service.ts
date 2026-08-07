@@ -634,6 +634,43 @@ export class OrganizationsService {
       ...(query.role ? { role: query.role } : {}),
       ...(query.status ? { status: query.status } : {}),
     };
+    const search = query.search?.trim().toLowerCase();
+
+    // Search matches against populated fields (e.g. the user's email),
+    // which Mongo cannot filter on before population. Fetching the whole
+    // matching set (capped) and paginating in memory keeps `total` correct
+    // and lets search reach beyond the first page, instead of only
+    // filtering whatever page skip/limit happened to fetch.
+    if (search) {
+      const allItems = await this.memberships
+        .find(filter)
+        .populate('userId', 'email phone status roles permissions lastLoginAt')
+        .populate('branchIds', 'name code city state status')
+        .populate('departmentIds', 'name code branchId function status')
+        .populate('teamIds', 'name code departmentId status')
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .limit(1000)
+        .lean();
+      const filteredItems = allItems.filter((item) =>
+        JSON.stringify(item).toLowerCase().includes(search),
+      );
+      const total = filteredItems.length;
+      const pageItems = filteredItems.slice(
+        (page - 1) * limit,
+        (page - 1) * limit + limit,
+      );
+      return {
+        items: pageItems,
+        pagination: {
+          limit,
+          page,
+          total,
+          totalPages: Math.max(1, Math.ceil(total / limit)),
+        },
+        sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+      };
+    }
+
     const [items, total] = await Promise.all([
       this.memberships
         .find(filter)
@@ -647,22 +684,13 @@ export class OrganizationsService {
         .lean(),
       this.memberships.countDocuments(filter),
     ]);
-    const search = query.search?.trim().toLowerCase();
-    const filteredItems = search
-      ? items.filter((item) =>
-          JSON.stringify(item).toLowerCase().includes(search),
-        )
-      : items;
     return {
-      items: filteredItems,
+      items,
       pagination: {
         limit,
         page,
-        total: search ? filteredItems.length : total,
-        totalPages: Math.max(
-          1,
-          Math.ceil((search ? filteredItems.length : total) / limit),
-        ),
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
@@ -692,6 +720,15 @@ export class OrganizationsService {
     const normalizedEmail = dto.email.toLowerCase().trim();
     const existingUser = await this.users.findOne({ email: normalizedEmail });
     if (existingUser) return throwConflict(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
+
+    if (dto.phone) {
+      const existingPhone = await this.users.findOne({
+        'phone.phone': dto.phone,
+      });
+      if (existingPhone) {
+        return throwConflict(ErrorCode.AUTH_PHONE_ALREADY_EXISTS);
+      }
+    }
 
     const organizationId = toOrganizationObjectId(dto.organizationId);
     const organization = await this.organizations.exists({
