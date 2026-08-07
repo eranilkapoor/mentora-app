@@ -117,6 +117,16 @@ export class LeadsController {
     );
   }
 
+  @Get('operations/assignments/operations/export')
+  @Permissions(Permission.LEAD_VIEW)
+  async exportAssignments(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportAssignments(organizationId),
+      'EDUCATION_PLATFORM_LEAD_ASSIGNMENTS_EXPORTED',
+      'Lead assignments exported',
+    );
+  }
+
   @Get(':leadId')
   @Permissions(Permission.LEAD_VIEW)
   async getLead(

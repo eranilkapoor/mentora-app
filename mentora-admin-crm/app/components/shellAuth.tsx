@@ -2,8 +2,7 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDesktop, faMoon, faSun } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import type { DemoUser } from "../store";
-import { defaultCrmUsers, type ThemeMode } from "./adminConfig";
+import type { ThemeMode } from "./adminConfig";
 
 export function LoginScreen({
   loginEmail,

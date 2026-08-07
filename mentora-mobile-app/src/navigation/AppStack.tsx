@@ -8,6 +8,7 @@ import { clearPostOnboardingTarget } from '@/store/slices/auth.slice';
 
 import BottomTabs from './BottomTabs';
 import SettingsStack from './SettingsStack';
+import AiTutorSessionScreen from '@/features/AiTutor/AiTutorSession.screen';
 import { AppNavigationProp, AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -83,6 +84,7 @@ export default function AppStack(): React.ReactElement {
     >
       <Stack.Screen name="Tabs" component={BottomTabs} />
       <Stack.Screen name="Settings" component={SettingsStack} />
+      <Stack.Screen name="AiTutorSession" component={AiTutorSessionScreen} />
     </Stack.Navigator>
   );
 }

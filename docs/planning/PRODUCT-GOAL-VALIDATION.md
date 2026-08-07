@@ -1,6 +1,6 @@
 # Mentora Product Goal Validation
 
-Last reviewed: 2026-07-29
+Last reviewed: 2026-08-07
 
 ## Goal
 
@@ -28,7 +28,7 @@ Implemented foundations:
 - AI tutor session guard for schedule, entitlement, subject, parental controls, and parallel session leakage.
 - AI tutor context, messages, safety events, summaries, and history.
 - Assessments, attempts, answers, results, topic progress, recommendations, and parent progress dashboard APIs.
-- Mobile Learn, Schedule, Progress tabs with account switcher.
+- Mobile Learn, Schedule, Progress tabs with account switcher, plus a dedicated AI tutor session screen (message thread, send/receive, safety-flag display).
 - Learning plans, billing summary, membership purchase screen, and subscription billing screen.
 - Multi-organization admin CRM foundation for organizations, users/RBAC, leads, applications, admissions, communications, payments, reports, workflows, integrations, and security policies.
 - Public website foundation for product pages, legal/support surfaces, and lead/demo capture.
@@ -47,14 +47,20 @@ Production launch still depends on:
 
 ## Gaps To Close
 
-Highest priority:
+Resolved since the 2026-07-29 review:
 
-- Replace AI tutor placeholder response with the selected model provider, provider moderation, usage metering, and lesson memory.
+- Entitlement usage metering is real: `sendAiTutorMessage` now increments `entitlement.usedQuantity` per exchange and rejects once a plan's quota is exhausted, instead of only checking quota at session start.
+- AI tutor replies now run through the same moderation check as student input (previously input-only), with a safe fallback message and a logged safety event when flagged.
+- `LearningSchedule.recurrenceRule` is no longer a dead field: `createSchedule` accepts `recurrenceFrequency`/`recurrenceCount` and expands daily/weekly/monthly occurrences.
+- `StudyPlan.maxConcurrentSessions` and `sessionsPerWeek` are now enforced in `createSchedule` via a new `LearningEntitlement.studyPlanId` link (previously stored but never read by anything).
+- The mobile "class board" buttons (Q&A, Chat, Start AI tutor) now navigate to a real `AiTutorSession` screen with working message send/receive, instead of doing nothing on press.
+
+Still open, highest priority:
+
+- Replace the AI tutor's hardcoded placeholder reply with a real model provider call, provider-side moderation, and lesson memory fed back into generation. No LLM SDK is wired in yet.
 - Add document verification flow for self-managed student age/legal eligibility, not only DOB policy.
-- Add explicit study-plan entities for goals such as JEE, NEET, UPSC, NDA, Olympiad, board exams, and skill courses.
-- Build the full class board screen with Q&A, chat, notes, assignments, tests/quizzes, attendance, tutor actions, and parent-visible summary.
-- Add recurrence rules for daily, weekly, and monthly classes beyond simple schedule rows.
-- Enforce plan-specific schedule frequency, subjects, tutor type, minutes, concurrent devices, and session limits.
+- Notes and Tests on the mobile class board are explicit "coming soon" states now (previously silent no-ops) — no backend or screen exists for either yet.
+- Enforce plan-specific subjects, tutor type, minutes, and concurrent-device limits (`StudyPlan.maxDevicesPerStudent`) — concurrent-session and per-week limits are enforced, but there is no device-session model to check device count against.
 - Add parent-only purchase approval controls and student self-purchase eligibility rules.
 - Add richer parent dashboard cards for attendance, ongoing class, test results, safety alerts, and payment usage.
 

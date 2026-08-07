@@ -13,6 +13,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import { Lead, LeadDocument } from '@/modules/leads/schemas/leads.schema';
@@ -192,6 +193,18 @@ export class OrganizationsService {
     };
   }
 
+  async exportOrganizations() {
+    const { items } = (await this.listOrganizations({})) as {
+      items: Array<Record<string, unknown>>;
+    };
+    const headers = ['id', 'name', 'code', 'type', 'status', 'userCount'];
+    return buildCsvExportFile(
+      'organizations',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
+  }
+
   async archiveOrganization(id: string) {
     const organization = await this.organizations.findByIdAndUpdate(
       toRequiredObjectId(id),
@@ -245,6 +258,19 @@ export class OrganizationsService {
       this.branches.countDocuments(filter),
     ]);
     return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
+  }
+
+  async exportBranches(organizationId: string) {
+    const { items } = await this.listBranches({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'code', 'city', 'state', 'status'];
+    return buildCsvExportFile(
+      'branches',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateBranchStatus(id: string, organizationId: string, status: string) {
@@ -321,6 +347,18 @@ export class OrganizationsService {
     });
   }
 
+  async exportLeadSources(organizationId: string) {
+    const sources = (await this.listLeadSources(organizationId)) as Array<
+      Record<string, unknown>
+    >;
+    const headers = ['id', 'name', 'code', 'category', 'activeLeads'];
+    return buildCsvExportFile(
+      'lead-sources',
+      headers,
+      sources.map((item) => withStringId(item)),
+    );
+  }
+
   async createLeadStage(dto: CreateLeadStageDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.stages.findOneAndUpdate(
@@ -364,6 +402,18 @@ export class OrganizationsService {
       lostStage: stage.isLost,
       sla: `${stage.slaDurationHours ?? 24}h`,
     }));
+  }
+
+  async exportLeadStages(organizationId: string) {
+    const stages = (await this.listLeadStages(organizationId)) as Array<
+      Record<string, unknown>
+    >;
+    const headers = ['id', 'name', 'code', 'order', 'activeLeadCount'];
+    return buildCsvExportFile(
+      'lead-stages',
+      headers,
+      stages.map((item) => withStringId(item)),
+    );
   }
 
   async createDepartment(dto: CreateDepartmentDto) {
@@ -410,6 +460,19 @@ export class OrganizationsService {
       this.departments.countDocuments(filter),
     ]);
     return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
+  }
+
+  async exportDepartments(organizationId: string) {
+    const { items } = await this.listDepartments({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'code', 'function', 'status'];
+    return buildCsvExportFile(
+      'departments',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateDepartmentStatus(
@@ -474,6 +537,19 @@ export class OrganizationsService {
       this.teams.countDocuments(filter),
     ]);
     return this.toPaginatedResult(items, total, page, limit, sortBy, sortOrder);
+  }
+
+  async exportTeams(organizationId: string) {
+    const { items } = await this.listTeams({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'code', 'status'];
+    return buildCsvExportFile(
+      'teams',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateTeamStatus(id: string, organizationId: string, status: string) {

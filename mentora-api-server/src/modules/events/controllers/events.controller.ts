@@ -63,6 +63,15 @@ export class EventsController {
       'Events fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'EVENTS_EXPORTED',
+      'Events exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(

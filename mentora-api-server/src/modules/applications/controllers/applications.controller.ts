@@ -71,6 +71,16 @@ export class ApplicationsController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.APPLICATION_VIEW)
+  async exportApplications(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportApplications(organizationId),
+      'EDUCATION_PLATFORM_APPLICATIONS_EXPORTED',
+      'Applications exported',
+    );
+  }
+
   @Put(':applicationId')
   @Permissions(Permission.APPLICATION_MANAGE)
   async updateApplication(

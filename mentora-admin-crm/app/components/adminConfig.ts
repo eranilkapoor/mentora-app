@@ -1,4 +1,3 @@
-import type { DemoUser } from "../store";
 import type { AdminModule, IconName, ModuleStatus } from "./adminTypes";
 
 export type ThemeMode = "light" | "dark";
@@ -22,6 +21,7 @@ export const dedicatedAdminModuleIds = new Set([
   "leads",
   "lead-sources",
   "lead-stages",
+  "programs",
   "reports",
   "scholarship",
   "support",
@@ -552,6 +552,7 @@ export const moduleActions: Record<string, string[]> = {
     "Auto Reply",
     "Follow-up Suggestion",
   ],
+  programs: ["Create Program", "Edit", "Archive", "Restore", "Export"],
   users: ["Create User"],
   roles: ["Create Role"],
   permissions: ["Create Permission"],
@@ -607,60 +608,6 @@ export const securityControlGroups = [
     actions: ["Audit Export", "Schedule Report"],
   },
 ];
-
-export const defaultCrmUsers = [
-  {
-    email: "super.admin@mentora.test",
-    name: "Super Admin",
-    contexts: [
-      {
-        organization: "All Organizations",
-        branch: "All Branches",
-        role: "super_admin",
-        label: "Platform Super Admin",
-        modules: [
-          "dashboard",
-          "organizations",
-          "security",
-          "analytics",
-          "integrations",
-        ],
-      },
-    ],
-  },
-  {
-    email: "counselor@mentora.test",
-    name: "Admission Counselor",
-    contexts: [
-      {
-        organization: "Webnza Coaching",
-        branch: "Delhi",
-        role: "admission_counselor",
-        label: "Counselor Workspace",
-        modules: [
-          "leads",
-          "applications",
-          "tasks",
-          "communications",
-          "calendar",
-        ],
-      },
-    ],
-  },
-  {
-    email: "finance@mentora.test",
-    name: "Finance Manager",
-    contexts: [
-      {
-        organization: "Webnza Coaching",
-        branch: "All Branches",
-        role: "finance",
-        label: "Finance Workspace",
-        modules: ["payments", "finance", "reports", "scholarship"],
-      },
-    ],
-  },
-] satisfies DemoUser[];
 
 export const navGroups = [
   {
@@ -1377,6 +1324,25 @@ export const extraModules: AdminModule[] = [
     ],
   },
   {
+    id: "programs",
+    title: "Programs",
+    group: "Education",
+    metric: "0",
+    description:
+      "Organization-owned programs and courses: level, duration, credits, eligibility, intake capacity, seat availability, and fees for admissions.",
+    filters: ["Level", "Status"],
+    columns: [
+      "Program",
+      "Code",
+      "Level",
+      "Duration Months",
+      "Intake Capacity",
+      "Seats Available",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
     id: "call-center",
     title: "Call Center",
     group: "Growth",
@@ -1893,6 +1859,7 @@ export const extraModules: AdminModule[] = [
 export const productionModuleIds = new Set([
   "leads",
   "applications",
+  "programs",
   "tasks",
   "campaigns",
   "communications",

@@ -10,6 +10,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AddLeadActivityDto,
@@ -188,6 +189,40 @@ export class LeadsService {
       },
       sort: { sortBy: 'assignedAt', sortOrder: 'desc' },
     };
+  }
+
+  async exportAssignments(organizationId: string) {
+    const { items } = await this.listAssignments({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = [
+      'id',
+      'lead',
+      'assignedTo',
+      'assignmentMethod',
+      'assignedAt',
+    ];
+    const rows = (items as Array<Record<string, unknown>>).map((item) => {
+      const lead = item.leadId as
+        | { leadNumber?: string; firstName?: string; lastName?: string }
+        | undefined;
+      const assignee = item.assignedTo as
+        | { firstName?: string; lastName?: string; email?: string }
+        | undefined;
+      return {
+        id: String(item._id),
+        lead: lead
+          ? `${lead.leadNumber ?? ''} ${lead.firstName ?? ''} ${lead.lastName ?? ''}`.trim()
+          : '',
+        assignedTo: assignee
+          ? `${assignee.firstName ?? ''} ${assignee.lastName ?? ''} <${assignee.email ?? ''}>`.trim()
+          : '',
+        assignmentMethod: item.assignmentMethod,
+        assignedAt: item.assignedAt,
+      };
+    });
+    return buildCsvExportFile('lead-assignments', headers, rows);
   }
 
   async updateLead(userId: string, leadId: string, dto: UpdateLeadDto) {
@@ -727,23 +762,16 @@ export class LeadsService {
       'temperature',
       'score',
     ];
-    const csv = [
-      headers.join(','),
-      ...leads.map((lead: Record<string, unknown>) =>
-        headers.map((header) => this.csvValue(lead[header])).join(','),
-      ),
-    ].join('\n');
 
     await this.writeAudit(userId, 'lead.exported', organizationId, undefined, {
       metadata: { exportedRows: leads.length },
     });
 
-    return {
-      filename: `mentora-leads-${new Date().toISOString().slice(0, 10)}.csv`,
-      contentType: 'text/csv',
-      rows: leads,
-      csv,
-    };
+    return buildCsvExportFile(
+      'leads',
+      headers,
+      leads.map((lead) => withStringId(lead)),
+    );
   }
 
   private async writeAudit(
@@ -854,23 +882,5 @@ export class LeadsService {
   private toPositiveInt(value: string | undefined, fallback: number) {
     const parsed = Number.parseInt(value ?? '', 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-  }
-
-  private csvValue(value: unknown): string {
-    if (value === null || value === undefined) return '';
-    const text = Array.isArray(value)
-      ? value.map((item) => this.csvScalar(item)).join('; ')
-      : this.csvScalar(value);
-    return `"${text.replaceAll('"', '""')}"`;
-  }
-
-  private csvScalar(value: unknown): string {
-    if (value === null || value === undefined) return '';
-    if (value instanceof Date) return value.toISOString();
-    if (typeof value === 'string') return value;
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return value.toString();
-    }
-    return JSON.stringify(value);
   }
 }

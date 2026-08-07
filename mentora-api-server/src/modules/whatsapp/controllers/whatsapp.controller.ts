@@ -63,6 +63,15 @@ export class WhatsappController {
       'WhatsApp conversations fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.COMMUNICATION_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'WHATSAPP_CONVERSATIONS_EXPORTED',
+      'WhatsApp conversations exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.COMMUNICATION_VIEW)
   async getById(

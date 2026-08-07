@@ -6,6 +6,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   ApproveApplicationDto,
   CreateApplicationDto,
@@ -85,6 +86,26 @@ export class ApplicationsService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportApplications(organizationId: string) {
+    const { items } = await this.listApplications({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = [
+      'id',
+      'applicationNumber',
+      'courseOffering',
+      'status',
+      'completenessPercentage',
+      'submittedAt',
+    ];
+    return buildCsvExportFile(
+      'applications',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateApplication(applicationId: string, dto: UpdateApplicationDto) {

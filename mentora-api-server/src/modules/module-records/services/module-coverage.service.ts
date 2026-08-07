@@ -343,12 +343,15 @@ const readinessByModule: Partial<
   },
   students: {
     layer: 'education_specific',
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
+    backendStatus: 'mvp_foundation',
+    frontendStatus: 'mvp_foundation',
     storage:
-      'student-profiles,student_academic_records,parent_student_relationships',
-    apiSurface: ['students', 'learning'],
-    productionBlockers: ['admission_conversion_timeline'],
+      'student-profiles,student_academic_records,parent_student_relationships,module_records',
+    apiSurface: ['students', 'learning', 'module-records'],
+    productionBlockers: [
+      'admission_conversion_timeline',
+      'org_scoped_admin_student_directory_endpoint',
+    ],
   },
   'academic-sessions': {
     layer: 'education_specific',
@@ -361,17 +364,23 @@ const readinessByModule: Partial<
   programs: {
     layer: 'education_specific',
     backendStatus: 'product_ready',
-    frontendStatus: 'workflow_ready',
-    storage: 'courses,study_plans,curriculums,module_records',
-    apiSurface: ['learning/catalog', 'module-records'],
-    productionBlockers: ['dedicated_program_admin_console'],
+    frontendStatus: 'product_ready',
+    storage: 'programs',
+    apiSurface: ['admin/programs', 'admin/programs/operations/export'],
+    productionBlockers: [],
   },
   courses: {
     layer: 'education_specific',
-    backendStatus: 'product_ready',
-    frontendStatus: 'workflow_ready',
-    storage: 'courses,subjects,topics,curriculums',
-    apiSurface: ['learning/catalog'],
+    backendStatus: 'mvp_foundation',
+    frontendStatus: 'mvp_foundation',
+    // `learning/catalog` (subjects/topics/curriculums) is the GLOBAL,
+    // non-org-scoped AI-tutoring catalog used by the mobile app. It is not
+    // an organization's own course catalog and the CRM does not use it.
+    // The CRM "courses" tab, if built, would need its own org-scoped module
+    // (see `programs` for the equivalent already built for course/program
+    // admissions offerings) rather than reading this endpoint.
+    storage: 'module_records',
+    apiSurface: ['module-records'],
     productionBlockers: ['dedicated_course_admin_console'],
   },
   specializations: {

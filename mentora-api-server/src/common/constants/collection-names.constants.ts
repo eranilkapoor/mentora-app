@@ -117,6 +117,7 @@ export const COLLECTION_NAMES = {
   INTERVIEW: 'interviews',
   EVENT: 'events',
   FIELD_VISIT: 'field_visits',
+  PROGRAM: 'programs',
   FINANCE_LEDGER_ENTRY: 'finance_ledger_entries',
   INTEGRATION_PROVIDER_CONFIG: 'integration_provider_configs',
   ORGANIZATION_SECURITY_POLICY: 'organization_security_policies',

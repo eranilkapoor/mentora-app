@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   CreateReportDefinitionDto,
@@ -96,6 +97,19 @@ export class ReportsService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportDefinitions(organizationId: string) {
+    const { items } = await this.listDefinitions({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'moduleKey', 'status'];
+    return buildCsvExportFile(
+      'report-definitions',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateDefinition(

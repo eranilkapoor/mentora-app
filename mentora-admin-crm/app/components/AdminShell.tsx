@@ -42,6 +42,7 @@ import {
   createSampleDocument,
   createWorkflowRule,
   executeWorkflow,
+  exportDedicatedCrmRecords,
   exportLeads,
   exportModuleRecords,
   findLeadDuplicates,
@@ -54,13 +55,18 @@ import {
   loadRbacRecords,
   loadOrganizations,
   loadSecurityPolicy,
+  loadAnalyticsOverview,
+  loadNotificationAnalytics,
+  loadNotificationDlq,
   loadOrganizationUsers,
+  loadPaymentReconciliation,
   loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
   loginWithCredentials,
   normalizeBackendCrmContexts,
   readPersistedCrmSession,
+  replayAllNotificationDlq,
   restoreDedicatedCrmRecord,
   restoreModuleRecord,
   saveModuleRecord,
@@ -96,7 +102,6 @@ import type {
 } from "./adminTypes";
 import {
   allModules,
-  defaultCrmUsers,
   dedicatedAdminModuleIds,
   getEditableModuleColumns,
   getModuleHref,
@@ -341,6 +346,18 @@ export default function AdminDashboardPage() {
       return;
     }
     if (!activeOrganizationId) {
+      return;
+    }
+    if (activeId === "integrations") {
+      void dispatch(
+        loadIntegrationProviders({ organizationId: activeOrganizationId }),
+      );
+      return;
+    }
+    if (activeId === "security") {
+      void dispatch(
+        loadSecurityPolicy({ organizationId: activeOrganizationId }),
+      );
       return;
     }
     if (dedicatedAdminModuleIds.has(activeId)) {
@@ -806,7 +823,7 @@ export default function AdminDashboardPage() {
       try {
         if (normalized.includes("export") || normalized.includes("setup")) {
           const result = await dispatch(
-            exportModuleRecords({
+            exportDedicatedCrmRecords({
               moduleKey: activeId,
               organizationId: activeOrganizationId,
             }),
@@ -1281,6 +1298,40 @@ export default function AdminDashboardPage() {
       }
 
       try {
+        if (normalized.includes("failed queue")) {
+          const result = await dispatch(loadNotificationDlq()).unwrap();
+          const data = normalizeResponseObject(result);
+          const items = normalizeResponseArray(data.items ?? data);
+          dispatch(
+            crmSessionActions.setToast(
+              `${items.length} failed notification job(s) in the dead-letter queue`,
+            ),
+          );
+          return;
+        }
+
+        if (normalized.includes("replay")) {
+          const result = await dispatch(replayAllNotificationDlq()).unwrap();
+          const data = normalizeResponseObject(result);
+          dispatch(
+            crmSessionActions.setToast(
+              `Replayed ${data.replayed ?? data.count ?? 0} failed notification job(s)`,
+            ),
+          );
+          return;
+        }
+
+        if (normalized.includes("analytics")) {
+          const result = await dispatch(loadNotificationAnalytics()).unwrap();
+          const data = normalizeResponseObject(result);
+          dispatch(
+            crmSessionActions.setToast(
+              `Notification analytics: ${data.totalSent ?? 0} sent, ${data.totalFailed ?? 0} failed`,
+            ),
+          );
+          return;
+        }
+
         if (
           normalized.includes("provider") ||
           normalized.includes("delivery")
@@ -1818,10 +1869,46 @@ export default function AdminDashboardPage() {
         }
 
         if (
+          activeId === "calendar" &&
+          (normalized.includes("interview") || normalized.includes("event"))
+        ) {
+          const moduleKey = normalized.includes("interview")
+            ? "interview"
+            : "events";
+          const result = await dispatch(
+            loadDedicatedCrmRecords({
+              limit: 5,
+              moduleKey,
+              organizationId: activeOrganizationId,
+              page: 1,
+            }),
+          ).unwrap();
+          const data = normalizeResponseObject(result.records);
+          const pagination = normalizeResponseObject(data.pagination);
+          dispatch(
+            crmSessionActions.setToast(
+              `${pagination.total ?? 0} ${moduleKey === "interview" ? "interview slot(s)" : "calendar event(s)"} on record`,
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "payments" && normalized.includes("reconciliation")) {
+          const result = await dispatch(loadPaymentReconciliation()).unwrap();
+          const data = normalizeResponseObject(result);
+          const totals = normalizeResponseObject(data.totals);
+          dispatch(
+            crmSessionActions.setToast(
+              `Reconciliation: ${totals.totalTransactions ?? 0} transactions, ` +
+                `${data.successRate ?? 0}% success, ${data.stalePendingCount ?? 0} stale pending`,
+            ),
+          );
+          return;
+        }
+
+        if (
           activeId === "payments" &&
-          (normalized.includes("link") ||
-            normalized.includes("reconciliation") ||
-            normalized.includes("refund"))
+          (normalized.includes("link") || normalized.includes("refund"))
         ) {
           await dispatch(
             upsertIntegrationProvider({
@@ -1850,6 +1937,42 @@ export default function AdminDashboardPage() {
               organizationId: activeOrganizationId,
             }),
           ).unwrap();
+        }
+
+        if (
+          activeId === "mobile-app" &&
+          (normalized.includes("lead") || normalized.includes("geo"))
+        ) {
+          const moduleKey = normalized.includes("lead")
+            ? "leads"
+            : "field-force";
+          const result = await dispatch(
+            loadDedicatedCrmRecords({
+              limit: 5,
+              moduleKey,
+              organizationId: activeOrganizationId,
+              page: 1,
+            }),
+          ).unwrap();
+          const data = normalizeResponseObject(result.records);
+          const pagination = normalizeResponseObject(data.pagination);
+          dispatch(
+            crmSessionActions.setToast(
+              `${pagination.total ?? 0} ${moduleKey === "leads" ? "lead(s)" : "field visit check-in(s)"} on record`,
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "analytics") {
+          const result = await dispatch(loadAnalyticsOverview()).unwrap();
+          const data = normalizeResponseObject(result);
+          dispatch(
+            crmSessionActions.setToast(
+              `Analytics: ${data.totalEvents ?? 0} tracked events, ${data.uniqueUsers ?? 0} unique users`,
+            ),
+          );
+          return;
         }
 
         await dispatch(
@@ -2018,10 +2141,15 @@ export default function AdminDashboardPage() {
           ).unwrap();
         }
         const result = await dispatch(
-          exportModuleRecords({
-            moduleKey: activeId,
-            organizationId: activeOrganizationId,
-          }),
+          dedicatedAdminModuleIds.has(activeId)
+            ? exportDedicatedCrmRecords({
+                moduleKey: activeId,
+                organizationId: activeOrganizationId,
+              })
+            : exportModuleRecords({
+                moduleKey: activeId,
+                organizationId: activeOrganizationId,
+              }),
         ).unwrap();
         const data = normalizeResponseObject(result);
         const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;

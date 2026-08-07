@@ -75,6 +75,16 @@ export class TasksController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.TASK_VIEW)
+  async exportTasks(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportTasks(organizationId),
+      'EDUCATION_PLATFORM_TASKS_EXPORTED',
+      'CRM tasks exported',
+    );
+  }
+
   @Put(':taskId')
   @Permissions(Permission.TASK_MANAGE)
   async updateTask(

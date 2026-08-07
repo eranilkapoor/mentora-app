@@ -77,6 +77,16 @@ export class DocumentsController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.DOCUMENT_VIEW)
+  async exportDocuments(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportDocuments(organizationId),
+      'DOCUMENTS_EXPORTED',
+      'Documents exported',
+    );
+  }
+
   @Put(':documentId')
   @Permissions(Permission.DOCUMENT_MANAGE)
   async updateDocument(

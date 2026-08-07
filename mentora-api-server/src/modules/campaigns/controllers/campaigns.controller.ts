@@ -68,6 +68,16 @@ export class CampaignsController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.CAMPAIGN_VIEW)
+  async exportCampaigns(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportCampaigns(organizationId),
+      'EDUCATION_PLATFORM_CAMPAIGNS_EXPORTED',
+      'Campaigns exported',
+    );
+  }
+
   @Put(':campaignId')
   @Permissions(Permission.CAMPAIGN_MANAGE)
   async updateCampaign(

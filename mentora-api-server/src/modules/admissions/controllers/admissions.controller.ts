@@ -71,6 +71,15 @@ export class AdmissionsController {
       'Admissions fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'ADMISSIONS_EXPORTED',
+      'Admissions exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(

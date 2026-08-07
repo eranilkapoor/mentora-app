@@ -42,6 +42,7 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { EventsModule } from './modules/events/events.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { ProgramsModule } from './modules/programs/programs.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ModuleRecordsModule } from './modules/module-records/module-records.module';
 import { ReportsModule } from './modules/reports/reports.module';
@@ -114,6 +115,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     EventsModule,
     InterviewsModule,
     IntegrationsModule,
+    ProgramsModule,
     ModuleRecordsModule,
     ScholarshipsModule,
     SecurityPoliciesModule,

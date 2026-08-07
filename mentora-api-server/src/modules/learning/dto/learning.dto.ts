@@ -553,6 +553,14 @@ export class CreateScheduleDto {
   @IsArray()
   @IsNumber({}, { each: true })
   reminderMinutesBefore?: number[];
+
+  @IsOptional()
+  @IsIn(['daily', 'weekly', 'monthly'])
+  recurrenceFrequency?: string;
+
+  @IsOptional()
+  @IsNumber()
+  recurrenceCount?: number;
 }
 
 export class RescheduleScheduleDto {
@@ -587,6 +595,10 @@ export class CreateEntitlementDto {
   @IsOptional()
   @IsMongoId()
   scheduleId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  studyPlanId?: string;
 
   @IsOptional()
   @IsNumber()

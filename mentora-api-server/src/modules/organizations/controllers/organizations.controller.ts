@@ -14,10 +14,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Permissions } from '@/common/decorators/permissions.decorator';
-import { Permission } from '@/common/enums';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Permission, Role } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { RolesGuard } from '@/modules/auth/guards/roles.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateBranchDto,
@@ -44,6 +46,8 @@ export class OrganizationsController {
 
   @Post('organizations')
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Permissions(Permission.ORGANIZATION_MANAGE)
   async createOrganization(@Body() dto: CreateOrganizationDto) {
     return successResponse(
@@ -54,6 +58,8 @@ export class OrganizationsController {
   }
 
   @Put('organizations/:id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Permissions(Permission.ORGANIZATION_MANAGE)
   async updateOrganization(
     @Param('id') id: string,
@@ -67,6 +73,8 @@ export class OrganizationsController {
   }
 
   @Get('organizations')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Permissions(Permission.ORGANIZATION_VIEW)
   async listOrganizations(
     @Query() query: ListOrganizationsDto,
@@ -78,7 +86,21 @@ export class OrganizationsController {
     );
   }
 
+  @Get('organizations/operations/export')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportOrganizations() {
+    return successResponse(
+      await this.service.exportOrganizations(),
+      'EDUCATION_PLATFORM_ORGANIZATIONS_EXPORTED',
+      'Organizations exported',
+    );
+  }
+
   @Delete('organizations/:id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
   @Permissions(Permission.ORGANIZATION_MANAGE)
   async archiveOrganization(@Param('id') id: string) {
     return successResponse(
@@ -116,6 +138,16 @@ export class OrganizationsController {
       await this.service.listBranches(query),
       'EDUCATION_PLATFORM_BRANCHES_FETCHED',
       'Branches fetched',
+    );
+  }
+
+  @Get('branches/operations/export')
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportBranches(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportBranches(organizationId),
+      'EDUCATION_PLATFORM_BRANCHES_EXPORTED',
+      'Branches exported',
     );
   }
 
@@ -168,6 +200,16 @@ export class OrganizationsController {
     );
   }
 
+  @Get('lead-sources/operations/export')
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportLeadSources(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportLeadSources(organizationId),
+      'EDUCATION_PLATFORM_LEAD_SOURCES_EXPORTED',
+      'Lead sources exported',
+    );
+  }
+
   @Post('lead-stages')
   @HttpCode(HttpStatus.CREATED)
   @Permissions(Permission.ORGANIZATION_MANAGE)
@@ -191,6 +233,16 @@ export class OrganizationsController {
     );
   }
 
+  @Get('lead-stages/operations/export')
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportLeadStages(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportLeadStages(organizationId),
+      'EDUCATION_PLATFORM_LEAD_STAGES_EXPORTED',
+      'Lead stages exported',
+    );
+  }
+
   @Post('departments')
   @HttpCode(HttpStatus.CREATED)
   @Permissions(Permission.ORGANIZATION_MANAGE)
@@ -209,6 +261,16 @@ export class OrganizationsController {
       await this.service.listDepartments(query),
       'EDUCATION_PLATFORM_DEPARTMENTS_FETCHED',
       'Departments fetched',
+    );
+  }
+
+  @Get('departments/operations/export')
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportDepartments(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportDepartments(organizationId),
+      'EDUCATION_PLATFORM_DEPARTMENTS_EXPORTED',
+      'Departments exported',
     );
   }
 
@@ -256,6 +318,16 @@ export class OrganizationsController {
       await this.service.listTeams(query),
       'EDUCATION_PLATFORM_TEAMS_FETCHED',
       'Teams fetched',
+    );
+  }
+
+  @Get('teams/operations/export')
+  @Permissions(Permission.ORGANIZATION_VIEW)
+  async exportTeams(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportTeams(organizationId),
+      'EDUCATION_PLATFORM_TEAMS_EXPORTED',
+      'Teams exported',
     );
   }
 

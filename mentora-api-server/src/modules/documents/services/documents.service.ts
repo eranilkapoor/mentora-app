@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   CreateCrmDocumentDto,
   UpdateCrmDocumentDto,
@@ -84,6 +85,19 @@ export class DocumentsService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportDocuments(organizationId: string) {
+    const { items } = await this.listDocuments({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'category', 'mimeType', 'status', 'size'];
+    return buildCsvExportFile(
+      'documents',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateDocument(documentId: string, dto: UpdateCrmDocumentDto) {

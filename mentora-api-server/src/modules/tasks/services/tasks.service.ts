@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -83,6 +84,16 @@ export class TasksService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportTasks(organizationId: string) {
+    const { items } = await this.listTasks({ organizationId, limit: '1000' });
+    const headers = ['id', 'title', 'status', 'priority', 'dueAt'];
+    return buildCsvExportFile(
+      'tasks',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   listTaskBoard(organizationId: string) {

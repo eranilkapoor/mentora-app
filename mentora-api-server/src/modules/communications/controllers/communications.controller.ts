@@ -73,6 +73,19 @@ export class CommunicationsController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.COMMUNICATION_VIEW)
+  async exportCommunications(
+    @Query('organizationId') organizationId: string,
+    @Query('channel') channel?: string,
+  ) {
+    return successResponse(
+      await this.service.exportCommunications(organizationId, channel),
+      'EDUCATION_PLATFORM_COMMUNICATIONS_EXPORTED',
+      'Communications exported',
+    );
+  }
+
   @Put(':communicationId')
   @Permissions(Permission.COMMUNICATION_MANAGE)
   async updateCommunication(

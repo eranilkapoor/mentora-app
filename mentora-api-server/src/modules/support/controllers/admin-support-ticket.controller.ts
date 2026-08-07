@@ -40,6 +40,15 @@ export class AdminSupportTicketController {
     );
   }
 
+  @Get('operations/export')
+  async exportTickets() {
+    return successResponse(
+      await this.service.exportTickets(),
+      SuccessCode.SUPPORT_TICKETS_FETCHED,
+      'Support tickets exported',
+    );
+  }
+
   @Post()
   async createTicket(
     @Req() req: AuthenticatedRequest,

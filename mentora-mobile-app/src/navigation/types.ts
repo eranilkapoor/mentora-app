@@ -124,6 +124,7 @@ export type BottomTabParamList = {
 export type AppStackParamList = {
   Tabs: NavigatorScreenParams<BottomTabParamList> | undefined;
   Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;
+  AiTutorSession: { sessionId: string };
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────
@@ -159,4 +160,8 @@ export type BottomNavigationProp = BottomTabNavigationProp<BottomTabParamList>; 
 export type ChatDetailsRouteProp = RouteProp<
   ChatsStackParamList,
   'ChatDetails'
+>;
+export type AiTutorSessionRouteProp = RouteProp<
+  AppStackParamList,
+  'AiTutorSession'
 >;

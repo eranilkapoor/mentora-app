@@ -7,10 +7,7 @@ import {
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
-import {
-  ExportLedgerDto,
-  ReconcileLedgerDto,
-} from '../dto/finance-ledgers.dto';
+import { ReconcileLedgerDto } from '../dto/finance-ledgers.dto';
 import {
   FinanceLedgerEntry,
   FinanceLedgerEntryDocument,
@@ -46,21 +43,5 @@ export class FinanceLedgersService extends CrmDomainRecordService<FinanceLedgerE
       { new: true },
     );
     return record;
-  }
-
-  async exportLedger(dto: ExportLedgerDto) {
-    const result = await this.list({
-      organizationId: dto.organizationId,
-      limit: '1000',
-    });
-    const rows = result.items;
-    return {
-      format: dto.format ?? 'csv',
-      rows,
-      summary: {
-        exportedAt: new Date().toISOString(),
-        rowCount: rows.length,
-      },
-    };
   }
 }

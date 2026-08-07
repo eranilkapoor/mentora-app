@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -6,15 +6,11 @@ import {
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
-import {
-  CreateCampaignDto,
-  UpdateCampaignDto,
-  UpdateCampaignMetricsDto,
-} from '../dto/campaigns.dto';
-import { Campaign, CampaignDocument } from '../schemas/campaigns.schema';
+import { CreateProgramDto, UpdateProgramDto } from '../dto/programs.dto';
+import { Program, ProgramDocument } from '../schemas/programs.schema';
 
-type CampaignListOptions = {
-  channel?: string;
+type ProgramListOptions = {
+  level?: string;
   limit?: string;
   page?: string;
   search?: string;
@@ -25,45 +21,46 @@ type CampaignListOptions = {
 };
 
 @Injectable()
-export class CampaignsService {
+export class ProgramsService {
   constructor(
-    @InjectModel(Campaign.name)
-    private readonly campaigns: Model<CampaignDocument>,
+    @InjectModel(Program.name)
+    private readonly programs: Model<ProgramDocument>,
   ) {}
 
-  async createCampaign(dto: CreateCampaignDto) {
-    return this.campaigns.create({
+  async createProgram(dto: CreateProgramDto) {
+    return this.programs.create({
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
-      scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+      code: dto.code.toUpperCase(),
     });
   }
 
-  async listCampaigns(options: CampaignListOptions) {
+  async listPrograms(options: ProgramListOptions) {
     const page = this.toPositiveInt(options.page, 1);
     const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
     const sortBy = this.resolveSortBy(options.sortBy);
     const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
     const filter: Record<string, unknown> = {
       organizationId: toOrganizationObjectId(options.organizationId),
-      ...(options.channel ? { channel: options.channel } : {}),
+      ...(options.level ? { level: options.level } : {}),
       ...(options.status ? { status: options.status } : {}),
     };
     const search = options.search?.trim();
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { channel: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { specialization: { $regex: search, $options: 'i' } },
       ];
     }
     const [items, total] = await Promise.all([
-      this.campaigns
+      this.programs
         .find(filter)
         .sort({ [sortBy]: sortOrder, _id: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
-      this.campaigns.countDocuments(filter),
+      this.programs.countDocuments(filter),
     ]);
     return {
       items,
@@ -77,66 +74,78 @@ export class CampaignsService {
     };
   }
 
-  async exportCampaigns(organizationId: string) {
-    const { items } = await this.listCampaigns({
+  async exportPrograms(organizationId: string) {
+    const { items } = await this.listPrograms({
       organizationId,
       limit: '1000',
     });
-    const headers = ['id', 'name', 'channel', 'status', 'scheduledAt'];
+    const headers = [
+      'id',
+      'name',
+      'code',
+      'level',
+      'durationMonths',
+      'intakeCapacity',
+      'seatsAvailable',
+      'status',
+    ];
     return buildCsvExportFile(
-      'campaigns',
+      'programs',
       headers,
       items.map((item) => withStringId(item)),
     );
   }
 
-  async updateCampaign(campaignId: string, dto: UpdateCampaignDto) {
+  async updateProgram(programId: string, dto: UpdateProgramDto) {
     const update: Record<string, unknown> = {
       ...dto,
-      ...(dto.scheduledAt ? { scheduledAt: new Date(dto.scheduledAt) } : {}),
+      ...(dto.code ? { code: dto.code.toUpperCase() } : {}),
     };
     delete update.organizationId;
-    return this.campaigns.findOneAndUpdate(
+    const program = await this.programs.findOneAndUpdate(
       {
-        _id: toRequiredObjectId(campaignId),
+        _id: toRequiredObjectId(programId),
         organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: update },
       { new: true, runValidators: true },
     );
+    if (!program) throw new NotFoundException('Program not found');
+    return program;
   }
 
-  async archiveCampaign(campaignId: string, organizationId: string) {
-    return this.campaigns.findOneAndUpdate(
+  async archiveProgram(programId: string, organizationId: string) {
+    const program = await this.programs.findOneAndUpdate(
       {
-        _id: toRequiredObjectId(campaignId),
+        _id: toRequiredObjectId(programId),
         organizationId: toOrganizationObjectId(organizationId),
       },
       { $set: { status: 'archived' } },
       { new: true },
     );
+    if (!program) throw new NotFoundException('Program not found');
+    return program;
   }
 
-  async updateMetrics(campaignId: string, dto: UpdateCampaignMetricsDto) {
-    return this.campaigns.findOneAndUpdate(
+  async restoreProgram(programId: string, organizationId: string) {
+    const program = await this.programs.findOneAndUpdate(
       {
-        _id: toRequiredObjectId(campaignId),
-        organizationId: toOrganizationObjectId(dto.organizationId),
+        _id: toRequiredObjectId(programId),
+        organizationId: toOrganizationObjectId(organizationId),
       },
-      {
-        ...(dto.status ? { status: dto.status } : {}),
-        ...(dto.metrics ? { metrics: dto.metrics } : {}),
-        ...(dto.roi ? { roi: dto.roi } : {}),
-      },
+      { $set: { status: 'active' } },
       { new: true },
     );
+    if (!program) throw new NotFoundException('Program not found');
+    return program;
   }
 
   private resolveSortBy(value?: string) {
     const allowed = new Set([
       'createdAt',
       'name',
-      'scheduledAt',
+      'code',
+      'level',
       'status',
       'updatedAt',
     ]);

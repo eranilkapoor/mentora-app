@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   CreateCommunicationDto,
   UpdateCommunicationDto,
@@ -85,6 +86,27 @@ export class CommunicationsService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportCommunications(organizationId: string, channel?: string) {
+    const { items } = await this.listCommunications({
+      organizationId,
+      channel,
+      limit: '1000',
+    });
+    const headers = [
+      'id',
+      'channel',
+      'direction',
+      'subject',
+      'status',
+      'createdAt',
+    ];
+    return buildCsvExportFile(
+      channel ?? 'communications',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   updateCommunication(communicationId: string, dto: UpdateCommunicationDto) {

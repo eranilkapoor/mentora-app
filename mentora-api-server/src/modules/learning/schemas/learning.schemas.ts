@@ -1023,6 +1023,9 @@ export class LearningEntitlement {
   @Prop({ type: Types.ObjectId, ref: LearningSchedule.name })
   scheduleId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: StudyPlan.name, index: true })
+  studyPlanId?: Types.ObjectId;
+
   @Prop()
   allocatedQuantity?: number;
 

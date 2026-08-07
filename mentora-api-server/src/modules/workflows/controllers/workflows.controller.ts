@@ -76,6 +76,16 @@ export class WorkflowsController {
     );
   }
 
+  @Get('rules/operations/export')
+  @Permissions(Permission.WORKFLOW_MANAGE)
+  async exportRules(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRules(organizationId),
+      'EDUCATION_PLATFORM_WORKFLOW_RULES_EXPORTED',
+      'CRM workflow rules exported',
+    );
+  }
+
   @Put('rules/:ruleId')
   @Permissions(Permission.WORKFLOW_MANAGE)
   async updateRule(

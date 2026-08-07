@@ -22,10 +22,7 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
-import {
-  ExportLedgerDto,
-  ReconcileLedgerDto,
-} from '../dto/finance-ledgers.dto';
+import { ReconcileLedgerDto } from '../dto/finance-ledgers.dto';
 import { FinanceLedgersService } from '../services/finance-ledgers.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
@@ -65,6 +62,15 @@ export class FinanceLedgersController {
       }),
       'LEDGER_ENTRIES_FETCHED',
       'ledger entries fetched',
+    );
+  }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'FINANCE_LEDGERS_EXPORTED',
+      'Finance ledgers exported',
     );
   }
   @Get(':recordId')
@@ -107,15 +113,6 @@ export class FinanceLedgersController {
     );
   }
 
-  @Post('operations/export')
-  @Permissions(Permission.MODULE_RECORD_VIEW)
-  async exportLedger(@Body() dto: ExportLedgerDto) {
-    return successResponse(
-      await this.service.exportLedger(dto),
-      'LEDGER_EXPORTED',
-      'ledger exported',
-    );
-  }
   @Post('operations/bulk-status')
   @Permissions(Permission.MODULE_RECORD_MANAGE)
   async bulkUpdateStatus(

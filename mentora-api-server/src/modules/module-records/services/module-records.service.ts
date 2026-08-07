@@ -6,6 +6,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   BulkUpdateModuleRecordStatusDto,
@@ -236,32 +237,12 @@ export class ModuleRecordsService {
       moduleKey,
       organizationId,
     });
-    const records = result.items;
+    const records = (
+      result.items as unknown as Array<Record<string, unknown>>
+    ).map((record) => withStringId(record));
     const headers = ['id', 'moduleKey', 'title', 'status', 'priority', 'dueAt'];
-    const csv = [
-      headers.join(','),
-      ...records.map((record) =>
-        [
-          record._id,
-          record.moduleKey,
-          record.title,
-          record.status,
-          record.priority,
-          record.dueAt,
-        ]
-          .map((value) => this.csvValue(value))
-          .join(','),
-      ),
-    ].join('\n');
 
-    return {
-      filename: `mentora-${moduleKey ?? 'module-records'}-${new Date()
-        .toISOString()
-        .slice(0, 10)}.csv`,
-      contentType: 'text/csv',
-      rows: records,
-      csv,
-    };
+    return buildCsvExportFile(moduleKey ?? 'module-records', headers, records);
   }
 
   async deleteModuleRecord(
@@ -363,15 +344,5 @@ export class ModuleRecordsService {
   private toAuditRecord(value: unknown): Record<string, unknown> | null {
     if (!value || typeof value !== 'object') return null;
     return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
-  }
-
-  private csvValue(value: unknown): string {
-    if (value === null || value === undefined) return '';
-    if (value instanceof Date) return `"${value.toISOString()}"`;
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      return `"${value.toString()}"`;
-    }
-    const text = typeof value === 'string' ? value : JSON.stringify(value);
-    return `"${text.replaceAll('"', '""')}"`;
   }
 }

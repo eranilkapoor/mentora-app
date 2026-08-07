@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   BulkUpdateCrmDomainRecordStatusDto,
@@ -275,6 +276,25 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       record,
     );
     return record;
+  }
+
+  async exportRecords(organizationId: string) {
+    const { items } = await this.list({ organizationId, limit: '1000' });
+    const headers = [
+      'id',
+      'title',
+      'description',
+      'status',
+      'priority',
+      'ownerId',
+      'dueAt',
+      'createdAt',
+    ];
+    return buildCsvExportFile(
+      this.resource,
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   private resolveSortBy(value?: string) {

@@ -73,6 +73,16 @@ export class ReportsController {
     );
   }
 
+  @Get('definitions/operations/export')
+  @Permissions(Permission.REPORT_VIEW)
+  async exportDefinitions(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportDefinitions(organizationId),
+      'EDUCATION_PLATFORM_REPORT_DEFINITIONS_EXPORTED',
+      'Report definitions exported',
+    );
+  }
+
   @Put('definitions/:definitionId')
   @Permissions(Permission.REPORT_VIEW)
   async updateDefinition(

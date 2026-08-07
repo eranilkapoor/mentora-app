@@ -146,4 +146,6 @@ export enum Permission {
   DOCUMENT_VIEW = 'document:view',
   DOCUMENT_MANAGE = 'document:manage',
   WORKFLOW_MANAGE = 'workflow:manage',
+  PROGRAM_VIEW = 'program:view',
+  PROGRAM_MANAGE = 'program:manage',
 }

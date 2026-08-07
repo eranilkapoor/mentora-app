@@ -63,6 +63,15 @@ export class FieldForceController {
       'Field visits fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'FIELD_VISITS_EXPORTED',
+      'Field visits exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(

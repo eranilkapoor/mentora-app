@@ -5,6 +5,7 @@ import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   CreateWorkflowRuleDto,
@@ -86,6 +87,16 @@ export class WorkflowsService {
       },
       sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
+  }
+
+  async exportRules(organizationId: string) {
+    const { items } = await this.listRules({ organizationId, limit: '1000' });
+    const headers = ['id', 'name', 'trigger', 'status', 'moduleKey'];
+    return buildCsvExportFile(
+      'workflow-rules',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
   }
 
   async updateRule(userId: string, ruleId: string, dto: UpdateWorkflowRuleDto) {

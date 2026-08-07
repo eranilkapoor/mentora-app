@@ -63,6 +63,15 @@ export class CallCenterController {
       'Calls fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'CALLS_EXPORTED',
+      'Calls exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(

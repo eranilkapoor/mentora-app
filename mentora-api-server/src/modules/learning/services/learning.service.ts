@@ -877,18 +877,133 @@ export class LearningService {
     if (dto.subjectId) {
       await this.assertSubjectEnrollment(studentId, dto.subjectId);
     }
-    return this.schedules.create({
-      ...dto,
-      studentProfileId: new Types.ObjectId(studentId),
-      scheduledByUserId: new Types.ObjectId(userId),
-      subjectId: dto.subjectId ? new Types.ObjectId(dto.subjectId) : undefined,
-      startAt: new Date(dto.startAt),
-      endAt: new Date(dto.endAt),
-      nextReminderAt: this.resolveNextReminderAt(
+
+    const studyPlan = await this.getActiveStudyPlanForStudent(studentId);
+    const durationMs =
+      new Date(dto.endAt).getTime() - new Date(dto.startAt).getTime();
+    const occurrenceCount = dto.recurrenceFrequency
+      ? Math.min(Math.max(dto.recurrenceCount ?? 1, 1), 52)
+      : 1;
+    const occurrences = Array.from({ length: occurrenceCount }, (_, index) => {
+      const startAt = this.addRecurrenceInterval(
         new Date(dto.startAt),
-        dto.reminderMinutesBefore,
-      ),
+        dto.recurrenceFrequency,
+        index,
+      );
+      return {
+        startAt,
+        endAt: new Date(startAt.getTime() + durationMs),
+      };
     });
+
+    if (studyPlan) {
+      await this.assertWithinStudyPlanLimits(studentId, studyPlan, occurrences);
+    }
+
+    const created = await this.schedules.insertMany(
+      occurrences.map(({ startAt, endAt }) => ({
+        ...dto,
+        studentProfileId: new Types.ObjectId(studentId),
+        scheduledByUserId: new Types.ObjectId(userId),
+        subjectId: dto.subjectId
+          ? new Types.ObjectId(dto.subjectId)
+          : undefined,
+        startAt,
+        endAt,
+        recurrenceRule: dto.recurrenceFrequency,
+        nextReminderAt: this.resolveNextReminderAt(
+          startAt,
+          dto.reminderMinutesBefore,
+        ),
+      })),
+    );
+
+    return occurrenceCount === 1 ? created[0] : created;
+  }
+
+  private addRecurrenceInterval(
+    date: Date,
+    frequency: string | undefined,
+    occurrenceIndex: number,
+  ): Date {
+    if (!frequency || occurrenceIndex === 0) {
+      return new Date(date);
+    }
+    const next = new Date(date);
+    if (frequency === 'daily') {
+      next.setDate(next.getDate() + occurrenceIndex);
+    } else if (frequency === 'weekly') {
+      next.setDate(next.getDate() + occurrenceIndex * 7);
+    } else if (frequency === 'monthly') {
+      next.setMonth(next.getMonth() + occurrenceIndex);
+    }
+    return next;
+  }
+
+  private async getActiveStudyPlanForStudent(studentId: string) {
+    const entitlement = await this.entitlements
+      .findOne({
+        studentProfileId: new Types.ObjectId(studentId),
+        status: 'active',
+        studyPlanId: { $exists: true, $ne: null },
+        expiresAt: { $gte: new Date() },
+      })
+      .sort({ expiresAt: -1 })
+      .lean();
+    if (!entitlement?.studyPlanId) {
+      return null;
+    }
+    return this.studyPlans.findById(entitlement.studyPlanId).lean();
+  }
+
+  private async assertWithinStudyPlanLimits(
+    studentId: string,
+    studyPlan: Pick<StudyPlan, 'maxConcurrentSessions' | 'sessionsPerWeek'>,
+    occurrences: Array<{ startAt: Date; endAt: Date }>,
+  ) {
+    const studentObjectId = new Types.ObjectId(studentId);
+    const existingSchedules = await this.schedules
+      .find({
+        studentProfileId: studentObjectId,
+        status: { $in: ['scheduled', 'started'] },
+      })
+      .select('startAt endAt')
+      .lean();
+
+    for (const occurrence of occurrences) {
+      const overlapping = existingSchedules.filter(
+        (existing) =>
+          existing.startAt < occurrence.endAt &&
+          existing.endAt > occurrence.startAt,
+      ).length;
+      if (overlapping >= studyPlan.maxConcurrentSessions) {
+        throw new ForbiddenException(
+          `This study plan allows at most ${studyPlan.maxConcurrentSessions} concurrent session(s)`,
+        );
+      }
+
+      const weekStart = this.startOfWeek(occurrence.startAt);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const sessionsThisWeek = existingSchedules.filter(
+        (existing) =>
+          existing.startAt >= weekStart && existing.startAt < weekEnd,
+      ).length;
+      if (sessionsThisWeek >= studyPlan.sessionsPerWeek) {
+        throw new ForbiddenException(
+          `This study plan allows at most ${studyPlan.sessionsPerWeek} session(s) per week`,
+        );
+      }
+    }
+  }
+
+  private startOfWeek(date: Date): Date {
+    const result = new Date(date);
+    const day = result.getDay();
+    const diffToMonday = (day + 6) % 7;
+    result.setDate(result.getDate() - diffToMonday);
+    result.setHours(0, 0, 0, 0);
+    return result;
   }
 
   async listSchedules(userId: string, studentId: string) {
@@ -959,6 +1074,9 @@ export class LearningService {
       subjectId: dto.subjectId ? new Types.ObjectId(dto.subjectId) : undefined,
       scheduleId: dto.scheduleId
         ? new Types.ObjectId(dto.scheduleId)
+        : undefined,
+      studyPlanId: dto.studyPlanId
+        ? new Types.ObjectId(dto.studyPlanId)
         : undefined,
       startsAt: new Date(dto.startsAt),
       expiresAt: new Date(dto.expiresAt),
@@ -1075,19 +1193,60 @@ export class LearningService {
         'This message was blocked by Mentora safety rules',
       );
     }
+
+    const entitlement = await this.entitlements.findById(
+      session.accessEntitlementId,
+    );
+    if (
+      entitlement &&
+      entitlement.allocatedQuantity !== undefined &&
+      entitlement.usedQuantity >= entitlement.allocatedQuantity
+    ) {
+      throw new ForbiddenException(
+        'AI tutor usage entitlement has been exhausted for this plan',
+      );
+    }
+
+    let aiContent =
+      'Mentora AI tutor is ready for this subject. The full model provider integration will generate the next adaptive explanation here.';
+    const outputModeration = this.moderateTutorMessage(aiContent);
+    if (outputModeration.status === 'blocked') {
+      aiContent =
+        'This response was withheld by Mentora safety rules. Please rephrase your question or contact your mentor.';
+    }
     const aiMessage = await this.aiMessages.create({
       sessionId: session._id,
       sender: 'ai',
       messageType: 'explanation',
-      content:
-        'Mentora AI tutor is ready for this subject. The full model provider integration will generate the next adaptive explanation here.',
+      content: aiContent,
       metadata: {
         placeholder: true,
+        safetyReasons: outputModeration.reasons,
       },
-      safetyStatus: 'allowed',
+      safetyStatus: outputModeration.status,
     });
+    if (outputModeration.status !== 'allowed') {
+      await this.safetyEvents.create({
+        studentProfileId: session.studentProfileId,
+        userId: new Types.ObjectId(userId),
+        sourceId: session._id,
+        sourceType: 'ai_tutor',
+        severity: outputModeration.severity,
+        reasons: outputModeration.reasons,
+        metadata: {
+          messageId: aiMessage._id,
+          action: outputModeration.status,
+          origin: 'ai_output',
+        },
+      });
+      session.safetyEventsCount += 1;
+    }
     session.totalMessages += 2;
     await session.save();
+    if (entitlement) {
+      entitlement.usedQuantity += 1;
+      await entitlement.save();
+    }
     return { studentMessage, aiMessage };
   }
 

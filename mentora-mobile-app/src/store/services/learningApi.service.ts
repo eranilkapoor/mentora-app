@@ -128,7 +128,29 @@ export interface AiTutorSession {
   subjectId: string;
   scheduleId?: string;
   status: 'active' | 'completed' | 'blocked';
+}
+
+export interface AiTutorSessionCreateResult {
+  session: AiTutorSession;
   access: AiTutorAccessCheck;
+  context?: unknown;
+}
+
+export interface AiTutorMessage {
+  id: string;
+  _id?: string;
+  sessionId: string;
+  sender: 'student' | 'ai';
+  messageType: string;
+  content: string;
+  safetyStatus: 'allowed' | 'review' | 'blocked';
+  createdAt?: string;
+}
+
+export interface AiTutorSessionDetail {
+  session: AiTutorSession;
+  messages: AiTutorMessage[];
+  context?: unknown;
 }
 
 export interface AiTutorMessagePayload {
@@ -215,7 +237,7 @@ export const learningApi = baseApi.injectEndpoints({
       providesTags: ['LearningProgress'],
     }),
     startAiTutorSession: builder.mutation<
-      ApiEnvelope<AiTutorSession>,
+      ApiEnvelope<AiTutorSessionCreateResult>,
       StartAiTutorSessionPayload
     >({
       query: (body) => ({
@@ -229,8 +251,18 @@ export const learningApi = baseApi.injectEndpoints({
         'LearningProgress',
       ],
     }),
+    getAiTutorSession: builder.query<
+      ApiEnvelope<AiTutorSessionDetail>,
+      { sessionId: string }
+    >({
+      query: ({ sessionId }) => `/ai-tutor/sessions/${sessionId}`,
+      providesTags: ['AiTutorSession'],
+    }),
     sendAiTutorMessage: builder.mutation<
-      ApiEnvelope<unknown>,
+      ApiEnvelope<{
+        studentMessage: AiTutorMessage;
+        aiMessage: AiTutorMessage;
+      }>,
       AiTutorMessagePayload
     >({
       query: ({ sessionId, ...body }) => ({
@@ -277,6 +309,7 @@ export const {
   useGetLearningEntitlementsQuery,
   useGetStudentProgressQuery,
   useStartAiTutorSessionMutation,
+  useGetAiTutorSessionQuery,
   useSendAiTutorMessageMutation,
   useGetAssessmentsQuery,
   useGetLearningRecommendationsQuery,

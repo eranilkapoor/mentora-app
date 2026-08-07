@@ -67,6 +67,15 @@ export class ScholarshipsController {
       'Scholarships fetched',
     );
   }
+  @Get('operations/export')
+  @Permissions(Permission.MODULE_RECORD_VIEW)
+  async exportRecords(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportRecords(organizationId),
+      'SCHOLARSHIPS_EXPORTED',
+      'Scholarships exported',
+    );
+  }
   @Get(':recordId')
   @Permissions(Permission.MODULE_RECORD_VIEW)
   async getById(

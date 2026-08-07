@@ -13,6 +13,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { useNavigation } from '@react-navigation/native';
 import Header from '@/core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { showError, showInfo } from '@/core/utils/toast';
 import { AppNavigationProp } from '@/navigation/types';
 import {
   LearningEntitlement,
@@ -40,6 +41,18 @@ type EntityWithMongoId = {
 
 const getEntityId = (entity?: EntityWithMongoId): string | undefined =>
   entity?.id ?? entity?._id;
+
+const extractErrorMessage = (error: unknown): string => {
+  if (error && typeof error === 'object' && 'data' in error) {
+    const data = (error as { data?: { message?: string | string[] } }).data;
+    if (data?.message) {
+      return Array.isArray(data.message)
+        ? data.message.join('\n')
+        : data.message;
+    }
+  }
+  return 'Something went wrong. Please try again.';
+};
 
 const getRemainingMinutes = (entitlement: LearningEntitlement): number => {
   if (typeof entitlement.remainingMinutes === 'number') {
@@ -249,18 +262,32 @@ export default function LearningTabScreen({
 
   const firstSubjectId = getEntityId(subjects?.data?.[0]);
   const nextSchedule = upcomingSchedules[0];
-  const handleStartTutor = (): void => {
+  const handleStartTutor = async (): Promise<void> => {
     if (!selectedStudentId || !firstSubjectId) return;
-    void startAiTutorSession({
-      studentProfileId: selectedStudentId,
-      subjectId: firstSubjectId,
-      scheduleId: getEntityId(nextSchedule),
-      deliveryMode:
-        nextSchedule?.deliveryMode === 'audio' ||
-        nextSchedule?.deliveryMode === 'video'
-          ? nextSchedule.deliveryMode
-          : 'chat',
-    });
+    try {
+      const result = await startAiTutorSession({
+        studentProfileId: selectedStudentId,
+        subjectId: firstSubjectId,
+        scheduleId: getEntityId(nextSchedule),
+        deliveryMode:
+          nextSchedule?.deliveryMode === 'audio' ||
+          nextSchedule?.deliveryMode === 'video'
+            ? nextSchedule.deliveryMode
+            : 'chat',
+      }).unwrap();
+      const sessionId = getEntityId(result.data?.session);
+      if (sessionId) {
+        navigation.navigate('AiTutorSession', { sessionId });
+      }
+    } catch (error) {
+      showError({
+        title: 'Unable to start tutor session',
+        message: extractErrorMessage(error),
+      });
+    }
+  };
+  const handleComingSoon = (feature: string): void => {
+    showInfo({ title: feature, message: 'This is coming soon.' });
   };
   const openMembership = (): void => {
     navigation.navigate('Settings', { screen: 'Membership' });
@@ -462,7 +489,7 @@ export default function LearningTabScreen({
         {mode === 'learn' && selectedStudentId ? (
           <Pressable
             disabled={!firstSubjectId || startingTutor}
-            onPress={handleStartTutor}
+            onPress={() => void handleStartTutor()}
             style={[
               styles.tutorCard,
               {
@@ -528,13 +555,34 @@ export default function LearningTabScreen({
 
             <View style={styles.boardActions}>
               {[
-                { icon: 'help-circle', label: 'Q&A' },
-                { icon: 'message-square', label: 'Chat' },
-                { icon: 'file-text', label: 'Notes' },
-                { icon: 'check-square', label: 'Tests' },
+                {
+                  icon: 'help-circle',
+                  label: 'Q&A',
+                  onPress: () => void handleStartTutor(),
+                },
+                {
+                  icon: 'message-square',
+                  label: 'Chat',
+                  onPress: () => void handleStartTutor(),
+                },
+                {
+                  icon: 'file-text',
+                  label: 'Notes',
+                  onPress: () => handleComingSoon('Notes'),
+                },
+                {
+                  icon: 'check-square',
+                  label: 'Tests',
+                  onPress: () => handleComingSoon('Tests'),
+                },
               ].map((action) => (
                 <Pressable
                   key={action.label}
+                  onPress={action.onPress}
+                  disabled={
+                    (action.label === 'Q&A' || action.label === 'Chat') &&
+                    (!selectedStudentId || !firstSubjectId || startingTutor)
+                  }
                   style={[
                     styles.boardAction,
                     {

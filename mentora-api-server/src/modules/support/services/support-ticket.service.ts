@@ -4,6 +4,7 @@ import {
   throwBadRequest,
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
+import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { CreateSupportTicketDto } from '../dto/create-support-ticket.dto';
 import {
@@ -144,6 +145,21 @@ export class SupportTicketService {
       hasNextPage: page * limit < total,
       hasPrevPage: page > 1,
     };
+  }
+
+  async exportTickets() {
+    const { items } = await this.listAllTickets({
+      page: 1,
+      limit: 1000,
+    });
+    const headers = ['id', 'subject', 'category', 'priority', 'status'];
+    return buildCsvExportFile(
+      'support-tickets',
+      headers,
+      (items as Array<Record<string, unknown>>).map((item) =>
+        withStringId(item),
+      ),
+    );
   }
 
   async createAdminTicket(userId: string, dto: AdminCreateSupportTicketDto) {

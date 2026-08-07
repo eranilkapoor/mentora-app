@@ -144,8 +144,10 @@ export function getServerRowsForModule(
   workspace: {
     branches?: unknown[];
     departments?: unknown[];
+    integrationProviders?: unknown[];
     moduleRecords: Record<string, unknown[]>;
     organizations: unknown[];
+    securityPolicy?: unknown;
     teams?: unknown[];
   },
 ) {
@@ -179,6 +181,18 @@ export function getServerRowsForModule(
 
   if (module.id === "authentication") {
     return authOverviewToRows(workspace.moduleRecords.authentication, module);
+  }
+
+  if (module.id === "integrations") {
+    return integrationRecordsToRows(workspace.integrationProviders, module);
+  }
+
+  if (module.id === "security") {
+    const policy =
+      workspace.securityPolicy && typeof workspace.securityPolicy === "object"
+        ? (workspace.securityPolicy as Record<string, unknown>)
+        : null;
+    return securityPolicyToRows(policy, module);
   }
 
   return recordsToRows(workspace.moduleRecords[module.id], module);
@@ -222,6 +236,7 @@ export function recordsToRows(
         metrics[key] ??
         roi[key] ??
         (key === "campaign" ? (object.name ?? object.title) : undefined) ??
+        (key === "program" ? (object.name ?? object.title) : undefined) ??
         (key === "leads" ? metrics.leads : undefined) ??
         (key === "applications" ? metrics.applications : undefined) ??
         (key === "spend" ? metrics.spend : undefined) ??
@@ -576,6 +591,87 @@ function authOverviewToRows(
 
     return module.columns.map((column) => stringifyCell(values[column]));
   });
+}
+
+function integrationRecordsToRows(
+  records: unknown[] | undefined,
+  module: AdminModule,
+) {
+  if (!records?.length) return [];
+
+  return records.map((record) => {
+    const object =
+      record && typeof record === "object"
+        ? (record as Record<string, unknown>)
+        : {};
+    const providerKey =
+      typeof object.providerKey === "string" ? object.providerKey : "";
+    const label = providerKey.replaceAll("_", " ");
+    const values: Record<string, unknown> = {
+      Integration: label,
+      Category: label.split(" ")[0] ?? "Integration",
+      Provider: label,
+      Owner: "Organization Admin",
+      "Last Sync": object.lastCheckedAt,
+      Status: object.status,
+    };
+
+    return module.columns.map((column) => stringifyCell(values[column]));
+  });
+}
+
+function securityPolicyToRows(
+  policy: Record<string, unknown> | null | undefined,
+  module: AdminModule,
+) {
+  if (!policy) return [];
+
+  const allowedIpCidrs = Array.isArray(policy.allowedIpCidrs)
+    ? policy.allowedIpCidrs
+    : [];
+  const maskedFields = Array.isArray(policy.maskedFields)
+    ? policy.maskedFields
+    : [];
+  const updated = policy.updatedAt ?? "Live";
+
+  const controls: Array<Record<string, unknown>> = [
+    {
+      Control: "Multi-factor authentication",
+      Scope: "Organization",
+      Policy: policy.mfaRequired ? "Required" : "Optional",
+      Owner: "Security",
+      Status: policy.mfaRequired ? "Enforced" : "Not enforced",
+      Updated: updated,
+    },
+    {
+      Control: "Single sign-on",
+      Scope: "Organization",
+      Policy: policy.ssoRequired ? "Required" : "Optional",
+      Owner: "Security",
+      Status: policy.ssoRequired ? "Enforced" : "Not enforced",
+      Updated: updated,
+    },
+    {
+      Control: "IP allowlist",
+      Scope: "Organization",
+      Policy: allowedIpCidrs.length ? allowedIpCidrs.join(", ") : "Unrestricted",
+      Owner: "Security",
+      Status: allowedIpCidrs.length ? "Restricted" : "Open",
+      Updated: updated,
+    },
+    {
+      Control: "Field masking",
+      Scope: "Organization",
+      Policy: maskedFields.length ? maskedFields.join(", ") : "None",
+      Owner: "Security",
+      Status: maskedFields.length ? "Enabled" : "Disabled",
+      Updated: updated,
+    },
+  ];
+
+  return controls.map((values) =>
+    module.columns.map((column) => stringifyCell(values[column])),
+  );
 }
 
 function roleRecordsToRows(

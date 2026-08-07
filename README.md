@@ -1355,12 +1355,12 @@ All reused code must follow Mentora terminology and must not retain unrelated pr
 
 ## Current Verification Snapshot
 
-Last checked locally on 2026-07-29:
+Last checked locally on 2026-08-07:
 
-* API server: lint and production build pass.
-* Admin CRM: typecheck, lint, and production build pass.
+* API server: lint, production build, and Jest suites (leads, applications, organizations, module-records, common/crm) pass.
+* Admin CRM: typecheck and production build pass. Export, Integrations/Security grids, and several toolbar actions now call real endpoints instead of generic/mismatched ones (see [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md)).
 * Public website: typecheck, lint, and production build pass.
-* Mobile app: typecheck, lint, and English/Hindi i18n key validation pass.
+* Mobile app: typecheck, lint, and English/Hindi i18n key validation pass. AI tutor session flow, entitlement metering, and schedule recurrence/limits are now real.
 
 Current production verdict:
 
@@ -1567,7 +1567,7 @@ db:migrate
 * Added user, role, permission, session, and audit foundations.
 * Added CRM modules for leads, contacts, assignments, activities, tasks, and follow-ups.
 * Added application, admission, document, interview, and offer foundations.
-* Added academic master modules for sessions, programs, courses, subjects, and course offerings.
+* Added an academic subjects/curriculums/topics catalog (global, used by the AI tutoring product) and a dedicated organization-scoped Programs module for admissions course offerings; academic-sessions, course-offerings, and a separate courses module are not yet built.
 * Added communication, campaign, workflow, integration, payment, and reporting foundations.
 * Added student, parent, relationship, parental-control, and consent foundations.
 * Added learning schedules, entitlements, AI tutor sessions, classrooms, tutors, and safety events.
@@ -1579,13 +1579,16 @@ db:migrate
 * Updated onboarding and profile editing for students, parents, and organization-linked learners.
 * Added `mentora-public-website` with product, plans, support, privacy, terms, account deletion, and community-guideline pages.
 * Added `mentora-admin-crm` with platform administration, organizations, users, RBAC, leads, applications, admissions, communications, payments, reports, workflows, integrations, and security-policy foundations.
+* Fixed the admin CRM export mismatch across 20+ dedicated modules, the Integrations/Security grids reading the wrong state, and several toolbar actions that only logged instead of calling real endpoints. Added a real Programs module end to end. Fixed a tenant-isolation gap in organization-entity CRUD. See [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md).
 
 ### Current Priorities
 
 * Complete oraganization isolation and data-scope enforcement across all oraganization-owned repositories and services.
 * Complete platform Super Admin and organization Admin user journeys.
 * Complete lead assignment, follow-up, activity timeline, and application conversion flows.
-* Complete configurable academic masters, application forms, stages, and workflows.
+* Complete configurable academic masters (academic-sessions, courses, course-offerings, specializations), application forms, stages, and workflows. Programs now has a real dedicated module; the rest are still on the generic module-records fallback with no dedicated backend.
+* Add an org-scoped admin student directory endpoint (the only current `/students` endpoint is B2C user-scoped, not usable by CRM staff) and a unified contacts view merging leads and students.
+* Add organization scoping to the platform payments admin API so the CRM payments module can safely list and refund real orders per organization.
 * Complete student, parent, counselor, and reviewer role-based navigation.
 * Regenerate and review the OpenAPI contract from a running API.
 * Connect AI tutor placeholders to the selected model provider.

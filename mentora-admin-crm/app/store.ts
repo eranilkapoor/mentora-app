@@ -384,6 +384,8 @@ const dedicatedCrmRoutes: Record<string, string> = {
   finance: adminPath("/finance-ledgers"),
   interview: adminPath("/interviews"),
   leads: adminPath("/leads"),
+  organizations: adminPath("/organizations"),
+  programs: adminPath("/programs"),
   "lead-sources": adminPath("/lead-sources"),
   "lead-stages": adminPath("/lead-stages"),
   automation: adminPath("/workflows/rules"),
@@ -1349,6 +1351,24 @@ export const exportModuleRecords = createAsyncThunk(
   },
 );
 
+export const exportDedicatedCrmRecords = createAsyncThunk(
+  "crmWorkspace/exportDedicatedCrmRecords",
+  async ({
+    moduleKey,
+    organizationId,
+  }: {
+    moduleKey: string;
+    organizationId: string;
+  }) => {
+    const route = dedicatedCrmRoutes[moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const query = new URLSearchParams({ organizationId });
+    if (moduleKey === "emails") query.set("channel", "email");
+    if (moduleKey === "sms") query.set("channel", "sms");
+    return getJson(`${route}/operations/export?${query.toString()}`);
+  },
+);
+
 export const findLeadDuplicates = createAsyncThunk(
   "crmWorkspace/findLeadDuplicates",
   async ({
@@ -1732,6 +1752,41 @@ export const testIntegrationProvider = createAsyncThunk(
         )}`,
       ),
     );
+  },
+);
+
+export const loadNotificationDlq = createAsyncThunk(
+  "crmWorkspace/loadNotificationDlq",
+  async () => {
+    return getJson(adminPath("/notifications/dlq?limit=20"));
+  },
+);
+
+export const replayAllNotificationDlq = createAsyncThunk(
+  "crmWorkspace/replayAllNotificationDlq",
+  async () => {
+    return sendJson(adminPath("/notifications/dlq/replay-all"), "POST", {});
+  },
+);
+
+export const loadNotificationAnalytics = createAsyncThunk(
+  "crmWorkspace/loadNotificationAnalytics",
+  async () => {
+    return getJson(adminPath("/notifications/analytics"));
+  },
+);
+
+export const loadAnalyticsOverview = createAsyncThunk(
+  "crmWorkspace/loadAnalyticsOverview",
+  async () => {
+    return getJson(adminPath("/analytics/overview"));
+  },
+);
+
+export const loadPaymentReconciliation = createAsyncThunk(
+  "crmWorkspace/loadPaymentReconciliation",
+  async () => {
+    return getJson(adminPath("/payments/reports/reconciliation"));
   },
 );
 
@@ -2271,6 +2326,9 @@ const crmWorkspaceSlice = createSlice({
       .addCase(exportModuleRecords.fulfilled, (state) => {
         state.error = null;
       })
+      .addCase(exportDedicatedCrmRecords.fulfilled, (state) => {
+        state.error = null;
+      })
       .addCase(findLeadDuplicates.fulfilled, (state) => {
         state.error = null;
       })
@@ -2407,6 +2465,21 @@ const crmWorkspaceSlice = createSlice({
       })
       .addCase(loadSecurityPolicy.fulfilled, (state, action) => {
         state.securityPolicy = normalizeApiObject(action.payload);
+        state.error = null;
+      })
+      .addCase(loadPaymentReconciliation.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadAnalyticsOverview.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadNotificationDlq.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(replayAllNotificationDlq.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadNotificationAnalytics.fulfilled, (state) => {
         state.error = null;
       })
       .addCase(updateSecurityPolicy.fulfilled, (state, action) => {
