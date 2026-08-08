@@ -9,7 +9,7 @@ describe('commonValidators', () => {
   });
 
   it('checks trimmed minimum length', () => {
-    expect(minLength('  mentora  ', 9)).toBe(true);
+    expect(minLength('  mentora  ', 7)).toBe(true);
     expect(minLength(' short ', 6)).toBe(false);
   });
 });

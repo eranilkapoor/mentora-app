@@ -83,13 +83,13 @@ describe('RbacService', () => {
 
   it('deletes permission when not attached to active role', async () => {
     roleModel.findOne.mockReturnValue(createQueryChain(null));
-    permissionModel.findByIdAndDelete.mockReturnValue(
-      createQueryChain({ _id: 'p1' }),
+    permissionModel.findByIdAndUpdate.mockReturnValue(
+      createQueryChain({ _id: 'p1', isActive: false }),
     );
 
     const result = await service.deletePermission('p1');
 
-    expect(result).toEqual({ deleted: true });
+    expect(result).toEqual({ _id: 'p1', isActive: false });
   });
 
   it('creates role after validating permission ids', async () => {
@@ -211,7 +211,7 @@ describe('RbacService', () => {
     roleModel.findOne.mockReturnValue({
       lean: () => ({ exec: jest.fn().mockResolvedValue(null) }),
     });
-    permissionModel.findByIdAndDelete.mockReturnValue(createQueryChain(null));
+    permissionModel.findByIdAndUpdate.mockReturnValue(createQueryChain(null));
     await expect(service.deletePermission('missing')).rejects.toMatchObject({
       code: ErrorCode.ADMIN_OPERATION_FAILED,
     });
@@ -293,14 +293,18 @@ describe('RbacService', () => {
       code: ErrorCode.ADMIN_OPERATION_FAILED,
     });
     userModel.findOne.mockReturnValue(createQueryChain(null));
-    roleModel.findByIdAndDelete.mockReturnValue(createQueryChain(null));
+    roleModel.findByIdAndUpdate.mockReturnValue(createQueryChain(null));
     await expect(service.deleteRole('missing')).rejects.toMatchObject({
       code: ErrorCode.ADMIN_OPERATION_FAILED,
     });
-    roleModel.findByIdAndDelete.mockReturnValue(
-      createQueryChain({ _id: 'r1' }),
+    roleModel.findByIdAndUpdate.mockReturnValue(
+      createQueryChain({ _id: 'r1', isActive: false, permissions: [] }),
     );
-    await expect(service.deleteRole('r1')).resolves.toEqual({ deleted: true });
+    await expect(service.deleteRole('r1')).resolves.toEqual({
+      _id: 'r1',
+      isActive: false,
+      permissions: [],
+    });
   });
 
   it('rejects missing users/invalid roles and ignores malformed populated permissions', async () => {

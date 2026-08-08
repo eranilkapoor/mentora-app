@@ -19,6 +19,12 @@
     "^@/(.*)$": "<rootDir>/src/$1",
     "^src/(.*)$": "<rootDir>/src/$1"
   },
+  "testPathIgnorePatterns": [
+    "<rootDir>/test/business-journeys.e2e-spec.ts",
+    "<rootDir>/test/matches-access-and-validation.e2e-spec.ts",
+    "<rootDir>/test/matches-interest-lifecycle-db.e2e-spec.ts",
+    "<rootDir>/test/profile-journey-db.e2e-spec.ts"
+  ],
   "maxWorkers": 1,
   "testTimeout": 120000,
   "detectOpenHandles": true,

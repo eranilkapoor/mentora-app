@@ -61,7 +61,7 @@ describe('application HTTP foundation (e2e)', () => {
     const live = await request(app.getHttpServer()).get('/live').expect(200);
 
     expect(root.body).toMatchObject({
-      message: 'Matrimony API is running ',
+      message: 'Mentora API is running',
       version: 'v1',
     });
     expect(live.body).toMatchObject({ status: 'ok', env: 'test' });

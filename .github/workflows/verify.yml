@@ -53,12 +53,12 @@ jobs:
         run: npm run ci
 
       - name: Build API container image
-        run: docker build -t match-mate-api:${{ github.sha }} ./mentora-api-server
+        run: docker build -t mentora-api:${{ github.sha }} ./mentora-api-server
 
       - name: Scan API container image
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: match-mate-api:${{ github.sha }}
+          image-ref: mentora-api:${{ github.sha }}
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true

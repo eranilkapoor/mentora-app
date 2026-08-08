@@ -207,7 +207,7 @@ describe('SubscriptionBillingScreen', () => {
     await fireEvent.press(getByText('membership.billing.cancel_auto_renew'));
 
     expect(mockGoBack).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Membership' });
+    expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Progress' });
     expect(mockRefetch).toHaveBeenCalled();
     expect(mockShowConfirm).toHaveBeenCalledWith(
       expect.objectContaining({

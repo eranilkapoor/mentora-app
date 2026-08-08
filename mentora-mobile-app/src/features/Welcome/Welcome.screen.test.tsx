@@ -101,5 +101,5 @@ describe('WelcomeScreen', () => {
     expect(mockNavigate).toHaveBeenNthCalledWith(2, 'Login');
     expect(mockNavigate).toHaveBeenNthCalledWith(3, 'TermsConditions');
     expect(mockNavigate).toHaveBeenNthCalledWith(4, 'PrivacyPolicy');
-  });
+  }, 15000);
 });

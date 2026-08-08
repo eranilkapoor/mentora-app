@@ -14,19 +14,6 @@
     "reply": "जवाब दें",
     "view_learning": "View learning"
   },
-  "types": {
-    "new_message": "आपको नया संदेश मिला है",
-    "session_scheduled": "Your session was scheduled",
-    "session_reminder": "A learning session is coming up",
-    "progress_update": "Student progress was updated",
-    "parent_alert": "A parent approval or safety item needs attention"
-  },
-  "sections": {
-    "today": "आज",
-    "yesterday": "कल",
-    "earlier": "पहले",
-    "new": "नई"
-  },
   "detail": {
     "title": "सूचना विवरण",
     "received": "प्राप्त हुआ",
@@ -65,5 +52,18 @@
     "subscription": "Subscription",
     "marketing": "Updates and offers",
     "system": "System"
+  },
+  "types": {
+    "new_message": "आपको नया संदेश मिला है",
+    "session_scheduled": "Your session was scheduled",
+    "session_reminder": "A learning session is coming up",
+    "progress_update": "Student progress was updated",
+    "parent_alert": "A parent approval or safety item needs attention"
+  },
+  "sections": {
+    "today": "आज",
+    "yesterday": "कल",
+    "earlier": "पहले",
+    "new": "नई"
   }
 }

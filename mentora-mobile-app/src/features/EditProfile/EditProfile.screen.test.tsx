@@ -75,6 +75,7 @@ jest.mock('./hooks/useEditProfileForm', () => ({
     imagesLoading: false,
     videos: [],
     videosLoading: false,
+    missingProfileSections: [],
     imageUploading: false,
     pickImage: mockPickImage,
     pickVideoIntro: mockPickVideoIntro,

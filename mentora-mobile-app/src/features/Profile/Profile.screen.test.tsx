@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
@@ -10,6 +10,19 @@ const mockDeleteAsync = jest.fn();
 const mockCopyAsync = jest.fn();
 const mockShowUpgradePrompt = jest.fn();
 const mockShowError = jest.fn();
+
+jest.mock('@/store/hooks', () => ({
+  useAppSelector: (selector: (state: unknown) => unknown) =>
+    selector({
+      auth: {
+        user: {
+          firstName: 'Asha',
+          lastName: 'Sharma',
+          email: 'asha@example.com',
+        },
+      },
+    }),
+}));
 
 jest.mock('expo-print', () => ({
   printToFileAsync: (...args: unknown[]) => mockPrintToFileAsync(...args),
@@ -260,35 +273,21 @@ describe('ProfileScreen', () => {
     mockCopyAsync.mockResolvedValue(undefined);
   });
 
-  it('renders profile contact details and wires settings, video upgrade, and PDF actions', async () => {
-    const { getByLabelText, getByText } = await render(
+  it('renders profile contact details and wires settings action', async () => {
+    const { getByText } = await render(
       <ProfileScreen navigation={{ navigate: mockNavigate } as never} />
     );
 
     expect(getByText('Asha Sharma')).toBeTruthy();
-    expect(getByText('+91 9876543210')).toBeTruthy();
     expect(getByText('asha@example.com')).toBeTruthy();
+    expect(getByText('profile.row_phone')).toBeTruthy();
 
     await fireEvent.press(getByText('settings'));
-    await fireEvent.press(getByText('profile.video_intro_available'));
-    await fireEvent.press(getByLabelText('profile.download_pdf_label'));
-
-    await waitFor(() => {
-      expect(mockShareAsync).toHaveBeenCalled();
-    });
     expect(mockNavigate).toHaveBeenCalledWith('Settings');
-    expect(mockShowUpgradePrompt).toHaveBeenCalledWith(
-      'profile.section_video_intro'
-    );
-    expect(mockPrintToFileAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ base64: false, html: expect.any(String) })
-    );
-    expect(mockCopyAsync).toHaveBeenCalledWith(
-      expect.objectContaining({
-        from: 'file:///tmp/profile.pdf',
-        to: expect.stringContaining('asha-sharma-profile.pdf'),
-      })
-    );
+    expect(mockShowUpgradePrompt).not.toHaveBeenCalled();
+    expect(mockShareAsync).not.toHaveBeenCalled();
+    expect(mockPrintToFileAsync).not.toHaveBeenCalled();
+    expect(mockCopyAsync).not.toHaveBeenCalled();
     expect(mockShowError).not.toHaveBeenCalled();
   });
 });

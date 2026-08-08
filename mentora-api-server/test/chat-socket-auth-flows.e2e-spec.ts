@@ -11,6 +11,8 @@ import { ChatPresenceService } from '@/modules/chat/services/chat-presence.servi
 import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
 import { ChatService } from '@/modules/chat/services/chat.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 
 describe('P0 chat socket flows (e2e)', () => {
   jest.setTimeout(20000);
@@ -64,6 +66,27 @@ describe('P0 chat socket flows (e2e)', () => {
     checkAccess: jest.fn(),
   };
 
+  const metricsService = {
+    recordSocketConnected: jest.fn(),
+    recordSocketDisconnected: jest.fn(),
+    recordSocketAuthFailure: jest.fn(),
+    recordSocketEvent: jest.fn(),
+  };
+
+  const cacheStore = new Map<string, unknown>();
+  const cacheService = {
+    set: jest.fn(async (key: string, value: unknown) => {
+      cacheStore.set(key, value);
+    }),
+    get: jest.fn(async <TValue>(key: string) => {
+      return (cacheStore.get(key) as TValue | undefined) ?? null;
+    }),
+    has: jest.fn(async (key: string) => cacheStore.has(key)),
+    del: jest.fn(async (key: string) => {
+      cacheStore.delete(key);
+    }),
+  };
+
   const openSockets: ClientSocket[] = [];
 
   beforeAll(async () => {
@@ -77,6 +100,8 @@ describe('P0 chat socket flows (e2e)', () => {
         { provide: ConfigService, useValue: configService },
         { provide: AppLogger, useValue: logger },
         { provide: FeatureService, useValue: featureService },
+        { provide: OperationalMetricsService, useValue: metricsService },
+        { provide: CACHE_SERVICE, useValue: cacheService },
       ],
     }).compile();
 
@@ -102,6 +127,7 @@ describe('P0 chat socket flows (e2e)', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    cacheStore.clear();
 
     chatService.getConversationDetail.mockResolvedValue({ roomId: roomA });
     chatService.getMessages.mockResolvedValue([]);

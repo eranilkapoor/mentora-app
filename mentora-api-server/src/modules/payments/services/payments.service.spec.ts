@@ -70,6 +70,34 @@ describe('PaymentsService', () => {
     create: jest.fn(),
   };
 
+  const creditNoteModel = {
+    create: jest.fn(),
+  };
+
+  const contractModel = {
+    create: jest.fn(),
+  };
+
+  const dunningModel = {
+    create: jest.fn(),
+  };
+
+  const organizationModel = {
+    findById: jest.fn(),
+  };
+
+  const branchModel = {
+    countDocuments: jest.fn(),
+  };
+
+  const leadModel = {
+    countDocuments: jest.fn(),
+  };
+
+  const membershipModel = {
+    countDocuments: jest.fn(),
+  };
+
   let service: PaymentsService;
 
   beforeEach(() => {
@@ -88,6 +116,7 @@ describe('PaymentsService', () => {
       lean: () => ({ exec: jest.fn().mockResolvedValue(null) }),
     });
     invoiceModel.create.mockResolvedValue({ _id: new Types.ObjectId() });
+    creditNoteModel.create.mockResolvedValue({ _id: new Types.ObjectId() });
     planModel.findById.mockReturnValue({
       lean: () => ({ exec: jest.fn().mockResolvedValue(null) }),
     });
@@ -102,6 +131,13 @@ describe('PaymentsService', () => {
       planModel as never,
       couponModel as never,
       invoiceModel as never,
+      creditNoteModel as never,
+      contractModel as never,
+      dunningModel as never,
+      organizationModel as never,
+      branchModel as never,
+      leadModel as never,
+      membershipModel as never,
       storeReceiptVerifier as never,
     );
   });
@@ -582,10 +618,12 @@ describe('PaymentsService', () => {
       status: PaymentStatus.SUCCESS,
       netAmount: 100,
       gateway: PaymentGateway.RAZORPAY,
+      userId: new Types.ObjectId(userId),
     });
     paymentRepo.markRefunded.mockResolvedValue({
       orderId: 'ORD',
       status: PaymentStatus.REFUNDED,
+      userId: new Types.ObjectId(userId),
     });
     await expect(service.adminInitiateRefund('ORD', {})).resolves.toMatchObject(
       {

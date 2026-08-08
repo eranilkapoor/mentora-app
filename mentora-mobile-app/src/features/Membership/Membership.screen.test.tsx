@@ -11,6 +11,7 @@ const mockShowUpgradePrompt = jest.fn();
 
 jest.mock('@react-navigation/native', () => ({
   CommonActions: { navigate: jest.fn((...args: unknown[]) => args) },
+  useNavigation: () => ({ navigate: jest.fn(), dispatch: jest.fn() }),
 }));
 
 jest.mock('react-i18next', () => ({

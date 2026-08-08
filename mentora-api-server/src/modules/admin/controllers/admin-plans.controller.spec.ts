@@ -19,12 +19,18 @@ describe('AdminPlansController', () => {
     write: jest.fn(),
   };
 
+  const subscriptionsService = {
+    getOrganizationBillingSummary: jest.fn(),
+    assignOrganizationSubscription: jest.fn(),
+  };
+
   let controller: AdminPlansController;
 
   beforeEach(() => {
     jest.clearAllMocks();
     controller = new AdminPlansController(
       planService as never,
+      subscriptionsService as never,
       auditService as never,
     );
   });
