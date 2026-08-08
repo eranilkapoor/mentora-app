@@ -1,5 +1,43 @@
 # Mentora Task Roadmap
 
+## 2026-08-08 Completion Review
+
+Current local validation passed for the two active CRM delivery surfaces:
+
+| Area                | Command                                      | Result |
+| ------------------- | -------------------------------------------- | ------ |
+| API server lint     | `npm.cmd run lint:check`                     | Passed |
+| API server build    | `npm.cmd run build`                          | Passed |
+| Admin CRM typecheck | `npm.cmd run lint`                           | Passed |
+| Admin CRM build     | `npm.cmd run build`                          | Passed |
+| Public website typecheck | `npm.cmd run lint`                      | Passed |
+| Public website build | `npm.cmd run build`                         | Passed |
+| Mobile typecheck    | `npm.cmd run typecheck`                      | Passed |
+| Mobile lint         | `npm.cmd run lint`                           | Passed |
+| Mobile i18n         | `npm.cmd run i18n:check`                     | Passed for 1183 static keys |
+
+Client-demo status:
+
+| Scope                     | Demo readiness                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Admin CRM                 | Ready for controlled desktop/tablet MVP demos with seeded data and local/staging API credentials.                  |
+| API server                | Ready for controlled MVP demos for admin CRM, learning, CRM, admissions, payments, workflows, and integrations.    |
+| Public website            | Ready for controlled MVP demos after fresh typecheck/build verification.                                           |
+| Mobile app                | Ready for controlled MVP demos after fresh typecheck/lint/i18n verification; device smoke QA is still required.    |
+| Live production launch    | Not ready until P0 environment, provider, legal/security, backup, monitoring, and staging QA gates are complete.    |
+
+Demo module count:
+
+| Category                                           | Count |
+| -------------------------------------------------- | ----- |
+| CRM roadmap modules visible and interactive        | 30    |
+| Code-side Product Ready modules in the CRM roadmap | 30    |
+| Live-production modules with no external gate      | 1     |
+| Modules blocked only by provider/infrastructure QA | 28    |
+| Modules with remaining CRM product depth           | 1     |
+
+The one remaining product-depth item in the 30-module matrix is the institutional **Students** view: student, parent, learning, schedule, entitlement, AI tutor, assessment, and progress APIs exist, but the CRM still needs a richer organization-scoped student directory and admission-to-student conversion timeline before it should be treated as fully complete for institutional operations.
+
 ## 2026-07-29 Production Audit Update
 
 The repository currently passes the local code quality checks recorded in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md): API lint/build, CRM build/typecheck, public website build/typecheck, and mobile lint/typecheck/i18n.

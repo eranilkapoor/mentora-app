@@ -109,7 +109,7 @@ Primary APIs:
 
 - `POST /api/v1/admin/campaigns`
 - `POST /api/v1/admin/campaigns/:id/metrics`
-- `POST /api/v1/communications`
+- `POST /api/v1/admin/communications`
 - `POST /api/v1/admin/notifications`
 - `GET /api/v1/admin/notifications/templates`
 - `GET /api/v1/admin/notifications/analytics`
@@ -135,12 +135,12 @@ Counselor/call-center user opens Call Center or WhatsApp CRM
 
 Primary APIs:
 
-- `POST /api/v1/call-center`
-- `POST /api/v1/call-center/:id`
-- `POST /api/v1/call-center/:id/complete`
-- `POST /api/v1/whatsapp`
-- `POST /api/v1/whatsapp/:id`
-- `POST /api/v1/whatsapp/:id/complete`
+- `POST /api/v1/admin/call-center`
+- `POST /api/v1/admin/call-center/:id`
+- `POST /api/v1/admin/call-center/:id/complete`
+- `POST /api/v1/admin/whatsapp`
+- `POST /api/v1/admin/whatsapp/:id`
+- `POST /api/v1/admin/whatsapp/:id/complete`
 
 External-only items:
 
@@ -167,9 +167,9 @@ Primary APIs:
 - `POST /api/v1/admin/scholarships`
 - `POST /api/v1/admin/scholarships/:id/evaluate`
 - `POST /api/v1/admin/scholarships/:id/decision`
-- `POST /api/v1/interviews`
-- `POST /api/v1/interviews/:id`
-- `POST /api/v1/interviews/:id/complete`
+- `POST /api/v1/admin/interviews`
+- `POST /api/v1/admin/interviews/:id`
+- `POST /api/v1/admin/interviews/:id/complete`
 
 External-only items:
 
@@ -195,12 +195,12 @@ Primary APIs:
 - `POST /api/v1/admin/documents`
 - `GET /api/v1/admin/documents`
 - `POST /api/v1/admin/documents/:id/verify`
-- `POST /api/v1/events`
-- `POST /api/v1/events/:id`
-- `POST /api/v1/events/:id/complete`
-- `POST /api/v1/field-force`
-- `POST /api/v1/field-force/:id`
-- `POST /api/v1/field-force/:id/complete`
+- `POST /api/v1/admin/events`
+- `POST /api/v1/admin/events/:id`
+- `POST /api/v1/admin/events/:id/complete`
+- `POST /api/v1/admin/field-force`
+- `POST /api/v1/admin/field-force/:id`
+- `POST /api/v1/admin/field-force/:id/complete`
 
 External-only items:
 

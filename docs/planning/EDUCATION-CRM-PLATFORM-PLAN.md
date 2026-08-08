@@ -14,9 +14,9 @@ Mentora CRM is organized into five enterprise product layers.
 
 The backend coverage endpoint now returns a `layer` value per module so the CRM can display readiness by product layer instead of a flat, hard-to-govern module list.
 
-Last reviewed: 2026-07-29
+Last reviewed: 2026-08-08
 
-Current readiness note: the CRM codebase is build-clean and the 30-module roadmap has code-side Product Ready coverage, but customer production rollout still depends on the gates documented in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md).
+Current readiness note: the API server and admin CRM are build-clean in the latest local verification, and the 30-module roadmap has code-side Product Ready coverage for a controlled client demo. Customer production rollout still depends on the environment, provider, QA, legal/security, monitoring, backup, and release gates documented in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md).
 
 ## Positioning
 

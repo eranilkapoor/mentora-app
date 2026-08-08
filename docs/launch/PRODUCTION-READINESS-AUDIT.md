@@ -1,6 +1,6 @@
 # Mentora Production Readiness Audit
 
-Last reviewed: 2026-08-07
+Last reviewed: 2026-08-08
 
 ## Verdict
 
@@ -44,6 +44,22 @@ CRM CRUD correctness and mobile learning-flow fixes verified on 2026-08-07:
 | Mobile lint         | `npm --prefix mentora-mobile-app run lint`       | Passed |
 | Mobile i18n         | `npm --prefix mentora-mobile-app run i18n:check` | Passed for 1183 static keys |
 
+Current completion review verified on 2026-08-08:
+
+| Area                | Command                                      | Result |
+| ------------------- | -------------------------------------------- | ------ |
+| API server lint     | `npm.cmd run lint:check`                     | Passed |
+| API server build    | `npm.cmd run build`                          | Passed |
+| Admin CRM typecheck | `npm.cmd run lint`                           | Passed |
+| Admin CRM build     | `npm.cmd run build`                          | Passed |
+| Public website typecheck | `npm.cmd run lint`                      | Passed |
+| Public website build | `npm.cmd run build`                         | Passed |
+| Mobile typecheck    | `npm.cmd run typecheck`                      | Passed |
+| Mobile lint         | `npm.cmd run lint`                           | Passed |
+| Mobile i18n         | `npm.cmd run i18n:check`                     | Passed for 1183 static keys |
+
+The API server, admin CRM, public website, and mobile app are suitable for a controlled customer MVP demo using seeded organizations, users, roles, permissions, and representative CRM/student data. They are not cleared for unmanaged live production traffic until the P0 production gates below are completed.
+
 ## Admin CRM CRUD Correctness Fixes (2026-08-07)
 
 A full audit of the admin CRM's CRUD wiring found that most modules genuinely call the live API (not mock data), but several specific defects made real functionality behave incorrectly or invisibly. All of the following were fixed and verified:
@@ -54,10 +70,10 @@ A full audit of the admin CRM's CRUD wiring found that most modules genuinely ca
 - **Dead code**: an unused `defaultCrmUsers` demo-seed array and its imports were removed.
 - **New dedicated module (proof of concept)**: "Programs" (organization-owned admissions programs/courses — name, code, level, duration, credits, eligibility, intake capacity, seats, fee) previously had no backend at all and no CRM screen; the CRM's "Education" navigation group already referenced it as a dead link. It now has a real Mongoose schema, NestJS module (`admin/programs`), and full CRUD/export in the CRM, mirroring the `campaigns` module pattern.
 
-**Explicitly not fixed** (documented rather than silently left inconsistent):
+**Explicitly still not launch-complete** (documented rather than silently left inconsistent):
 
-- `contacts`, `courses`, `specializations`, `notes`, `custom-fields`, `landing-pages`, `chatbots` remain on the generic module-records fallback (real CRUD, generic title/description/status/priority fields). There is no existing dedicated backend for any of these — building one for each is a genuinely new feature (new schema, service, controller, RBAC, CRM screen) comparable in size to the new Programs module, not a wiring fix. The backend's `module-coverage.service.ts` previously asserted several of these already had a working `apiSurface` (e.g. pointing "courses" at `learning/catalog`) — that endpoint is the **global**, non-org-scoped AI-tutoring subject catalog used by the mobile app, not an organization's own course offerings, so pointing the CRM at it would have shown the wrong data. That self-assessment was corrected for `programs`; `courses`/`specializations`/`academic-sessions`/`enrollment`/`fees` still need the same correction plus real modules.
-- `students` and `learning` CRM modules also remain on the generic fallback. The only student-list backend endpoint (`GET /students`) is a B2C, user-scoped endpoint (returns the caller's own children), not an org-scoped admin directory — there is no admin-facing "all students in my organization" endpoint to redirect to.
+- `contacts`, `courses`, `specializations`, `notes`, `custom-fields`, `landing-pages`, and `chatbots` can still be represented through the generic `module_records` fallback. That fallback is real CRUD, but it is not the same as a dedicated domain model with module-specific validation, lifecycle rules, imports, exports, and analytics.
+- `students` and `learning` are strong on the B2C/mobile side. The CRM still needs a richer organization-scoped student directory and admission-to-student conversion timeline before this area should be called fully production-depth for institutional CRM usage.
 - "Voice Note," "Offline Sync," and "Mobile Report" (mobile-app module) and "Payment Link" and "Refund" (payments module) remain generic-log actions. The former have no backend concept at all (`mobile_offline_sync_engine` is an explicit documented blocker). The latter have a real backend (`admin/payments/:orderId/refund`), but it is platform-wide with no `organizationId` filter — wiring the CRM's payments grid to list real orders would leak cross-organization payment data into an org-scoped view, so it was left alone pending a backend change to scope that endpoint by organization first.
 - Several `navGroups` sidebar entries (e.g. `platform-foundation`, `billing`, `activities`, `follow-ups`, `meetings`, `tags`, `imports-exports`, `academic-sessions`, `courses`, `enrollment`, `fees`) reference module ids that have no entry in the module registry at all. They are invisible to non-super-admin users (filtered by RBAC) but would render a blank page if a super admin clicked them. This is a pre-existing nav/config inconsistency, not something introduced or fixed here.
 

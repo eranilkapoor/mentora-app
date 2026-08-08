@@ -111,28 +111,31 @@ export default function AiTutorSessionScreen(): React.ReactElement {
               <View
                 style={[
                   styles.bubble,
-                  isStudent
-                    ? {
-                        alignSelf: 'flex-end',
-                        backgroundColor: theme.colors.primary,
-                      }
-                    : {
-                        alignSelf: 'flex-start',
-                        backgroundColor: theme.colors.surface,
-                        borderColor: theme.colors.divider,
-                        borderWidth: 1,
-                      },
+                  isStudent ? styles.studentBubble : styles.tutorBubble,
+                  {
+                    backgroundColor: isStudent
+                      ? theme.colors.primary
+                      : theme.colors.surface,
+                    borderColor: theme.colors.divider,
+                  },
                 ]}
               >
                 <Text
-                  style={{
-                    color: isStudent ? '#FFFFFF' : theme.colors.textPrimary,
-                  }}
+                  style={[
+                    styles.messageText,
+                    {
+                      color: isStudent
+                        ? theme.colors.white
+                        : theme.colors.textPrimary,
+                    },
+                  ]}
                 >
                   {item.content}
                 </Text>
                 {item.safetyStatus !== 'allowed' ? (
-                  <Text style={styles.safetyNote}>
+                  <Text
+                    style={[styles.safetyNote, { color: theme.colors.warning }]}
+                  >
                     Flagged for review by Mentora safety rules
                   </Text>
                 ) : null}
@@ -171,9 +174,9 @@ export default function AiTutorSessionScreen(): React.ReactElement {
             disabled={sending || !draft.trim()}
           >
             {sending ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={theme.colors.white} />
             ) : (
-              <Feather name="send" size={18} color="#fff" />
+              <Feather name="send" size={18} color={theme.colors.white} />
             )}
           </Pressable>
         </View>
@@ -211,10 +214,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
+  studentBubble: {
+    alignSelf: 'flex-end',
+  },
+  tutorBubble: {
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
   safetyNote: {
     marginTop: 4,
     fontSize: 11,
-    color: '#B45309',
   },
   inputRow: {
     flexDirection: 'row',

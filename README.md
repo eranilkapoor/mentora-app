@@ -1355,16 +1355,24 @@ All reused code must follow Mentora terminology and must not retain unrelated pr
 
 ## Current Verification Snapshot
 
-Last checked locally on 2026-08-07:
+Last checked locally on 2026-08-08:
 
-* API server: lint, production build, and Jest suites (leads, applications, organizations, module-records, common/crm) pass.
-* Admin CRM: typecheck and production build pass. Export, Integrations/Security grids, and several toolbar actions now call real endpoints instead of generic/mismatched ones (see [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md)).
-* Public website: typecheck, lint, and production build pass.
-* Mobile app: typecheck, lint, and English/Hindi i18n key validation pass. AI tutor session flow, entitlement metering, and schedule recurrence/limits are now real.
+* API server: lint and production build pass.
+* Admin CRM: typecheck and production build pass. Organization context, users/RBAC, dedicated CRM module routes, exports, integrations/security grids, and key toolbar actions call real endpoints instead of generic/mismatched ones (see [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md)).
+* Public website: typecheck and production build pass.
+* Mobile app: typecheck, lint, and English/Hindi i18n key validation pass.
 
 Current production verdict:
 
-The codebase is build-clean and suitable for continued development, product demonstrations, and controlled MVP pilots. It is not production-live until production credentials, infrastructure, legal review, security review, end-to-end testing, device testing, monitoring, backups, disaster recovery, provider verification, and launch runbooks are completed.
+The API server and admin CRM are build-clean and suitable for continued development, product demonstrations, and controlled MVP pilots. The platform is not production-live until production credentials, infrastructure, legal review, security review, end-to-end testing, device testing, monitoring, backups, disaster recovery, provider verification, and launch runbooks are completed.
+
+Client demo coverage:
+
+* 30 CRM roadmap modules are visible and interactive in the admin CRM.
+* 30 CRM roadmap modules have code-side Product Ready coverage for a controlled demo.
+* 1 module has no external production gate: Dashboard.
+* 28 modules are blocked only by external providers, infrastructure, compliance, or staging QA.
+* 1 module still needs additional CRM depth: institutional Students, specifically richer organization-scoped student directory and admission-to-student conversion timeline.
 
 See the [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md).
 
@@ -1579,7 +1587,7 @@ db:migrate
 * Updated onboarding and profile editing for students, parents, and organization-linked learners.
 * Added `mentora-public-website` with product, plans, support, privacy, terms, account deletion, and community-guideline pages.
 * Added `mentora-admin-crm` with platform administration, organizations, users, RBAC, leads, applications, admissions, communications, payments, reports, workflows, integrations, and security-policy foundations.
-* Fixed the admin CRM export mismatch across 20+ dedicated modules, the Integrations/Security grids reading the wrong state, and several toolbar actions that only logged instead of calling real endpoints. Added a real Programs module end to end. Fixed a tenant-isolation gap in organization-entity CRUD. See [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md).
+* Fixed the admin CRM export mismatch across 20+ dedicated modules, the Integrations/Security grids reading the wrong state, and several toolbar actions that only logged instead of calling real endpoints. Added a real Programs module end to end. Fixed an organization-isolation gap in organization-entity CRUD. See [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md).
 
 ### Current Priorities
 
