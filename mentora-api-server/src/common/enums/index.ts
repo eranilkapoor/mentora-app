@@ -1,5 +1,6 @@
 export * from './caste.enum';
 export * from './country.enum';
+export * from './data-scope.enum';
 export * from './document-mime-type.enum';
 export * from './feature-key.enum';
 export * from './gender.enum';

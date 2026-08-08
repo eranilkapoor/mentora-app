@@ -3,11 +3,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { FilterQuery, Model } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
-import { Role, Status } from '@/common/enums';
+import { Permission, Status } from '@/common/enums';
 import {
+  throwBadRequest,
   throwConflict,
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
+import {
+  isPlatformRole,
+  resolveSystemRoleForOrgRole,
+} from '@/common/rbac/role-catalog';
+import { resolveOrgRolePermissions } from '@/common/rbac/org-role-permissions';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
@@ -737,6 +743,7 @@ export class OrganizationsService {
     });
     if (!organization) return throwNotFound(ErrorCode.INVALID_REQUEST);
 
+    const assignment = this.resolveOrgRoleAssignment(dto.role);
     const user = await this.users.create({
       authAccounts: [
         {
@@ -750,13 +757,19 @@ export class OrganizationsService {
       createdBy: actorId,
       email: normalizedEmail,
       isEmailVerified: true,
+      permissions: [
+        ...new Set([
+          ...assignment.permissions,
+          ...((dto.permissions ?? []) as Permission[]),
+        ]),
+      ],
       phone: dto.phone
         ? {
             countryCode: dto.countryCode ?? '+91',
             phone: dto.phone,
           }
         : undefined,
-      roles: [this.toSystemRole(dto.role)],
+      roles: assignment.roles,
       status: dto.status ?? Status.ACTIVE,
       updatedBy: actorId,
     });
@@ -803,13 +816,20 @@ export class OrganizationsService {
     };
   }
 
-  private toSystemRole(role: string): Role {
-    if (role === 'super_admin') return Role.SUPER_ADMIN;
-    if (role === 'finance') return Role.FINANCE;
-    if (role === 'marketing_executive') return Role.MARKETING_ADMIN;
-    if (role === 'student') return Role.STUDENT;
-    if (role === 'parent') return Role.PARENT;
-    return Role.ADMIN;
+  private resolveOrgRoleAssignment(role: string): {
+    roles: ReturnType<typeof resolveSystemRoleForOrgRole>[];
+    permissions: Permission[];
+  } {
+    if (isPlatformRole(role)) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'platform_role_not_assignable_via_organization_membership',
+        role,
+      });
+    }
+    return {
+      roles: [resolveSystemRoleForOrgRole(role)],
+      permissions: resolveOrgRolePermissions(role),
+    };
   }
 
   private resolveOrganizationSortBy(value?: string) {

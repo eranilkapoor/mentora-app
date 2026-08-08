@@ -194,6 +194,20 @@ That route validates the minimum lead payload and forwards to `POST /api/v1/lead
 
 Every organization-owned CRM query must include `organizationId`. The MVP services use `src/common/utils/organization-scope.util.ts` to convert and validate organization IDs and user-provided ObjectIds before database access. Expand this into request-context enforcement after real CRM auth is wired, so organization ID can be derived from the authenticated context rather than trusted from a query/body alone.
 
+## Identity and Access Model
+
+Three user categories, each pinned to an application surface:
+
+- **Platform Users** — global staff (`super_admin`, `admin`, `support`, `finance`, `kyc_reviewer`, `content_moderator`, `marketing_admin`, `content_manager`, `moderator`). Admin CRM only. See `src/common/rbac/role-catalog.ts` `PLATFORM_ROLE_CATALOG`.
+- **Organization Users** — staff scoped to one org via `UserMembership` (`organization_admin`, `branch_admin`, `admission_manager`, `admission_counselor`, `marketing_executive`, `sales_executive`, `call-center`, `finance`, `field_agent`, `mentor`). Admin CRM; `admission_counselor` and `mentor` are dual-surface and also get mobile app access as a lightweight field companion. See `ORG_ROLE_CATALOG` in the same file.
+- **External & Learning Users** — `student`, `parent`, `teacher`, `guardian`, `admission`, `partner`, `referral_partner`, `franchise_partner`, `vendor` (all `Role` enum members). Mobile app / public website only, never the CRM. See `EXTERNAL_ROLE_CATALOG`.
+
+Login is gated per surface in `AuthService.login()` (`assertUserCanAccessAdminCrm` / `assertUserCanAccessApp`), called from `AdminAuthController` and `AuthController` respectively.
+
+A separate **Data Scope** axis (`src/common/enums/data-scope.enum.ts`: `SELF`, `TEAM`, `DEPARTMENT`, `BRANCH`, `ORGANIZATION`, `PLATFORM`) determines which records a role's permitted actions can reach, resolved per-actor by `ActorScopeService` (`src/common/rbac/actor-scope.service.ts`) and applied via `buildScopeFilter()` (`data-scope.util.ts`). Currently wired end-to-end into **Leads** and **Tasks** as the proven pattern; rolling it out to the remaining CRM modules (Applications, Students, Campaigns, etc.) is tracked follow-up work, not yet done.
+
+**Status of the four new external roles** (`partner`, `referral_partner`, `franchise_partner`, `vendor`) and `guardian`/`admission`: modeled in the `Role` enum and correctly login-gated (mobile/website surface, `SELF` data scope, no permissions granted yet), but **no CRM module, mobile screen, or public-website onboarding flow exists for them** — there is currently no way to actually sign one up. Building that UI is separate future work.
+
 ## Admin CRM UI Status
 
 Implemented starter Next.js CRM portal:

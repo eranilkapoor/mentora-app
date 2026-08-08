@@ -106,6 +106,7 @@ import {
   dedicatedAdminModuleIds,
   getEditableModuleColumns,
   getModuleHref,
+  globalModuleIds,
   moduleActions,
   moduleMap,
   navGroups,
@@ -568,11 +569,17 @@ export default function AdminDashboardPage() {
 
   function canAccessModule(id: string) {
     const context = activeContext ?? loggedInUser?.contexts[0];
-    return (
+    const roleAllows =
       context?.role === "super_admin" ||
       context?.modules.includes(id) ||
-      id === "dashboard"
-    );
+      id === "dashboard";
+    if (!roleAllows) return false;
+    // These modules operate platform-wide (RBAC catalogs, the org directory
+    // itself, and the dashboard) so they stay visible with no organization
+    // selected. Everything else needs an active organization to do anything,
+    // so keep it out of the sidebar until one is picked.
+    if (globalModuleIds.has(id)) return true;
+    return Boolean(activeOrganizationId);
   }
 
   if (!loggedInUser) {

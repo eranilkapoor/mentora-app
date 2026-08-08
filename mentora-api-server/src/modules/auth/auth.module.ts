@@ -30,6 +30,10 @@ import {
   SecuritySettingSchema,
 } from '../settings/schemas/security-setting.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+import {
+  UserMembership,
+  UserMembershipSchema,
+} from '../contexts/schemas/contexts.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SafetyModule } from '../safety/safety.module';
@@ -47,6 +51,7 @@ import { ReferralsModule } from '../referrals/referrals.module';
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: SecuritySetting.name, schema: SecuritySettingSchema },
       { name: Media.name, schema: MediaSchema },
+      { name: UserMembership.name, schema: UserMembershipSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),

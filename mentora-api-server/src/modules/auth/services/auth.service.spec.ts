@@ -9,7 +9,7 @@ import {
 import { AnalyticsPlatform } from '@/modules/analytics/enums/analytics-event.enum';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
-import { Status } from '@/common/enums';
+import { Role, Status } from '@/common/enums';
 import { AuthService } from './auth.service';
 
 jest.mock('bcryptjs', () => ({
@@ -50,6 +50,7 @@ const createUser = (overrides: Record<string, unknown> = {}) => ({
   _id: new Types.ObjectId(USER_ID),
   email: 'asha@example.com',
   phone: { countryCode: '+91', phone: '9999999999' },
+  roles: [Role.USER],
   status: Status.ACTIVE,
   isEmailVerified: true,
   isPhoneVerified: true,
@@ -106,6 +107,10 @@ const createFixture = () => {
   const activityLogModel = { create: jest.fn() };
   const securitySettingModel = { findOne: jest.fn() };
   const mediaModel = { findOne: jest.fn(), create: jest.fn() };
+  const userMembershipModel = {
+    exists: jest.fn().mockResolvedValue(false),
+    find: jest.fn().mockReturnValue(queryChain([])),
+  };
   const notificationsService = {
     notify: jest.fn(),
     sendSecurityEmail: jest.fn(),
@@ -169,6 +174,7 @@ const createFixture = () => {
     activityLogModel as never,
     securitySettingModel as never,
     mediaModel as never,
+    userMembershipModel as never,
     notificationsService as never,
     analyticsService as never,
     authPasswordService as never,
@@ -230,6 +236,7 @@ const createFixture = () => {
     service,
     socialAuthVerifierService,
     subscriptionModel,
+    userMembershipModel,
     userRepo,
     userSessionModel,
   };
@@ -749,6 +756,115 @@ describe('AuthService', () => {
         password: 'wrong',
       }),
     ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_CREDENTIALS });
+  });
+
+  it('rejects a plain "user" role on the admin CRM login surface', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(
+      createUser({ roles: [Role.USER] }),
+    );
+
+    await expect(
+      f.service.login(
+        request(),
+        response() as never,
+        { email: 'asha@example.com', password: 'Password@123' },
+        { surface: 'admin' },
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
+  });
+
+  it('allows a staff role on the admin CRM login surface', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(
+      createUser({ roles: [Role.ADMIN] }),
+    );
+    jest
+      .spyOn(testable(f.service), 'issueTokensOrChallenge')
+      .mockResolvedValue({ accessToken: 'access' });
+
+    await expect(
+      f.service.login(
+        request(),
+        response() as never,
+        { email: 'asha@example.com', password: 'Password@123' },
+        { surface: 'admin' },
+      ),
+    ).resolves.toEqual({ accessToken: 'access' });
+  });
+
+  it('does not gate the regular app login surface by CRM role', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(
+      createUser({ roles: [Role.USER] }),
+    );
+    jest
+      .spyOn(testable(f.service), 'issueTokensOrChallenge')
+      .mockResolvedValue({ accessToken: 'access' });
+
+    await expect(
+      f.service.login(request(), response() as never, {
+        email: 'asha@example.com',
+        password: 'Password@123',
+      }),
+    ).resolves.toEqual({ accessToken: 'access' });
+  });
+
+  it('allows an organization member with no platform role onto the admin CRM surface', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(
+      createUser({ roles: [Role.ORG_STAFF] }),
+    );
+    f.userMembershipModel.exists.mockResolvedValue(true);
+    jest
+      .spyOn(testable(f.service), 'issueTokensOrChallenge')
+      .mockResolvedValue({ accessToken: 'access' });
+
+    await expect(
+      f.service.login(
+        request(),
+        response() as never,
+        { email: 'asha@example.com', password: 'Password@123' },
+        { surface: 'admin' },
+      ),
+    ).resolves.toEqual({ accessToken: 'access' });
+  });
+
+  it('rejects an organization-only staff role (no mobile surface) on the app login surface', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(
+      createUser({ roles: [Role.ORG_STAFF] }),
+    );
+    f.userMembershipModel.find.mockReturnValue(
+      queryChain([{ role: 'branch_admin' }]),
+    );
+
+    await expect(
+      f.service.login(request(), response() as never, {
+        email: 'asha@example.com',
+        password: 'Password@123',
+      }),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_FORBIDDEN });
+  });
+
+  it('allows dual-surface org roles (counselor, mentor) onto the app login surface', async () => {
+    for (const role of ['admission_counselor', 'mentor']) {
+      const f = createFixture();
+      f.userRepo.findByProvider.mockResolvedValue(
+        createUser({ roles: [Role.ORG_STAFF] }),
+      );
+      f.userMembershipModel.find.mockReturnValue(queryChain([{ role }]));
+      jest
+        .spyOn(testable(f.service), 'issueTokensOrChallenge')
+        .mockResolvedValue({ accessToken: 'access' });
+
+      await expect(
+        f.service.login(request(), response() as never, {
+          email: 'asha@example.com',
+          password: 'Password@123',
+        }),
+      ).resolves.toEqual({ accessToken: 'access' });
+    }
   });
 
   it('sends OTP with environment-sensitive exposure', async () => {

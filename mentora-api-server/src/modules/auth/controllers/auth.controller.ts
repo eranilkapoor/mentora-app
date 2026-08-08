@@ -77,7 +77,9 @@ export class AuthController {
     @Body() dto: LoginDto,
   ) {
     req.res = res;
-    const data = await this.authService.login(req, res, dto);
+    const data = await this.authService.login(req, res, dto, {
+      surface: 'app',
+    });
     return successResponse(
       data,
       SuccessCode.AUTH_LOGIN_SUCCESS,

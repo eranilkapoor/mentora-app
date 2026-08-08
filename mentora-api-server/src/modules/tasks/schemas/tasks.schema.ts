@@ -40,6 +40,18 @@ export class Task {
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   assignedBy?: Types.ObjectId;
 
+  // Denormalized from the assignee's active organization membership at
+  // creation time, so DataScope filtering (see common/rbac) can scope task
+  // visibility by branch/department/team without a join on every query.
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
+  departmentId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
+
   @Prop({
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium',

@@ -83,6 +83,16 @@ import {
   MediaStatus,
 } from '@/modules/profiles/enums/profile-media.enums';
 import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
+import {
+  UserMembership,
+  UserMembershipDocument,
+} from '@/modules/contexts/schemas/contexts.schema';
+import {
+  ORG_ROLE_CATALOG,
+  Surface,
+  isExternalRole,
+  isPlatformRole,
+} from '@/common/rbac/role-catalog';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -135,6 +145,8 @@ export class AuthService {
     private readonly securitySettingModel: Model<SecuritySettingDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
+    @InjectModel(UserMembership.name)
+    private readonly userMembershipModel: Model<UserMembershipDocument>,
     private readonly notificationsService: NotificationsService,
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
@@ -1373,7 +1385,12 @@ export class AuthService {
     return normalized || undefined;
   }
 
-  async login(req: AppRequest, res: Response, dto: LoginDto) {
+  async login(
+    req: AppRequest,
+    res: Response,
+    dto: LoginDto,
+    options?: { surface?: 'admin' | 'app' },
+  ) {
     try {
       this.assertAuthMethodEnabled('authMethods.emailPasswordEnabled', 'email');
 
@@ -1397,6 +1414,11 @@ export class AuthService {
       }
 
       this.assertUserCanAuthenticate(existingUser);
+      if (options?.surface === 'admin') {
+        await this.assertUserCanAccessAdminCrm(existingUser);
+      } else {
+        await this.assertUserCanAccessApp(existingUser);
+      }
 
       const userPayload = {
         user: {
@@ -1922,6 +1944,46 @@ export class AuthService {
     if (user.status === Status.DELETED) {
       return throwUnauthorized(ErrorCode.AUTH_ACCOUNT_DELETED);
     }
+  }
+
+  private async assertUserCanAccessAdminCrm(user: {
+    _id: Types.ObjectId;
+    roles?: Role[];
+  }) {
+    const roles = (user.roles ?? []).map(String);
+    if (roles.some(isPlatformRole)) return;
+
+    const hasActiveMembership = await this.userMembershipModel.exists({
+      userId: user._id,
+      status: 'active',
+    });
+    if (hasActiveMembership) return;
+
+    return throwForbidden(ErrorCode.AUTH_FORBIDDEN, {
+      reason: 'crm_access_denied',
+    });
+  }
+
+  private async assertUserCanAccessApp(user: {
+    _id: Types.ObjectId;
+    roles?: Role[];
+  }) {
+    const roles = (user.roles ?? []).map(String);
+    if (roles.some(isExternalRole)) return;
+
+    const memberships = await this.userMembershipModel
+      .find({ userId: user._id, status: 'active' })
+      .select('role')
+      .lean()
+      .exec();
+    const hasMobileEligibleMembership = memberships.some((membership) =>
+      ORG_ROLE_CATALOG[membership.role]?.surfaces.includes(Surface.MOBILE_APP),
+    );
+    if (hasMobileEligibleMembership) return;
+
+    return throwForbidden(ErrorCode.AUTH_FORBIDDEN, {
+      reason: 'app_access_denied',
+    });
   }
 
   private assertAuthMethodEnabled(configKey: string, method: string): void {

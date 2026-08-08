@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RbacModule } from '@/common/rbac/rbac.module';
 import { AdminModule } from '../admin/admin.module';
 import { ContextsModule } from '../contexts/contexts.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
@@ -21,6 +22,7 @@ import { LeadCaptureService } from './services/lead-capture.service';
     AdminModule,
     ContextsModule,
     OrganizationsModule,
+    RbacModule,
     MongooseModule.forFeature([
       { name: Lead.name, schema: LeadSchema },
       { name: LeadActivity.name, schema: LeadActivitySchema },

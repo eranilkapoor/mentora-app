@@ -11,6 +11,8 @@ import {
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
+import { ActorScopeService } from '@/common/rbac/actor-scope.service';
+import { buildScopeFilter, ScopeFieldMap } from '@/common/rbac/data-scope.util';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AddLeadActivityDto,
@@ -37,6 +39,17 @@ import {
   LeadDocument,
 } from '../schemas/leads.schema';
 
+// A SELF-scoped counselor only reaches their own leads; a BRANCH-scoped
+// branch admin reaches every lead assigned within their branch; and so on
+// up to PLATFORM (unrestricted). See common/rbac/data-scope.util.ts.
+const LEAD_SCOPE_FIELDS: ScopeFieldMap = {
+  ownerField: 'assignedTo',
+  organizationField: 'organizationId',
+  branchField: 'branchId',
+  departmentField: 'departmentId',
+  teamField: 'teamId',
+};
+
 @Injectable()
 export class LeadsService {
   constructor(
@@ -47,6 +60,7 @@ export class LeadsService {
     @InjectModel(LeadAssignment.name)
     private readonly assignments: Model<LeadAssignmentDocument>,
     private readonly auditService: AdminAuditService,
+    private readonly actorScope: ActorScopeService,
   ) {}
 
   async createLead(userId: string | undefined, dto: CreateLeadDto) {
@@ -89,7 +103,7 @@ export class LeadsService {
     return lead;
   }
 
-  async listLeads(query: ListLeadsDto): Promise<unknown> {
+  async listLeads(query: ListLeadsDto, actorId?: string): Promise<unknown> {
     const page = this.toPositiveInt(query.page, 1);
     const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
     const sortBy = this.resolveLeadSortBy(query.sortBy);
@@ -123,9 +137,14 @@ export class LeadsService {
         { tags: { $regex: search, $options: 'i' } },
       ];
     }
+    const scopedFilter = await this.applyScope(
+      filter,
+      actorId,
+      query.organizationId,
+    );
     const [items, total] = await Promise.all([
       this.leads
-        .find(filter)
+        .find(scopedFilter)
         .populate('sourceId', 'name code category')
         .populate('stageId', 'name code order category')
         .populate('assignedTo', 'firstName lastName email')
@@ -135,7 +154,7 @@ export class LeadsService {
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
-      this.leads.countDocuments(filter),
+      this.leads.countDocuments(scopedFilter),
     ]);
     const duplicateKeys = this.getDuplicateKeys(items);
     return {
@@ -245,11 +264,16 @@ export class LeadsService {
         : {}),
     };
     delete update.organizationId;
-    const lead = await this.leads.findOneAndUpdate(
+    const updateFilter = await this.applyScope(
       {
         _id: toRequiredObjectId(leadId),
         organizationId: toOrganizationObjectId(dto.organizationId),
       },
+      userId,
+      dto.organizationId,
+    );
+    const lead = await this.leads.findOneAndUpdate(
+      updateFilter,
       { $set: update },
       { new: true, runValidators: true },
     );
@@ -274,11 +298,16 @@ export class LeadsService {
   }
 
   async archiveLead(userId: string, leadId: string, organizationId: string) {
-    const lead = await this.leads.findOneAndUpdate(
+    const filter = await this.applyScope(
       {
         _id: toRequiredObjectId(leadId),
         organizationId: toOrganizationObjectId(organizationId),
       },
+      userId,
+      organizationId,
+    );
+    const lead = await this.leads.findOneAndUpdate(
+      filter,
       { $set: { status: 'archived' } },
       { new: true, runValidators: true },
     );
@@ -421,12 +450,17 @@ export class LeadsService {
 
   async transferLead(userId: string, leadId: string, dto: TransferLeadDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
+    const filter = await this.applyScope(
+      { _id: toRequiredObjectId(leadId), organizationId },
+      userId,
+      dto.organizationId,
+    );
     const previousLead = await this.leads
-      .findOne({ _id: toRequiredObjectId(leadId), organizationId })
+      .findOne(filter)
       .select('assignedTo')
       .lean();
     const lead = await this.leads.findOneAndUpdate(
-      { _id: toRequiredObjectId(leadId), organizationId },
+      filter,
       {
         assignedTo: toRequiredObjectId(dto.assignedTo),
         branchId: toOptionalObjectId(dto.branchId),
@@ -465,25 +499,33 @@ export class LeadsService {
     return lead;
   }
 
-  async getLead(organizationId: string, leadId: string) {
-    const lead = await this.leads
-      .findOne({
+  async getLead(organizationId: string, leadId: string, actorId?: string) {
+    const filter = await this.applyScope(
+      {
         _id: toRequiredObjectId(leadId),
         organizationId: toOrganizationObjectId(organizationId),
-      })
-      .lean();
+      },
+      actorId,
+      organizationId,
+    );
+    const lead = await this.leads.findOne(filter).lean();
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     return lead;
   }
 
   async assignLead(userId: string, leadId: string, dto: AssignLeadDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
+    const filter = await this.applyScope(
+      { _id: toRequiredObjectId(leadId), organizationId },
+      userId,
+      dto.organizationId,
+    );
     const previousLead = await this.leads
-      .findOne({ _id: toRequiredObjectId(leadId), organizationId })
+      .findOne(filter)
       .select('assignedTo')
       .lean();
     const lead = await this.leads.findOneAndUpdate(
-      { _id: toRequiredObjectId(leadId), organizationId },
+      filter,
       {
         assignedTo: toRequiredObjectId(dto.assignedTo),
         status: 'open',
@@ -527,8 +569,13 @@ export class LeadsService {
     dto: ChangeLeadStageDto,
   ) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
-    const lead = await this.leads.findOneAndUpdate(
+    const filter = await this.applyScope(
       { _id: toRequiredObjectId(leadId), organizationId },
+      userId,
+      dto.organizationId,
+    );
+    const lead = await this.leads.findOneAndUpdate(
+      filter,
       { stageId: toRequiredObjectId(dto.stageId) },
       { new: true },
     );
@@ -882,5 +929,26 @@ export class LeadsService {
   private toPositiveInt(value: string | undefined, fallback: number) {
     const parsed = Number.parseInt(value ?? '', 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  // Merges the caller's DataScope filter into an existing lead filter via
+  // $and, so it never overwrites a field the caller already filtered on
+  // (e.g. an explicit ?branchId= alongside a BRANCH-scoped actor).
+  private async applyScope(
+    filter: FilterQuery<LeadDocument>,
+    actorId: string | undefined,
+    organizationId: string,
+  ): Promise<FilterQuery<LeadDocument>> {
+    if (!actorId) return filter;
+    const scope = await this.actorScope.resolveActorScope(
+      actorId,
+      organizationId,
+    );
+    const scopeFilter = buildScopeFilter<LeadDocument>(
+      scope,
+      LEAD_SCOPE_FIELDS,
+    );
+    if (Object.keys(scopeFilter).length === 0) return filter;
+    return { $and: [filter, scopeFilter] };
   }
 }

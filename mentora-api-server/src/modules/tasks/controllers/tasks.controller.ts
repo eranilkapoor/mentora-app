@@ -48,6 +48,7 @@ export class TasksController {
   @Get()
   @Permissions(Permission.TASK_VIEW)
   async listTasks(
+    @Req() req: AuthenticatedRequest,
     @Query('organizationId') organizationId: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -59,17 +60,20 @@ export class TasksController {
     @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
-      await this.service.listTasks({
-        assignedTo,
-        limit,
-        page,
-        priority,
-        search,
-        sortBy,
-        sortOrder,
-        status,
-        organizationId,
-      }),
+      await this.service.listTasks(
+        {
+          assignedTo,
+          limit,
+          page,
+          priority,
+          search,
+          sortBy,
+          sortOrder,
+          status,
+          organizationId,
+        },
+        req.user.sub,
+      ),
       'EDUCATION_PLATFORM_TASKS_FETCHED',
       'CRM tasks fetched',
     );
@@ -88,11 +92,12 @@ export class TasksController {
   @Put(':taskId')
   @Permissions(Permission.TASK_MANAGE)
   async updateTask(
+    @Req() req: AuthenticatedRequest,
     @Param('taskId') taskId: string,
     @Body() dto: UpdateTaskDto,
   ) {
     return successResponse(
-      await this.service.updateTask(taskId, dto),
+      await this.service.updateTask(taskId, dto, req.user.sub),
       'EDUCATION_PLATFORM_TASK_UPDATED',
       'CRM task updated',
     );
@@ -101,11 +106,12 @@ export class TasksController {
   @Delete(':taskId')
   @Permissions(Permission.TASK_MANAGE)
   async archiveTask(
+    @Req() req: AuthenticatedRequest,
     @Param('taskId') taskId: string,
     @Query('organizationId') organizationId: string,
   ) {
     return successResponse(
-      await this.service.archiveTask(taskId, organizationId),
+      await this.service.archiveTask(taskId, organizationId, req.user.sub),
       'EDUCATION_PLATFORM_TASK_ARCHIVED',
       'CRM task archived',
     );
@@ -113,9 +119,12 @@ export class TasksController {
 
   @Get('board')
   @Permissions(Permission.TASK_VIEW)
-  async listTaskBoard(@Query('organizationId') organizationId: string) {
+  async listTaskBoard(
+    @Req() req: AuthenticatedRequest,
+    @Query('organizationId') organizationId: string,
+  ) {
     return successResponse(
-      await this.service.listTaskBoard(organizationId),
+      await this.service.listTaskBoard(organizationId, req.user.sub),
       'EDUCATION_PLATFORM_TASK_BOARD_FETCHED',
       'CRM task board fetched',
     );

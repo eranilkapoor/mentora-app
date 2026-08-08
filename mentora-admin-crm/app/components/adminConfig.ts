@@ -36,6 +36,18 @@ export const organizationStructureModuleIds = new Set([
   "teams",
 ]);
 
+// Modules that operate platform-wide and stay usable with no organization
+// selected: the org directory itself, the dashboard, and the RBAC catalogs
+// (roles/permissions are global definitions, not scoped to one org). Every
+// other module needs an active organization to do anything useful, so it is
+// hidden from the sidebar until one is picked.
+export const globalModuleIds = new Set([
+  "dashboard",
+  "organizations",
+  "roles",
+  "permissions",
+]);
+
 export const readonlyFormColumns = new Set([
   "assigned",
   "assigned to",
@@ -1775,13 +1787,6 @@ export const extraModules: AdminModule[] = [
     "Education",
     "Academic terms, batches, live classes, AI tutor schedules, holidays, and operational calendars.",
     ["Session", "Program", "Batch", "Start", "Owner", "Status"],
-  ),
-  createLayerModule(
-    "programs",
-    "Programs",
-    "Education",
-    "Programs such as JEE, NEET, UPSC, school tutoring, study abroad, foundation batches, and long-term learning tracks.",
-    ["Program", "Category", "Duration", "Subjects", "Owner", "Status"],
   ),
   createLayerModule(
     "courses",

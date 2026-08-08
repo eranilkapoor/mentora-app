@@ -157,6 +157,49 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
     permissionPrefixes: ['subject:', 'ai_tutor:view', 'ai_tutor:moderate'],
   },
   { name: Role.USER, description: 'Base Account User', permissionPrefixes: [] },
+  {
+    // Organization-membership staff. Intentionally grants nothing via the
+    // built-in role table — real permissions come from user.permissions,
+    // materialized by resolveOrgRolePermissions() at creation/role-change
+    // time (see common/rbac/org-role-permissions.ts).
+    name: Role.ORG_STAFF,
+    description: 'Organization Staff',
+    permissionPrefixes: [],
+  },
+  // External & Learning users modeled for mobile/website login this pass
+  // (see common/rbac/role-catalog.ts EXTERNAL_ROLE_CATALOG) with no CRM
+  // module or dedicated feature built yet — intentionally granted no
+  // permissions beyond authentication, same as the base USER role.
+  {
+    name: Role.GUARDIAN,
+    description: 'Guardian',
+    permissionPrefixes: [],
+  },
+  {
+    name: Role.ADMISSION,
+    description: 'Admission Applicant',
+    permissionPrefixes: [],
+  },
+  {
+    name: Role.PARTNER,
+    description: 'Partner',
+    permissionPrefixes: [],
+  },
+  {
+    name: Role.REFERRAL_PARTNER,
+    description: 'Referral Partner',
+    permissionPrefixes: [],
+  },
+  {
+    name: Role.FRANCHISE_PARTNER,
+    description: 'Franchise Partner',
+    permissionPrefixes: [],
+  },
+  {
+    name: Role.VENDOR,
+    description: 'Vendor',
+    permissionPrefixes: [],
+  },
 ];
 
 export function resolveRolePermissions(

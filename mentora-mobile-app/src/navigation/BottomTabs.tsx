@@ -8,6 +8,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { bottomTabsStyles } from '@/core/styles/BottomTabs.styles';
 import { isTabletWidth } from '@/core/utils/device';
+import { isParentRole } from '@/core/utils/role';
 import { useAppSelector } from '@/store/hooks';
 import LearningTabScreen from '@/features/LearningShell/LearningTab.screen';
 import HomeStack from './HomeStack';
@@ -52,11 +53,7 @@ export default function BottomTabs(): React.ReactElement {
   const { width } = useWindowDimensions();
   const isTablet = isTabletWidth(width);
   const isParentMode = useAppSelector((state) =>
-    Boolean(
-      (state.auth.user as { roles?: string[] } | null)?.roles?.includes(
-        'parent'
-      )
-    )
+    isParentRole(state.auth.user?.roles)
   );
 
   const screenOptions = useMemo(() => {

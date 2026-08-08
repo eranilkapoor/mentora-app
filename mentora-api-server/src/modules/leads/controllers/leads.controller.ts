@@ -58,9 +58,12 @@ export class LeadsController {
 
   @Get()
   @Permissions(Permission.LEAD_VIEW)
-  async listLeads(@Query() query: ListLeadsDto): Promise<unknown> {
+  async listLeads(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: ListLeadsDto,
+  ): Promise<unknown> {
     return successResponse(
-      await this.service.listLeads(query),
+      await this.service.listLeads(query, req.user.sub),
       'EDUCATION_PLATFORM_LEADS_FETCHED',
       'Leads fetched',
     );
@@ -130,11 +133,12 @@ export class LeadsController {
   @Get(':leadId')
   @Permissions(Permission.LEAD_VIEW)
   async getLead(
+    @Req() req: AuthenticatedRequest,
     @Query('organizationId') organizationId: string,
     @Param('leadId') leadId: string,
   ) {
     return successResponse(
-      await this.service.getLead(organizationId, leadId),
+      await this.service.getLead(organizationId, leadId, req.user.sub),
       'EDUCATION_PLATFORM_LEAD_FETCHED',
       'Lead fetched',
     );

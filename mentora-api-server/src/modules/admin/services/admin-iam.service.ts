@@ -5,10 +5,17 @@ import { FilterQuery, Model, Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { Permission, Role, Status } from '@/common/enums';
 import {
+  throwBadRequest,
   throwConflict,
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
 import { toRequiredObjectId } from '@/common/utils/organization-scope.util';
+import {
+  isPlatformRole,
+  PLATFORM_ROLE_VALUES,
+  resolveSystemRoleForOrgRole,
+} from '@/common/rbac/role-catalog';
+import { resolveOrgRolePermissions } from '@/common/rbac/org-role-permissions';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import {
   UserSession,
@@ -84,19 +91,40 @@ export class AdminIamService {
           ).map((item) => item.userId)
         : undefined;
     const search = query.search?.trim();
+    // A plain organization filter is "browse this org's roster" and should
+    // still surface platform-level staff (super_admin, admin, support, ...)
+    // who manage the org but have no membership row of their own. A role or
+    // branch filter is a deliberate structural drill-down, so it stays
+    // strictly membership-scoped.
+    const includeGlobalStaff = Boolean(
+      query.organizationId && !query.role && !query.branchId,
+    );
+    const scopeConditions: FilterQuery<UserDocument>[] = [];
+    if (membershipUserIds) {
+      scopeConditions.push(
+        includeGlobalStaff
+          ? {
+              $or: [
+                { _id: { $in: membershipUserIds } },
+                { roles: { $in: PLATFORM_ROLE_VALUES } },
+              ],
+            }
+          : { _id: { $in: membershipUserIds } },
+      );
+    }
+    if (search) {
+      scopeConditions.push({
+        $or: [
+          { email: { $regex: search, $options: 'i' } },
+          { roles: { $regex: search, $options: 'i' } },
+          { 'phone.phone': { $regex: search, $options: 'i' } },
+        ],
+      });
+    }
     const userFilter: FilterQuery<UserDocument> = {
       deletedAt: { $exists: false },
       ...(query.status ? { status: query.status } : {}),
-      ...(membershipUserIds ? { _id: { $in: membershipUserIds } } : {}),
-      ...(search
-        ? {
-            $or: [
-              { email: { $regex: search, $options: 'i' } },
-              { roles: { $regex: search, $options: 'i' } },
-              { 'phone.phone': { $regex: search, $options: 'i' } },
-            ],
-          }
-        : {}),
+      ...(scopeConditions.length ? { $and: scopeConditions } : {}),
     };
 
     const [items, total] = await Promise.all([
@@ -158,6 +186,7 @@ export class AdminIamService {
     const existing = await this.users.findOne({ email }).lean().exec();
     if (existing) return throwConflict(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
 
+    const assignment = this.resolveOrgRoleAssignment(dto.role);
     const user = await this.users.create({
       authAccounts: [
         {
@@ -175,11 +204,14 @@ export class AdminIamService {
       ipRestrictions: dto.ipRestrictions ?? [],
       lastName: dto.lastName,
       mfaRequired: dto.mfaRequired ?? false,
-      permissions: dto.permissionOverrides ?? [],
+      permissions: this.mergePermissions(
+        assignment.permissions,
+        dto.permissionOverrides,
+      ),
       phone: dto.phone
         ? { countryCode: dto.countryCode ?? '+91', phone: dto.phone }
         : undefined,
-      roles: [this.toSystemRole(dto.role)],
+      roles: assignment.roles,
       status: Status.ACTIVE,
       updatedBy: actorId,
     });
@@ -213,16 +245,22 @@ export class AdminIamService {
     if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     if (dto.status) user.status = dto.status;
-    if (dto.role) user.roles = [this.toSystemRole(dto.role)];
+    if (dto.role) {
+      const assignment = this.resolveOrgRoleAssignment(dto.role);
+      user.roles = assignment.roles;
+      user.permissions = this.mergePermissions(
+        assignment.permissions,
+        dto.permissionOverrides,
+      );
+    } else if (dto.permissionOverrides) {
+      user.permissions = dto.permissionOverrides as Permission[];
+    }
     if (dto.firstName !== undefined) user.firstName = dto.firstName;
     if (dto.lastName !== undefined) user.lastName = dto.lastName;
     if (dto.phone !== undefined) {
       user.phone = dto.phone
         ? { countryCode: '+91', phone: dto.phone }
         : undefined;
-    }
-    if (dto.permissionOverrides) {
-      user.permissions = dto.permissionOverrides as Permission[];
     }
     if (dto.mfaRequired !== undefined) user.mfaRequired = dto.mfaRequired;
     if (dto.ipRestrictions) user.ipRestrictions = dto.ipRestrictions;
@@ -294,18 +332,28 @@ export class AdminIamService {
   }
 
   async getAuthOverview(organizationId?: string): Promise<AdminApiObject> {
-    const membershipUserIds = organizationId
-      ? (
-          await this.memberships
-            .find({ organizationId: toRequiredObjectId(organizationId) })
-            .select('userId')
-            .lean()
-            .exec()
-        ).map((item) => item.userId)
-      : undefined;
+    let scopedUserIds: Types.ObjectId[] | undefined;
+    if (organizationId) {
+      const [memberships, globalStaff] = await Promise.all([
+        this.memberships
+          .find({ organizationId: toRequiredObjectId(organizationId) })
+          .select('userId')
+          .lean()
+          .exec(),
+        this.users
+          .find({ roles: { $in: PLATFORM_ROLE_VALUES } })
+          .select('_id')
+          .lean()
+          .exec(),
+      ]);
+      scopedUserIds = [
+        ...memberships.map((item) => item.userId),
+        ...globalStaff.map((item) => item._id),
+      ];
+    }
     const userFilter: FilterQuery<UserDocument> = {
       deletedAt: { $exists: false },
-      ...(membershipUserIds ? { _id: { $in: membershipUserIds } } : {}),
+      ...(scopedUserIds ? { _id: { $in: scopedUserIds } } : {}),
     };
     const now = new Date();
     const [totalUsers, activeUsers, suspendedUsers, activeSessions, expiring] =
@@ -317,15 +365,13 @@ export class AdminIamService {
           status: { $in: [Status.SUSPENDED, Status.BLOCKED] },
         }),
         this.sessions.countDocuments({
-          ...(membershipUserIds ? { userId: { $in: membershipUserIds } } : {}),
+          ...(scopedUserIds ? { userId: { $in: scopedUserIds } } : {}),
           expiresAt: { $gt: now },
           isActive: true,
         }),
         this.sessions
           .find({
-            ...(membershipUserIds
-              ? { userId: { $in: membershipUserIds } }
-              : {}),
+            ...(scopedUserIds ? { userId: { $in: scopedUserIds } } : {}),
             expiresAt: { $gt: now },
             isActive: true,
           })
@@ -361,13 +407,27 @@ export class AdminIamService {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
-  private toSystemRole(role: string): Role {
-    if (role === 'super_admin') return Role.SUPER_ADMIN;
-    if (role === 'finance') return Role.FINANCE;
-    if (role === 'marketing_executive') return Role.MARKETING_ADMIN;
-    if (role === 'student') return Role.STUDENT;
-    if (role === 'parent') return Role.PARENT;
-    return Role.ADMIN;
+  private mergePermissions(
+    base: Permission[],
+    overrides?: string[],
+  ): Permission[] {
+    return [...new Set([...base, ...((overrides ?? []) as Permission[])])];
+  }
+
+  private resolveOrgRoleAssignment(role: string): {
+    roles: Role[];
+    permissions: Permission[];
+  } {
+    if (isPlatformRole(role)) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'platform_role_not_assignable_via_organization_membership',
+        role,
+      });
+    }
+    return {
+      roles: [resolveSystemRoleForOrgRole(role)],
+      permissions: resolveOrgRolePermissions(role),
+    };
   }
 
   private async resolveActorScope(actorId?: string): Promise<{

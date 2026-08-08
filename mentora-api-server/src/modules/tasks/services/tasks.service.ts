@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
+import { ActorScopeService } from '@/common/rbac/actor-scope.service';
+import { buildScopeFilter, ScopeFieldMap } from '@/common/rbac/data-scope.util';
 import {
   CreateTaskDto,
   UpdateTaskDto,
@@ -25,26 +27,42 @@ type TaskListOptions = {
   organizationId: string;
 };
 
+const TASK_SCOPE_FIELDS: ScopeFieldMap = {
+  ownerField: 'assignedTo',
+  organizationField: 'organizationId',
+  branchField: 'branchId',
+  departmentField: 'departmentId',
+  teamField: 'teamId',
+};
+
 @Injectable()
 export class TasksService {
   constructor(
     @InjectModel(Task.name)
     private readonly tasks: Model<TaskDocument>,
+    private readonly actorScope: ActorScopeService,
   ) {}
 
   async createTask(userId: string, dto: CreateTaskDto) {
+    const assigneeScope = await this.actorScope.resolveActorScope(
+      dto.assignedTo,
+      dto.organizationId,
+    );
     return this.tasks.create({
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
       entityId: toRequiredObjectId(dto.entityId),
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
+      branchId: assigneeScope.branchIds[0],
+      departmentId: assigneeScope.departmentIds[0],
+      teamId: assigneeScope.teamIds[0],
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       reminderAt: dto.reminderAt ? new Date(dto.reminderAt) : undefined,
     });
   }
 
-  async listTasks(options: TaskListOptions) {
+  async listTasks(options: TaskListOptions, actorId?: string) {
     const page = this.toPositiveInt(options.page, 1);
     const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
     const sortBy = this.resolveSortBy(options.sortBy);
@@ -65,14 +83,19 @@ export class TasksService {
         { entityType: { $regex: search, $options: 'i' } },
       ];
     }
+    const scopedFilter = await this.applyScope(
+      filter,
+      actorId,
+      options.organizationId,
+    );
     const [items, total] = await Promise.all([
       this.tasks
-        .find(filter)
+        .find(scopedFilter)
         .sort({ [sortBy]: sortOrder, _id: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
-      this.tasks.countDocuments(filter),
+      this.tasks.countDocuments(scopedFilter),
     ]);
     return {
       items,
@@ -96,14 +119,23 @@ export class TasksService {
     );
   }
 
-  listTaskBoard(organizationId: string) {
+  async listTaskBoard(organizationId: string, actorId?: string) {
+    const filter = await this.applyScope(
+      { organizationId: toOrganizationObjectId(organizationId) },
+      actorId,
+      organizationId,
+    );
     return this.tasks
-      .find({ organizationId: toOrganizationObjectId(organizationId) })
+      .find(filter)
       .sort({ boardColumn: 1, dueAt: 1, priority: -1 })
       .lean();
   }
 
-  updateWorkflow(userId: string, taskId: string, dto: UpdateTaskWorkflowDto) {
+  async updateWorkflow(
+    userId: string,
+    taskId: string,
+    dto: UpdateTaskWorkflowDto,
+  ) {
     const push: Record<string, unknown> = {};
     if (dto.comment) {
       push.comments = {
@@ -120,11 +152,16 @@ export class TasksService {
       };
     }
 
-    return this.tasks.findOneAndUpdate(
+    const filter = await this.applyScope(
       {
         _id: toRequiredObjectId(taskId),
         organizationId: toOrganizationObjectId(dto.organizationId),
       },
+      userId,
+      dto.organizationId,
+    );
+    return this.tasks.findOneAndUpdate(
+      filter,
       {
         ...(dto.status ? { status: dto.status } : {}),
         ...(dto.boardColumn ? { boardColumn: dto.boardColumn } : {}),
@@ -135,7 +172,7 @@ export class TasksService {
     );
   }
 
-  updateTask(taskId: string, dto: UpdateTaskDto) {
+  async updateTask(taskId: string, dto: UpdateTaskDto, actorId?: string) {
     const update: Record<string, unknown> = {
       ...dto,
       ...(dto.assignedTo
@@ -145,22 +182,32 @@ export class TasksService {
       ...(dto.reminderAt ? { reminderAt: new Date(dto.reminderAt) } : {}),
     };
     delete update.organizationId;
-    return this.tasks.findOneAndUpdate(
+    const filter = await this.applyScope(
       {
         _id: toRequiredObjectId(taskId),
         organizationId: toOrganizationObjectId(dto.organizationId),
       },
+      actorId,
+      dto.organizationId,
+    );
+    return this.tasks.findOneAndUpdate(
+      filter,
       { $set: update },
       { new: true, runValidators: true },
     );
   }
 
-  archiveTask(taskId: string, organizationId: string) {
-    return this.tasks.findOneAndUpdate(
+  async archiveTask(taskId: string, organizationId: string, actorId?: string) {
+    const filter = await this.applyScope(
       {
         _id: toRequiredObjectId(taskId),
         organizationId: toOrganizationObjectId(organizationId),
       },
+      actorId,
+      organizationId,
+    );
+    return this.tasks.findOneAndUpdate(
+      filter,
       { $set: { status: 'cancelled', boardColumn: 'done' } },
       { new: true },
     );
@@ -180,5 +227,25 @@ export class TasksService {
   private toPositiveInt(value: string | undefined, fallback: number) {
     const parsed = Number.parseInt(value ?? '', 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  // See LeadsService.applyScope for the same pattern: $and-merges the
+  // caller's DataScope filter so it never overwrites an existing field.
+  private async applyScope(
+    filter: FilterQuery<TaskDocument>,
+    actorId: string | undefined,
+    organizationId: string,
+  ): Promise<FilterQuery<TaskDocument>> {
+    if (!actorId) return filter;
+    const scope = await this.actorScope.resolveActorScope(
+      actorId,
+      organizationId,
+    );
+    const scopeFilter = buildScopeFilter<TaskDocument>(
+      scope,
+      TASK_SCOPE_FIELDS,
+    );
+    if (Object.keys(scopeFilter).length === 0) return filter;
+    return { $and: [filter, scopeFilter] };
   }
 }

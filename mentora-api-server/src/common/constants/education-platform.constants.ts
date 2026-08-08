@@ -76,6 +76,11 @@ export const EDUCATION_PLATFORM_USER_ROLES = [
   'call-center',
   'finance',
   'field_agent',
+  // Dual-surface org staff: full CRM access plus a mobile-app companion.
+  // Distinct from the unrelated, currently-unused `Role.MENTOR` enum value
+  // (a pre-existing naming collision between this org-membership vocabulary
+  // and the platform `Role` enum, not introduced by this entry).
+  'mentor',
   'student',
   'parent',
 ] as const;

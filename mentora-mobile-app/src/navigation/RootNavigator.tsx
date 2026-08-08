@@ -21,10 +21,12 @@ export default function RootNavigator(): React.ReactElement {
   const onboardingCompletionPending = useAppSelector(
     (s) => s.auth.onboardingCompletionPending
   );
+  const roles = useAppSelector((s) => s.auth.user?.roles);
   const entryRoute = getRootEntryRoute(
     accessToken,
     isOnboardingCompleted,
-    onboardingCompletionPending
+    onboardingCompletionPending,
+    roles
   );
 
   return (

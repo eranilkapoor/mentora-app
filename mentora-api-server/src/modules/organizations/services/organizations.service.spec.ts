@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
+import { Role } from '@/common/enums';
 import { OrganizationsService } from './organizations.service';
 
 const createQueryChain = (result: unknown) => {
@@ -190,10 +191,31 @@ describe('OrganizationsService', () => {
 
       const result = await service.createOrganizationUser(baseDto());
 
-      expect(users.create).toHaveBeenCalledWith(
-        expect.objectContaining({ email: baseDto().email }),
+      const calls = users.create.mock.calls as unknown[][];
+      const created = calls[0][0] as {
+        email: string;
+        roles: Role[];
+        permissions: string[];
+      };
+      expect(created.email).toBe(baseDto().email);
+      expect(created.roles).toEqual([Role.ORG_STAFF]);
+      expect(created.permissions).toEqual(
+        expect.arrayContaining(['lead:view']),
       );
       expect(result.membership).toBeDefined();
+    });
+
+    it('rejects assigning a platform role through organization-membership creation', async () => {
+      const { service, users } = createFixture();
+      users.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.createOrganizationUser({
+          ...baseDto(),
+          role: 'super_admin',
+        }),
+      ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
+      expect(users.create).not.toHaveBeenCalled();
     });
   });
 });
