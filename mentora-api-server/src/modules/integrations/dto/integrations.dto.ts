@@ -7,6 +7,7 @@ export class UpsertIntegrationProviderDto {
   @IsOptional()
   @IsIn([
     'not_configured',
+    'sandbox_configured',
     'configured',
     'pending_approval',
     'healthy',

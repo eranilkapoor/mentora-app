@@ -1,3 +1,9 @@
+const isProduction = process.env.NODE_ENV === 'production';
+const demoMode =
+  process.env.INTEGRATION_DEMO_MODE !== undefined
+    ? process.env.INTEGRATION_DEMO_MODE === 'true'
+    : !isProduction;
+
 export default () => ({
   notification: {
     queue: {
@@ -12,10 +18,12 @@ export default () => ({
       backoffMs: Number(process.env.NOTIFICATION_QUEUE_BACKOFF_MS || '3000'),
     },
     email: {
-      enabled: process.env.NOTIFICATION_EMAIL_ENABLED === 'true',
+      enabled: process.env.NOTIFICATION_EMAIL_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_EMAIL_PROVIDER || 'log',
-      from: process.env.NOTIFICATION_EMAIL_FROM || '',
-      apiKey: process.env.NOTIFICATION_EMAIL_API_KEY || '',
+      from: process.env.NOTIFICATION_EMAIL_FROM || 'support@mentora.test',
+      apiKey:
+        process.env.NOTIFICATION_EMAIL_API_KEY ||
+        (demoMode ? 'demo-email-api-key' : ''),
       ses: {
         region:
           process.env.NOTIFICATION_EMAIL_SES_REGION ||
@@ -48,11 +56,15 @@ export default () => ({
       },
     },
     sms: {
-      enabled: process.env.NOTIFICATION_SMS_ENABLED === 'true',
+      enabled: process.env.NOTIFICATION_SMS_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_SMS_PROVIDER || 'log',
       msg91: {
-        authKey: process.env.NOTIFICATION_SMS_MSG91_AUTH_KEY || '',
-        templateId: process.env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID || '',
+        authKey:
+          process.env.NOTIFICATION_SMS_MSG91_AUTH_KEY ||
+          (demoMode ? 'demo-msg91-auth-key' : ''),
+        templateId:
+          process.env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID ||
+          (demoMode ? 'demo-msg91-template-id' : ''),
         otpTemplateId:
           process.env.NOTIFICATION_SMS_MSG91_OTP_TEMPLATE_ID ||
           process.env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID ||
@@ -66,9 +78,11 @@ export default () => ({
       },
     },
     push: {
-      enabled: process.env.NOTIFICATION_PUSH_ENABLED === 'true',
+      enabled: process.env.NOTIFICATION_PUSH_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_PUSH_PROVIDER || 'log',
-      serverKey: process.env.NOTIFICATION_PUSH_SERVER_KEY || '',
+      serverKey:
+        process.env.NOTIFICATION_PUSH_SERVER_KEY ||
+        (demoMode ? 'demo-fcm-server-key' : ''),
       fcm: {
         serviceAccountPath:
           process.env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH || '',

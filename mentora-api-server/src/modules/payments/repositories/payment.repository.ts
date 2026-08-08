@@ -229,6 +229,7 @@ export class PaymentRepository {
     orderId?: string;
     search?: string;
     userId?: string;
+    organizationId?: string;
     status?: PaymentStatus;
     gateway?: PaymentGateway;
     method?: PaymentMethod;
@@ -263,6 +264,10 @@ export class PaymentRepository {
 
     if (params.userId) {
       filter.userId = new Types.ObjectId(params.userId);
+    }
+
+    if (params.organizationId) {
+      filter.organizationId = new Types.ObjectId(params.organizationId);
     }
 
     if (params.status) {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { Model, Types } from 'mongoose';
 import { PaymentRepository } from '../repositories/payment.repository';
 import { AdminListPaymentsDto } from '../dto/admin-list-payments.dto';
@@ -28,7 +28,32 @@ import {
   PaymentInvoice,
   PaymentInvoiceDocument,
 } from '../schemas/payment-invoice.schema';
+import {
+  BillingContract,
+  BillingContractDocument,
+} from '../schemas/billing-contract.schema';
+import {
+  BillingDunningEvent,
+  BillingDunningEventDocument,
+} from '../schemas/billing-dunning-event.schema';
+import {
+  PaymentCreditNote,
+  PaymentCreditNoteDocument,
+} from '../schemas/payment-credit-note.schema';
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
+import {
+  Branch,
+  BranchDocument,
+} from '@/modules/organizations/schemas/branch.schema';
+import { Lead, LeadDocument } from '@/modules/leads/schemas/lead.schema';
+import {
+  Organization,
+  OrganizationDocument,
+} from '@/modules/organizations/schemas/organization.schema';
+import {
+  UserMembership,
+  UserMembershipDocument,
+} from '@/modules/contexts/schemas/contexts.schema';
 import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { WalletService } from '@/modules/referrals/services/wallet.service';
@@ -41,7 +66,10 @@ import {
   throwNotFound,
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
-import { verifyPaymentSignature } from '../utils/payment-signature.util';
+import {
+  createPaymentSignature,
+  verifyPaymentSignature,
+} from '../utils/payment-signature.util';
 import {
   StoreReceiptVerifierService,
   VerifiedStoreSubscription,
@@ -63,6 +91,20 @@ export class PaymentsService {
     private readonly couponModel: Model<PromotionCouponDocument>,
     @InjectModel(PaymentInvoice.name)
     private readonly invoiceModel: Model<PaymentInvoiceDocument>,
+    @InjectModel(PaymentCreditNote.name)
+    private readonly creditNoteModel: Model<PaymentCreditNoteDocument>,
+    @InjectModel(BillingContract.name)
+    private readonly contractModel: Model<BillingContractDocument>,
+    @InjectModel(BillingDunningEvent.name)
+    private readonly dunningModel: Model<BillingDunningEventDocument>,
+    @InjectModel(Organization.name)
+    private readonly organizationModel: Model<OrganizationDocument>,
+    @InjectModel(Branch.name)
+    private readonly branchModel: Model<BranchDocument>,
+    @InjectModel(Lead.name)
+    private readonly leadModel: Model<LeadDocument>,
+    @InjectModel(UserMembership.name)
+    private readonly membershipModel: Model<UserMembershipDocument>,
     private readonly storeReceiptVerifier: StoreReceiptVerifierService,
   ) {}
 
@@ -94,12 +136,28 @@ export class PaymentsService {
     }
 
     const isBoostPlan = plan.planType === PlanType.LEARNING_BOOST;
+    const isOrganizationPlan = plan.planType === PlanType.ORGANIZATION;
     if (
       (purpose === PaymentPurpose.LEARNING_BOOST && !isBoostPlan) ||
-      (purpose === PaymentPurpose.SUBSCRIPTION && isBoostPlan)
+      (purpose === PaymentPurpose.SUBSCRIPTION &&
+        (isBoostPlan || isOrganizationPlan)) ||
+      (purpose === PaymentPurpose.ORGANIZATION_SUBSCRIPTION &&
+        !isOrganizationPlan)
     ) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'payment_purpose_does_not_match_catalog_product',
+      });
+    }
+
+    if (isOrganizationPlan && !dto.organizationId) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'organization_subscription_requires_organization_id',
+      });
+    }
+
+    if (!isOrganizationPlan && dto.organizationId) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'consumer_plan_cannot_use_organization_context',
       });
     }
 
@@ -144,6 +202,9 @@ export class PaymentsService {
 
     const payment = await this.paymentRepo.create({
       userId: new Types.ObjectId(userId),
+      organizationId: dto.organizationId
+        ? new Types.ObjectId(dto.organizationId)
+        : undefined,
       planId: dto.planId ? new Types.ObjectId(dto.planId) : undefined,
       orderId,
       gatewayOrderId,
@@ -161,6 +222,18 @@ export class PaymentsService {
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       metadata: {
         description: dto.description,
+        ...(isOrganizationPlan
+          ? {
+              audience: 'organization',
+              branchLimit: plan.branchLimit,
+              userLimit: plan.userLimit,
+              leadLimit: plan.leadLimit,
+              storageLimitGb: plan.storageLimitGb,
+              aiCreditLimit: plan.aiCreditLimit,
+              enabledModules: plan.enabledModules,
+              catalogProduct: plan.slug,
+            }
+          : {}),
         ...(isBoostPlan
           ? {
               durationHours: plan.durationDays * 24,
@@ -185,7 +258,18 @@ export class PaymentsService {
       status: payment.status,
       gateway: payment.gateway,
       expiresAt: payment.expiresAt,
+      checkout: this.buildProviderCheckout(payment, plan),
     };
+  }
+
+  async createOrganizationCheckout(
+    userId: string,
+    dto: CreateOrderDto & { organizationId: string },
+  ) {
+    return this.createOrder(userId, {
+      ...dto,
+      purpose: PaymentPurpose.ORGANIZATION_SUBSCRIPTION,
+    });
   }
 
   async verifyPayment(userId: string, dto: VerifyPaymentDto) {
@@ -378,6 +462,80 @@ export class PaymentsService {
     }
 
     return { processed: true, status: updated.status };
+  }
+
+  async processRazorpayWebhook(
+    payload: Record<string, unknown>,
+    signature?: string,
+  ) {
+    const secret = this.configService.get<string>(
+      'payments.razorpay.keySecret',
+    );
+    if (!this.verifyProviderPayload(payload, signature, secret)) {
+      return throwUnauthorized(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'invalid_razorpay_webhook_signature',
+      });
+    }
+
+    const event = this.toProviderString(payload.event);
+    const paymentEntity = this.getNestedObject(payload, [
+      'payload',
+      'payment',
+      'entity',
+    ]);
+    const paymentNotes = this.getNestedObject(paymentEntity, ['notes']);
+    const orderId = this.toProviderString(
+      paymentNotes.orderId ?? paymentEntity.order_id ?? payload.orderId,
+    );
+    const gatewayPaymentId = this.toProviderString(paymentEntity.id);
+    const eventId =
+      this.toProviderString(payload.eventId ?? payload.id) || randomUUID();
+    const status =
+      event === 'payment.failed' ? PaymentStatus.FAILED : PaymentStatus.SUCCESS;
+    return this.processWebhook(
+      {
+        eventId,
+        gatewayPaymentId,
+        orderId,
+        payload,
+        status,
+      },
+      this.createInternalWebhookSignature({ eventId, orderId, status }),
+    );
+  }
+
+  async processStripeWebhook(
+    payload: Record<string, unknown>,
+    signature?: string,
+  ) {
+    const secret = this.configService.get<string>(
+      'payments.stripe.webhookSecret',
+    );
+    if (!this.verifyProviderPayload(payload, signature, secret)) {
+      return throwUnauthorized(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'invalid_stripe_webhook_signature',
+      });
+    }
+
+    const dataObject = this.getNestedObject(payload, ['data', 'object']);
+    const metadata = this.getNestedObject(dataObject, ['metadata']);
+    const orderId = this.toProviderString(metadata.orderId);
+    const eventType = this.toProviderString(payload.type);
+    const status =
+      eventType === 'payment_intent.payment_failed'
+        ? PaymentStatus.FAILED
+        : PaymentStatus.SUCCESS;
+    const eventId = this.toProviderString(payload.id) || randomUUID();
+    return this.processWebhook(
+      {
+        eventId,
+        gatewayPaymentId: this.toProviderString(dataObject.id),
+        orderId,
+        payload,
+        status,
+      },
+      this.createInternalWebhookSignature({ eventId, orderId, status }),
+    );
   }
 
   getUserPayments(userId: string, query: ListPaymentsDto) {
@@ -667,6 +825,7 @@ export class PaymentsService {
       orderId: query.orderId,
       search: query.search,
       userId: query.userId,
+      organizationId: query.organizationId,
       status: query.status,
       gateway: query.gateway,
       method: query.method,
@@ -750,11 +909,191 @@ export class PaymentsService {
       });
     }
 
+    const creditNote = await this.issueCreditNoteForPayment(updated, {
+      amount: refundAmount,
+      reason: dto.reason ?? 'Admin initiated refund',
+    });
+
     return {
       orderId: updated.orderId,
       status: updated.status,
       refund: refundPayload,
+      creditNote,
     };
+  }
+
+  async previewOrganizationPlanChange(params: {
+    organizationId: string;
+    currentPlanId?: string;
+    newPlanId: string;
+    effectiveAt?: string;
+  }) {
+    const [currentPlan, newPlan] = await Promise.all([
+      params.currentPlanId
+        ? this.planModel.findById(params.currentPlanId).lean().exec()
+        : null,
+      this.planModel.findById(params.newPlanId).lean().exec(),
+    ]);
+    if (!newPlan || newPlan.planType !== PlanType.ORGANIZATION) {
+      return throwBadRequest(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'new_organization_plan_not_found',
+      });
+    }
+    const effectiveAt = params.effectiveAt
+      ? new Date(params.effectiveAt)
+      : new Date();
+    const activeSubscription =
+      await this.subscriptionsService.getActiveOrganizationSubscription(
+        params.organizationId,
+      );
+    const endDate =
+      activeSubscription &&
+      typeof activeSubscription === 'object' &&
+      'endDate' in activeSubscription
+        ? new Date(String(activeSubscription.endDate))
+        : effectiveAt;
+    const remainingDays = Math.max(
+      0,
+      Math.ceil((endDate.getTime() - effectiveAt.getTime()) / 86_400_000),
+    );
+    const currentDaily = currentPlan
+      ? Number(currentPlan.price ?? 0) / Math.max(currentPlan.durationDays, 1)
+      : 0;
+    const newDaily =
+      Number(newPlan.price ?? 0) / Math.max(newPlan.durationDays, 1);
+    const credit = Number((currentDaily * remainingDays).toFixed(2));
+    const charge = Number((newDaily * remainingDays).toFixed(2));
+
+    return {
+      organizationId: params.organizationId,
+      currentPlan,
+      newPlan,
+      effectiveAt,
+      remainingDays,
+      credit,
+      charge,
+      netDue: Number(Math.max(0, charge - credit).toFixed(2)),
+      creditBalance: Number(Math.max(0, credit - charge).toFixed(2)),
+      currency: newPlan.currency ?? currentPlan?.currency ?? 'INR',
+    };
+  }
+
+  async getOrganizationUsage(organizationId: string) {
+    const organizationObjectId = new Types.ObjectId(organizationId);
+    const [billing, users, branches, leads, organization] = await Promise.all([
+      this.subscriptionsService.getOrganizationBillingSummary(organizationId),
+      this.membershipModel.countDocuments({
+        organizationId: organizationObjectId,
+        status: 'active',
+      }),
+      this.branchModel.countDocuments({
+        organizationId: organizationObjectId,
+        status: 'active',
+      }),
+      this.leadModel.countDocuments({ organizationId: organizationObjectId }),
+      this.organizationModel.findById(organizationId).lean().exec(),
+    ]);
+    const limits = billing.limits;
+    const storageUsedGb = Number(organization?.settings?.storageUsageGb ?? 0);
+    const checks = {
+      users: this.limitState(users, Number(limits.userLimit ?? 0)),
+      branches: this.limitState(branches, Number(limits.branchLimit ?? 0)),
+      leads: this.limitState(leads, Number(limits.leadLimit ?? 0)),
+      storage: this.limitState(
+        storageUsedGb,
+        Number(limits.storageLimitGb ?? 0),
+      ),
+      aiCredits: this.limitState(0, Number(limits.aiCreditLimit ?? 0)),
+    };
+
+    return {
+      organizationId,
+      usage: { users, branches, leads, storageUsedGb, aiCreditsUsed: 0 },
+      limits,
+      checks,
+      allowed: Object.values(checks).every((check) => check.allowed),
+    };
+  }
+
+  async createBillingContract(params: {
+    actorId: string;
+    organizationId: string;
+    planId: string;
+    purchaseOrderNumber?: string;
+    legalEntityName?: string;
+    billingEmail?: string;
+    billingPhone?: string;
+    taxNumber?: string;
+    contractValue?: number;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    const plan = await this.planModel.findById(params.planId).lean().exec();
+    if (!plan || plan.planType !== PlanType.ORGANIZATION) {
+      return throwBadRequest(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'organization_plan_not_found',
+      });
+    }
+    const startDate = params.startDate
+      ? new Date(params.startDate)
+      : new Date();
+    const endDate = params.endDate
+      ? new Date(params.endDate)
+      : new Date(startDate.getTime() + plan.durationDays * 86_400_000);
+    return this.contractModel.create({
+      organizationId: new Types.ObjectId(params.organizationId),
+      planId: new Types.ObjectId(params.planId),
+      contractNumber: `CTR-${Date.now()}-${randomUUID().slice(0, 6).toUpperCase()}`,
+      status: 'active',
+      purchaseOrderNumber: params.purchaseOrderNumber,
+      legalEntityName: params.legalEntityName,
+      billingEmail: params.billingEmail,
+      billingPhone: params.billingPhone,
+      taxNumber: params.taxNumber,
+      currency: plan.currency ?? 'INR',
+      contractValue: params.contractValue ?? Number(plan.price ?? 0),
+      startDate,
+      endDate,
+      limits: {
+        userLimit: plan.userLimit,
+        branchLimit: plan.branchLimit,
+        leadLimit: plan.leadLimit,
+        storageLimitGb: plan.storageLimitGb,
+        aiCreditLimit: plan.aiCreditLimit,
+        enabledModules: plan.enabledModules,
+      },
+      terms: {
+        billingCycle: plan.billingCycle,
+        autoRenew: plan.autoRenewDefault,
+        demoReady: true,
+      },
+      createdBy: new Types.ObjectId(params.actorId),
+    });
+  }
+
+  async createDunningEvent(params: {
+    organizationId?: string;
+    userId: string;
+    paymentId?: string;
+    subscriptionId?: string;
+    eventType: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    return this.dunningModel.create({
+      organizationId: params.organizationId
+        ? new Types.ObjectId(params.organizationId)
+        : undefined,
+      userId: new Types.ObjectId(params.userId),
+      paymentId: params.paymentId
+        ? new Types.ObjectId(params.paymentId)
+        : undefined,
+      subscriptionId: params.subscriptionId
+        ? new Types.ObjectId(params.subscriptionId)
+        : undefined,
+      eventType: params.eventType,
+      nextRetryAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      metadata: params.metadata ?? {},
+    });
   }
 
   async adminReconcilePayments(query: PaymentReconciliationDto) {
@@ -1145,10 +1484,141 @@ export class PaymentsService {
     }
   }
 
+  private buildProviderCheckout(
+    payment: {
+      orderId: string;
+      gatewayOrderId?: string;
+      gateway?: PaymentGateway;
+      amount?: number;
+      netAmount?: number;
+      currency?: string;
+      customer?: { name?: string; email?: string; phone?: string };
+    },
+    plan: { name?: string; slug?: string } | null,
+  ) {
+    if (payment.gateway === PaymentGateway.STRIPE) {
+      return {
+        provider: 'stripe',
+        mode: 'payment_intent',
+        publishableKey: this.configService.get<string>(
+          'payments.stripe.publishableKey',
+        ),
+        clientSecret: `pi_demo_${payment.orderId}_secret_mentora`,
+        amount: Math.round(Number(payment.netAmount ?? 0) * 100),
+        currency: (payment.currency ?? 'INR').toLowerCase(),
+        metadata: {
+          orderId: payment.orderId,
+          plan: plan?.slug ?? plan?.name,
+        },
+      };
+    }
+
+    return {
+      provider: 'razorpay',
+      mode: 'order',
+      keyId: this.configService.get<string>('payments.razorpay.keyId'),
+      orderId: payment.gatewayOrderId,
+      amount: Math.round(Number(payment.netAmount ?? 0) * 100),
+      currency: payment.currency ?? 'INR',
+      name: 'Mentora',
+      description: plan?.name ?? 'Mentora subscription',
+      notes: {
+        orderId: payment.orderId,
+        plan: plan?.slug ?? plan?.name,
+      },
+      prefill: payment.customer ?? {},
+    };
+  }
+
+  private async issueCreditNoteForPayment(
+    payment: {
+      _id?: { toString(): string };
+      invoiceId?: { toString(): string };
+      organizationId?: { toString(): string };
+      userId: { toString(): string };
+      currency?: string;
+    },
+    params: { amount: number; reason: string },
+  ) {
+    const issuedAt = new Date();
+    return this.creditNoteModel.create({
+      amount: params.amount,
+      creditNoteNumber: `CN-${issuedAt.getFullYear()}-${Date.now()}`,
+      currency: payment.currency ?? 'INR',
+      invoiceId: payment.invoiceId
+        ? new Types.ObjectId(payment.invoiceId.toString())
+        : undefined,
+      organizationId: payment.organizationId
+        ? new Types.ObjectId(payment.organizationId.toString())
+        : undefined,
+      paymentId: payment._id
+        ? new Types.ObjectId(payment._id.toString())
+        : undefined,
+      userId: new Types.ObjectId(payment.userId.toString()),
+      reason: params.reason,
+      issuedAt,
+      metadata: { source: 'refund' },
+    });
+  }
+
+  private limitState(used: number, limit: number) {
+    const unlimited = limit <= 0;
+    const percentage = unlimited
+      ? 0
+      : Number(((used / limit) * 100).toFixed(2));
+    return {
+      allowed: unlimited || used <= limit,
+      limit,
+      percentage,
+      remaining: unlimited ? null : Math.max(0, limit - used),
+      used,
+    };
+  }
+
+  private verifyProviderPayload(
+    payload: Record<string, unknown>,
+    signature: string | undefined,
+    secret: string | undefined,
+  ) {
+    if (!secret) return this.canAllowUnsignedPaymentVerification();
+    const serialized = JSON.stringify(payload);
+    return verifyPaymentSignature(serialized, signature, secret);
+  }
+
+  private createInternalWebhookSignature(params: {
+    eventId: string;
+    orderId: string;
+    status: PaymentStatus;
+  }) {
+    const secret = this.configService.get<string>('payments.webhookSecret');
+    return createPaymentSignature(
+      `${params.eventId}|${params.orderId}|${params.status}`,
+      secret ?? 'demo-payment-webhook-secret',
+    );
+  }
+
+  private getNestedObject(value: unknown, path: string[]) {
+    let current: unknown = value;
+    for (const key of path) {
+      if (!current || typeof current !== 'object') return {};
+      current = (current as Record<string, unknown>)[key];
+    }
+    return current && typeof current === 'object'
+      ? (current as Record<string, unknown>)
+      : {};
+  }
+
+  private toProviderString(value: unknown) {
+    return typeof value === 'string' || typeof value === 'number'
+      ? String(value)
+      : '';
+  }
+
   private async createInvoiceIfRequired(payment: {
     _id?: { toString(): string };
     orderId: string;
     userId: { toString(): string };
+    organizationId?: { toString(): string };
     planId?: { toString(): string };
     amount?: number;
     discountAmount?: number;
@@ -1171,10 +1641,18 @@ export class PaymentsService {
     }
 
     const issuedAt = new Date();
+    const invoiceNumber = `INV-${issuedAt.getFullYear()}-${payment.orderId.replace(/^ORD_/, '')}`;
+    const pdfStorageKey = `invoices/${issuedAt.getFullYear()}/${invoiceNumber}.pdf`;
+    const pdfChecksum = createHash('sha256')
+      .update(`${invoiceNumber}|${payment.orderId}|${payment.netAmount ?? 0}`)
+      .digest('hex');
     const invoice = await this.invoiceModel.create({
-      invoiceNumber: `INV-${issuedAt.getFullYear()}-${payment.orderId.replace(/^ORD_/, '')}`,
+      invoiceNumber,
       paymentId: new Types.ObjectId(payment._id.toString()),
       userId: new Types.ObjectId(payment.userId.toString()),
+      organizationId: payment.organizationId
+        ? new Types.ObjectId(payment.organizationId.toString())
+        : undefined,
       orderId: payment.orderId,
       planId: payment.planId
         ? new Types.ObjectId(payment.planId.toString())
@@ -1189,6 +1667,11 @@ export class PaymentsService {
       totalAmount: Number(payment.netAmount ?? 0),
       customerGstin: payment.customer?.gstin,
       issuedAt,
+      immutable: true,
+      pdfGeneratedAt: issuedAt,
+      pdfStorageKey,
+      pdfUrl: `mentora-demo://${pdfStorageKey}`,
+      pdfChecksum,
     });
 
     await this.paymentRepo.attachInvoice(
@@ -1331,6 +1814,7 @@ export class PaymentsService {
       _id?: { toString(): string };
       purpose?: PaymentPurpose;
       planId?: { toString(): string };
+      organizationId?: { toString(): string };
       netAmount?: number;
       gateway?: PaymentGateway;
       storeProductId?: string;
@@ -1358,7 +1842,13 @@ export class PaymentsService {
       status?: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
     },
   ) {
-    if (payment.purpose !== PaymentPurpose.SUBSCRIPTION || !payment.planId) {
+    if (
+      ![
+        PaymentPurpose.SUBSCRIPTION,
+        PaymentPurpose.ORGANIZATION_SUBSCRIPTION,
+      ].includes(payment.purpose as PaymentPurpose) ||
+      !payment.planId
+    ) {
       return;
     }
 
@@ -1366,6 +1856,7 @@ export class PaymentsService {
       userId,
       payment.planId.toString(),
       {
+        organizationId: payment.organizationId?.toString(),
         paymentId: payment._id?.toString(),
         paymentProvider: options?.paymentProvider ?? payment.gateway,
         autoRenew: options?.autoRenew,

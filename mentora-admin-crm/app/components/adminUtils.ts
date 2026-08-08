@@ -1,8 +1,34 @@
 import type { AdminModule, ModuleCoverage, ModuleStatus } from "./adminTypes";
 
 export function statusClass(status?: ModuleStatus) {
-  if (status === "Active") return "good";
-  if (status === "Configured") return "warn";
+  const normalized = String(status ?? "")
+    .trim()
+    .toLowerCase()
+    .replaceAll("_", " ");
+  if (
+    ["active", "paid", "ready", "delivered", "opened", "completed"].includes(
+      normalized,
+    )
+  ) {
+    return "good";
+  }
+  if (
+    [
+      "configured",
+      "trial",
+      "pending",
+      "inactive",
+      "open",
+      "in progress",
+      "under review",
+      "review",
+    ].includes(normalized)
+  ) {
+    return "warn";
+  }
+  if (["suspended", "blocked", "archived", "cancelled"].includes(normalized)) {
+    return "danger";
+  }
   return "neutral";
 }
 
@@ -31,7 +57,16 @@ export function formatReadiness(coverage: ModuleCoverage): ModuleStatus {
 }
 
 export function formatStatus(value?: string) {
-  return value ? value.replaceAll("_", " ") : "unknown";
+  return value
+    ? value
+        .replaceAll("_", " ")
+        .split(" ")
+        .filter(Boolean)
+        .map(
+          (part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase(),
+        )
+        .join(" ")
+    : "Unknown";
 }
 
 export function extractFirstId(records: unknown[]) {
@@ -157,6 +192,14 @@ export function getServerRowsForModule(
 
   if (module.id === "branches") {
     return recordsToRows(workspace.branches, module);
+  }
+
+  if (module.id === "billing") {
+    return billingSummaryToRows(
+      workspace.moduleRecords.billing,
+      module,
+      workspace.organizations,
+    );
   }
 
   if (module.id === "departments") {
@@ -479,6 +522,43 @@ function organizationRecordsToRows(
   });
 }
 
+function billingSummaryToRows(
+  records: unknown[] | undefined,
+  module: AdminModule,
+  organizations: unknown[],
+) {
+  if (!records?.length) return [];
+
+  return records.map((record) => {
+    const object = normalizeResponseObject(record);
+    const currentPlan = normalizeResponseObject(object.currentPlan);
+    const plan = normalizeResponseObject(currentPlan.planId);
+    const billing = normalizeResponseObject(object.billing);
+    const limits = normalizeResponseObject(object.limits);
+    const organizationName =
+      resolveRecordName(
+        object.organizationId,
+        organizations as Array<Record<string, unknown>>,
+      ) || object.organizationName;
+    const values: Record<string, unknown> = {
+      Organization: organizationName,
+      Plan: plan.name ?? plan.slug ?? "No active plan",
+      Cycle: plan.billingCycle,
+      Amount: plan.price,
+      Status: currentPlan.status ?? "inactive",
+      Renewal: billing.nextRenewalAt ?? currentPlan.endDate,
+      Users: limits.userLimit,
+      Branches: limits.branchLimit,
+      Leads: limits.leadLimit,
+      Storage: limits.storageLimitGb
+        ? `${String(limits.storageLimitGb)} GB`
+        : undefined,
+    };
+
+    return module.columns.map((column) => stringifyCell(values[column]));
+  });
+}
+
 function userRecordsToRows(
   records: unknown[] | undefined,
   module: AdminModule,
@@ -654,7 +734,9 @@ function securityPolicyToRows(
     {
       Control: "IP allowlist",
       Scope: "Organization",
-      Policy: allowedIpCidrs.length ? allowedIpCidrs.join(", ") : "Unrestricted",
+      Policy: allowedIpCidrs.length
+        ? allowedIpCidrs.join(", ")
+        : "Unrestricted",
       Owner: "Security",
       Status: allowedIpCidrs.length ? "Restricted" : "Open",
       Updated: updated,

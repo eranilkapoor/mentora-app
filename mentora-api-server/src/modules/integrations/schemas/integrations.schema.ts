@@ -25,6 +25,7 @@ export class IntegrationProviderConfig {
   @Prop({
     enum: [
       'not_configured',
+      'sandbox_configured',
       'configured',
       'pending_approval',
       'healthy',

@@ -29,6 +29,10 @@ export class AdminListPaymentsDto {
   userId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
+
+  @IsOptional()
   @IsEnum(PaymentStatus)
   status?: PaymentStatus;
 

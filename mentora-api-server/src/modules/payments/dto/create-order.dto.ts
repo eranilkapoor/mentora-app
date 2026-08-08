@@ -16,6 +16,10 @@ export class CreateOrderDto {
   planId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
+
+  @IsOptional()
   @IsEnum(PaymentGateway)
   gateway?: PaymentGateway;
 

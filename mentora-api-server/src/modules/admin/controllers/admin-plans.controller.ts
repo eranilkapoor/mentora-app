@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Query,
   Param,
   Patch,
   Post,
@@ -23,6 +24,8 @@ import { CreatePlanDto } from '@/modules/subscriptions/dto/create-plan.dto';
 import { UpdatePlanDto } from '@/modules/subscriptions/dto/update-plan.dto';
 import { CreateFeatureDto } from '@/modules/subscriptions/dto/create-feature.dto';
 import { AssignFeatureDto } from '@/modules/subscriptions/dto/assign-feature.dto';
+import { AssignOrganizationSubscriptionDto } from '@/modules/subscriptions/dto/organization-subscription.dto';
+import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { AdminAuditService } from '../services/admin-audit.service';
 
 @Controller('admin/plans')
@@ -31,6 +34,7 @@ import { AdminAuditService } from '../services/admin-audit.service';
 export class AdminPlansController {
   constructor(
     private readonly planService: PlanService,
+    private readonly subscriptionsService: SubscriptionsService,
     private readonly auditService: AdminAuditService,
   ) {}
 
@@ -41,6 +45,51 @@ export class AdminPlansController {
       await this.planService.getPlans(),
       SuccessCode.PLANS_FETCHED,
     );
+  }
+
+  @Permissions(Permission.PLAN_VIEW)
+  @Get('organization')
+  async getOrganizationPlans() {
+    return successResponse(
+      await this.planService.getOrganizationPlans(),
+      SuccessCode.PLANS_FETCHED,
+    );
+  }
+
+  @Permissions(Permission.PLAN_VIEW)
+  @Get('organization/billing')
+  async getOrganizationBilling(
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.subscriptionsService.getOrganizationBillingSummary(
+        organizationId,
+      ),
+      SuccessCode.SUBSCRIPTION_BILLING_FETCHED,
+    );
+  }
+
+  @Permissions(Permission.PLAN_UPDATE)
+  @Post('organization/subscriptions')
+  async assignOrganizationSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: AssignOrganizationSubscriptionDto,
+  ) {
+    const data = await this.subscriptionsService.assignOrganizationSubscription(
+      req.user.sub,
+      dto,
+    );
+    await this.auditService.write({
+      req,
+      actorId: req.user.sub,
+      action: 'organization_subscription.assigned',
+      resource: 'organization_subscription',
+      targetId: dto.organizationId,
+      metadata: { planId: dto.planId },
+      reason: dto.reason,
+      after: data.toObject() as unknown as Record<string, unknown>,
+    });
+    return successResponse(data, SuccessCode.SUBSCRIPTION_CREATED);
   }
 
   @Permissions(Permission.PLAN_VIEW)

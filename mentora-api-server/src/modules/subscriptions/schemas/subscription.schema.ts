@@ -8,6 +8,9 @@ export class Subscription {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'Plan', required: true })
   planId!: Types.ObjectId;
 
@@ -103,6 +106,7 @@ export type SubscriptionDocument = Subscription & Document;
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
 
 SubscriptionSchema.index({ userId: 1, createdAt: -1 });
+SubscriptionSchema.index({ organizationId: 1, status: 1, endDate: -1 });
 SubscriptionSchema.index({ status: 1, endDate: -1 });
 SubscriptionSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 SubscriptionSchema.index({ legalHoldUntil: 1 });

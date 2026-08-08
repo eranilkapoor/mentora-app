@@ -13,6 +13,9 @@ export class PaymentInvoice {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ required: true })
   orderId!: string;
 
@@ -62,6 +65,21 @@ export class PaymentInvoice {
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 
+  @Prop({ trim: true })
+  pdfStorageKey?: string;
+
+  @Prop({ trim: true })
+  pdfUrl?: string;
+
+  @Prop({ trim: true })
+  pdfChecksum?: string;
+
+  @Prop()
+  pdfGeneratedAt?: Date;
+
+  @Prop({ default: true })
+  immutable!: boolean;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy?: Types.ObjectId;
 
@@ -89,6 +107,7 @@ export const PaymentInvoiceSchema =
   SchemaFactory.createForClass(PaymentInvoice);
 
 PaymentInvoiceSchema.index({ userId: 1, issuedAt: -1 });
+PaymentInvoiceSchema.index({ organizationId: 1, issuedAt: -1 });
 PaymentInvoiceSchema.index({ issuedAt: -1 });
 PaymentInvoiceSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 PaymentInvoiceSchema.index({ legalHoldUntil: 1 });

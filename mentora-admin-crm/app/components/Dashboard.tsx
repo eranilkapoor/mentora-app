@@ -76,6 +76,14 @@ export function Dashboard({
     ],
     ["Open Tasks", getDashboardMetric(dashboard, "openTasks"), "tasks"],
   ];
+  const visibleDashboardKpis = dashboardKpis.filter(({ id }) =>
+    canAccessModule(id),
+  );
+  const visiblePipelineRows = pipelineRows.filter(([, , moduleId]) =>
+    canAccessModule(String(moduleId)),
+  );
+  const canOpenLeads = canAccessModule("leads");
+  const canOpenOrganizations = canAccessModule("organizations");
 
   return (
     <section className="workspace">
@@ -88,31 +96,35 @@ export function Dashboard({
             learning handoff in one enterprise console.
           </p>
         </div>
-        <button
-          className="btn btn-primary"
-          onClick={() => openModule("leads")}
-          type="button"
-        >
-          <Icon name="lead" />
-          Open Lead Queue
-        </button>
+        {canOpenLeads ? (
+          <button
+            className="btn btn-primary"
+            onClick={() => openModule("leads")}
+            type="button"
+          >
+            <Icon name="lead" />
+            Open Lead Queue
+          </button>
+        ) : null}
       </div>
 
       <section className="kpi-grid" aria-label="CRM key metrics">
-        <button
-          className="metric-card"
-          onClick={() => openModule("organizations")}
-          type="button"
-        >
-          <Icon name="organization" />
-          <span>Organizations</span>
-          <strong>{workspace.organizations.length}</strong>
-          <p>
-            <em>Live</em>
-            API workspace
-          </p>
-        </button>
-        {dashboardKpis.map(({ helper, icon, id, label, value }) => (
+        {canOpenOrganizations ? (
+          <button
+            className="metric-card"
+            onClick={() => openModule("organizations")}
+            type="button"
+          >
+            <Icon name="organization" />
+            <span>Organizations</span>
+            <strong>{workspace.organizations.length}</strong>
+            <p>
+              <em>Live</em>
+              API workspace
+            </p>
+          </button>
+        ) : null}
+        {visibleDashboardKpis.map(({ helper, icon, id, label, value }) => (
           <button
             className="metric-card"
             key={label}
@@ -134,17 +146,23 @@ export function Dashboard({
         <div className="listmanager">
           <div className="head">Admissions Pipeline</div>
           <div className="pipeline">
-            {pipelineRows.map(([stage, value, moduleId]) => (
-              <button
-                className="pipeline-step"
-                key={stage}
-                onClick={() => openModule(moduleId)}
-                type="button"
-              >
-                <span>{stage}</span>
-                <strong>{value}</strong>
-              </button>
-            ))}
+            {visiblePipelineRows.length > 0 ? (
+              visiblePipelineRows.map(([stage, value, moduleId]) => (
+                <button
+                  className="pipeline-step"
+                  key={stage}
+                  onClick={() => openModule(String(moduleId))}
+                  type="button"
+                >
+                  <span>{stage}</span>
+                  <strong>{value}</strong>
+                </button>
+              ))
+            ) : (
+              <div className="empty-inline">
+                Select an organization or request access to pipeline modules.
+              </div>
+            )}
           </div>
         </div>
         <div className="listmanager">

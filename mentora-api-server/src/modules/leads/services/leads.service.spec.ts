@@ -36,6 +36,11 @@ const createFixture = () => {
   };
   const activities = { create: jest.fn().mockResolvedValue({}) };
   const assignments = { create: jest.fn().mockResolvedValue({}) };
+  const stages = {
+    findOne: jest.fn().mockReturnValue({
+      sort: jest.fn().mockResolvedValue(null),
+    }),
+  };
   const auditService = { write: jest.fn().mockResolvedValue(undefined) };
   const actorScope = { resolveActorScope: jest.fn() };
 
@@ -43,11 +48,20 @@ const createFixture = () => {
     leads as never,
     activities as never,
     assignments as never,
+    stages as never,
     auditService as never,
     actorScope as never,
   );
 
-  return { service, leads, activities, assignments, auditService, actorScope };
+  return {
+    service,
+    leads,
+    activities,
+    assignments,
+    stages,
+    auditService,
+    actorScope,
+  };
 };
 
 describe('LeadsService', () => {

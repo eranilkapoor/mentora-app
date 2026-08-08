@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RbacModule } from '@/common/rbac/rbac.module';
+import {
+  LeadStage,
+  LeadStageSchema,
+} from '@/common/crm/schemas/lead-stage.schema';
 import { AdminModule } from '../admin/admin.module';
 import { ContextsModule } from '../contexts/contexts.module';
 import { OrganizationsModule } from '../organizations/organizations.module';
@@ -27,6 +31,7 @@ import { LeadCaptureService } from './services/lead-capture.service';
       { name: Lead.name, schema: LeadSchema },
       { name: LeadActivity.name, schema: LeadActivitySchema },
       { name: LeadAssignment.name, schema: LeadAssignmentSchema },
+      { name: LeadStage.name, schema: LeadStageSchema },
     ]),
   ],
   controllers: [LeadsController, LeadCaptureController],

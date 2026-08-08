@@ -61,6 +61,94 @@ export class AdminPaymentsController {
   }
 
   @Permissions(Permission.PAYMENT_VIEW)
+  @Get('organization/usage')
+  async organizationUsage(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.paymentsService.getOrganizationUsage(organizationId),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
+  }
+
+  @Permissions(Permission.PAYMENT_VIEW)
+  @Get('organization/proration')
+  async organizationProration(
+    @Query('organizationId') organizationId: string,
+    @Query('newPlanId') newPlanId: string,
+    @Query('currentPlanId') currentPlanId?: string,
+    @Query('effectiveAt') effectiveAt?: string,
+  ) {
+    return successResponse(
+      await this.paymentsService.previewOrganizationPlanChange({
+        organizationId,
+        currentPlanId,
+        newPlanId,
+        effectiveAt,
+      }),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
+  }
+
+  @Permissions(Permission.SUBSCRIPTION_MANAGE)
+  @Post('organization/contracts')
+  async createContract(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      organizationId: string;
+      planId: string;
+      purchaseOrderNumber?: string;
+      legalEntityName?: string;
+      billingEmail?: string;
+      billingPhone?: string;
+      taxNumber?: string;
+      contractValue?: number;
+      startDate?: string;
+      endDate?: string;
+    },
+  ) {
+    const data = await this.paymentsService.createBillingContract({
+      actorId: req.user.sub,
+      ...dto,
+    });
+    await this.auditService.write({
+      req,
+      actorId: req.user.sub,
+      action: 'billing_contract.created',
+      resource: 'billing_contract',
+      targetId: dto.organizationId,
+      metadata: { planId: dto.planId },
+      after: data.toObject() as unknown as Record<string, unknown>,
+    });
+    return successResponse(data, SuccessCode.PAYMENT_CREATED);
+  }
+
+  @Permissions(Permission.SUBSCRIPTION_MANAGE)
+  @Post('organization/dunning')
+  async createDunning(
+    @Req() req: AuthenticatedRequest,
+    @Body()
+    dto: {
+      organizationId?: string;
+      userId: string;
+      paymentId?: string;
+      subscriptionId?: string;
+      eventType: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    const data = await this.paymentsService.createDunningEvent(dto);
+    await this.auditService.write({
+      req,
+      actorId: req.user.sub,
+      action: 'billing_dunning.created',
+      resource: 'billing_dunning_event',
+      targetId: dto.organizationId ?? dto.userId,
+      after: data.toObject() as unknown as Record<string, unknown>,
+    });
+    return successResponse(data, SuccessCode.PAYMENT_CREATED);
+  }
+
+  @Permissions(Permission.PAYMENT_VIEW)
   @Get()
   async listPayments(@Query() query: AdminListPaymentsDto) {
     return successResponse(

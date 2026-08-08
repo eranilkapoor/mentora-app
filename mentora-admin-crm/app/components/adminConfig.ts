@@ -9,6 +9,7 @@ export const dedicatedAdminModuleIds = new Set([
   "applications",
   "assignments",
   "automation",
+  "billing",
   "call-center",
   "campaigns",
   "communications",
@@ -77,11 +78,16 @@ export const readonlyFormColumns = new Set([
 export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "roles") return ["Description", "Permissions"];
   if (module.id === "permissions") return ["Module", "Description"];
+  if (module.id === "branches") return ["Code", "City", "State"];
+  if (module.id === "departments") return ["Code", "Branch", "Function"];
+  if (module.id === "teams") return ["Code", "Department"];
   if (module.id === "leads") {
     return [
       "First Name",
       "Middle Name",
       "Last Name",
+      "Lead Type",
+      "Persona",
       "Email",
       "Phone",
       "Alternate Phone",
@@ -113,6 +119,7 @@ export function getEditableModuleColumns(module: AdminModule) {
       "UTM Content",
       "Landing Page",
       "Form Source",
+      "Capture Channel",
       "Branch",
       "Department",
       "Team",
@@ -418,9 +425,6 @@ export const moduleActions: Record<string, string[]> = {
   ],
   organizations: [
     "Create Organization",
-    "Create Branch",
-    "Create Department",
-    "Create Team",
     "Update Branding",
     "Configure Channel",
     "Export Setup",
@@ -727,6 +731,8 @@ export const modules: AdminModule[] = [
     columns: [
       "Lead Number",
       "Applicant Name",
+      "Lead Type",
+      "Persona",
       "Phone",
       "Email",
       "Interested Course",
@@ -734,6 +740,7 @@ export const modules: AdminModule[] = [
       "Lead Stage",
       "Lead Status",
       "Source",
+      "Capture Channel",
       "Campaign",
       "Assigned Counselor",
       "Team",
@@ -1143,7 +1150,18 @@ export const extraModules: AdminModule[] = [
     "Billing",
     "Platform Foundation",
     "Organization subscriptions, invoices, billing cycles, plan changes, payment gateway status, tax metadata, and collection controls.",
-    ["Account", "Plan", "Cycle", "Amount", "Status", "Renewal"],
+    [
+      "Organization",
+      "Plan",
+      "Cycle",
+      "Amount",
+      "Status",
+      "Renewal",
+      "Users",
+      "Branches",
+      "Leads",
+      "Storage",
+    ],
   ),
   createLayerModule(
     "branding",
@@ -1218,6 +1236,7 @@ export const extraModules: AdminModule[] = [
     filters: ["Status", "Permission", "Module"],
     columns: ["Role", "Description", "Permissions", "Status", "Updated"],
     rows: [],
+    status: "Active",
   },
   {
     id: "permissions",
@@ -1229,6 +1248,7 @@ export const extraModules: AdminModule[] = [
     filters: ["Module", "Status"],
     columns: ["Permission", "Module", "Description", "Status", "Updated"],
     rows: [],
+    status: "Active",
   },
   {
     id: "organizations",

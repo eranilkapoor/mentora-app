@@ -107,7 +107,7 @@ export class RbacService {
     return permission;
   }
 
-  async deletePermission(id: string): Promise<{ deleted: boolean }> {
+  async deletePermission(id: string): Promise<LeanPermission> {
     const roleUsing = await this.roleModel
       .findOne({ permissions: id, isActive: true })
       .lean()
@@ -121,14 +121,18 @@ export class RbacService {
     }
 
     const result = await this.permissionModel
-      .findByIdAndDelete(id)
-      .lean()
+      .findByIdAndUpdate(
+        id,
+        { $set: { isActive: false } },
+        { new: true, runValidators: true },
+      )
+      .lean<LeanPermission>()
       .exec();
     if (!result)
       return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
         reason: 'permission_not_found',
       });
-    return { deleted: true };
+    return result;
   }
 
   //  Roles
@@ -248,7 +252,7 @@ export class RbacService {
     return updated!;
   }
 
-  async deleteRole(id: string): Promise<{ deleted: boolean }> {
+  async deleteRole(id: string): Promise<LeanRolePopulated> {
     const userWithRole = await this.userModel
       .findOne({ roles: id })
       .lean()
@@ -260,12 +264,21 @@ export class RbacService {
       });
     }
 
-    const result = await this.roleModel.findByIdAndDelete(id).lean().exec();
-    if (!result)
+    const result = await this.roleModel
+      .findByIdAndUpdate(
+        id,
+        { $set: { isActive: false } },
+        { new: true, runValidators: true },
+      )
+      .populate<{ permissions: LeanPermission[] }>('permissions')
+      .lean<LeanRolePopulated>()
+      .exec();
+    if (!result) {
       return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
         reason: 'role_not_found',
       });
-    return { deleted: true };
+    }
+    return result;
   }
 
   //  User Roles

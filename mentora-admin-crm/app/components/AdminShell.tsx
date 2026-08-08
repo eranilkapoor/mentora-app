@@ -579,6 +579,12 @@ export default function AdminDashboardPage() {
     // selected. Everything else needs an active organization to do anything,
     // so keep it out of the sidebar until one is picked.
     if (globalModuleIds.has(id)) return true;
+    if (
+      context?.role === "super_admin" &&
+      organizationStructureModuleIds.has(id)
+    ) {
+      return true;
+    }
     return Boolean(activeOrganizationId);
   }
 
@@ -622,6 +628,13 @@ export default function AdminDashboardPage() {
       </main>
     );
   }
+
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(canAccessModule),
+    }))
+    .filter((group) => group.items.length > 0);
 
   async function runAction(label: string) {
     const normalized = label.toLowerCase();
@@ -846,12 +859,12 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        if (normalized.includes("branch")) {
+        if (activeId === "branches" && normalized.includes("branch")) {
           setOrganizationSetupForm({ kind: "branch", title: "Create Branch" });
           return;
         }
 
-        if (normalized.includes("department")) {
+        if (activeId === "departments" && normalized.includes("department")) {
           setOrganizationSetupForm({
             kind: "department",
             title: "Create Department",
@@ -859,7 +872,7 @@ export default function AdminDashboardPage() {
           return;
         }
 
-        if (normalized.includes("team")) {
+        if (activeId === "teams" && normalized.includes("team")) {
           setOrganizationSetupForm({ kind: "team", title: "Create Team" });
           return;
         }
@@ -2475,7 +2488,7 @@ export default function AdminDashboardPage() {
           aria-label="Admin CRM modules"
           ref={mainMenuRef}
         >
-          {navGroups.map((group) => (
+          {visibleNavGroups.map((group) => (
             <section
               className={`menu-group ${
                 collapsedGroups[group.title] ? "group-collapsed" : ""
@@ -2496,7 +2509,7 @@ export default function AdminDashboardPage() {
                 <span className="menu-heading-title">{group.title}</span>
               </button>
               <ul>
-                {group.items.filter(canAccessModule).map((id) => (
+                {group.items.map((id) => (
                   <li key={id}>
                     <button
                       className={activeId === id ? "selected" : ""}
@@ -2795,24 +2808,32 @@ export default function AdminDashboardPage() {
                   setRecordForm(null);
                   return;
                 }
-                if (
-                  organizationStructureModuleIds.has(activeModule.id) &&
-                  recordForm.row
-                ) {
+                if (organizationStructureModuleIds.has(activeModule.id)) {
                   const existing = normalizeResponseObject(
-                    findModuleRecordForRow(
-                      getActiveModuleApiRecords(),
-                      recordForm.row,
-                    ),
+                    recordForm.row
+                      ? findModuleRecordForRow(
+                          getActiveModuleApiRecords(),
+                          recordForm.row,
+                        )
+                      : undefined,
                   );
                   const existingCode =
                     typeof existing.code === "string"
                       ? existing.code
                       : undefined;
-                  if (!existingCode) {
+                  const submittedCode =
+                    finalDraft.payload.code ||
+                    finalDraft.payload.organizationCode ||
+                    existingCode ||
+                    finalDraft.title
+                      .trim()
+                      .replace(/[^a-z0-9]+/gi, "-")
+                      .replace(/^-|-$/g, "")
+                      .toUpperCase();
+                  if (!submittedCode) {
                     dispatch(
                       crmSessionActions.setToast(
-                        "Existing record code was not found; cannot save changes",
+                        "Code is required before saving this hierarchy record",
                       ),
                     );
                     return;
@@ -2821,12 +2842,26 @@ export default function AdminDashboardPage() {
                     typeof value === "string"
                       ? value
                       : getUnknownRecordId(value) || undefined;
+                  const submittedBranchId =
+                    finalDraft.payload.branchId ||
+                    findOrganizationIdByName(
+                      workspace.branches,
+                      finalDraft.payload.branch,
+                    ) ||
+                    existingRelationId(existing.branchId);
+                  const submittedDepartmentId =
+                    finalDraft.payload.departmentId ||
+                    findOrganizationIdByName(
+                      workspace.departments,
+                      finalDraft.payload.department,
+                    ) ||
+                    existingRelationId(existing.departmentId);
                   if (activeModule.id === "branches") {
                     await dispatch(
                       createBranch({
                         organizationId: activeOrganizationId,
                         name: finalDraft.title,
-                        code: existingCode,
+                        code: submittedCode,
                         city: finalDraft.payload.city || undefined,
                         state: finalDraft.payload.state || undefined,
                       }),
@@ -2836,8 +2871,8 @@ export default function AdminDashboardPage() {
                       createDepartment({
                         organizationId: activeOrganizationId,
                         name: finalDraft.title,
-                        code: existingCode,
-                        branchId: existingRelationId(existing.branchId),
+                        code: submittedCode,
+                        branchId: submittedBranchId,
                         function: finalDraft.payload.function || undefined,
                       }),
                     ).unwrap();
@@ -2846,13 +2881,15 @@ export default function AdminDashboardPage() {
                       createTeam({
                         organizationId: activeOrganizationId,
                         name: finalDraft.title,
-                        code: existingCode,
-                        departmentId: existingRelationId(existing.departmentId),
+                        code: submittedCode,
+                        departmentId: submittedDepartmentId,
                       }),
                     ).unwrap();
                   }
                   await dispatch(
-                    loadIdentityHierarchy({ organizationId: activeOrganizationId }),
+                    loadIdentityHierarchy({
+                      organizationId: activeOrganizationId,
+                    }),
                   ).unwrap();
                   dispatch(crmSessionActions.setToast("Record saved to API"));
                   setRecordForm(null);
@@ -3387,7 +3424,6 @@ function ModulePanel(props: {
             </select>
           ) : null}
           <div className="view-toolbar">
-            <span>View mode</span>
             <div className="btn-group btn-group-sm" role="group">
               <button
                 className={`btn ${
@@ -3842,6 +3878,9 @@ function getRecordStatus(row: string[]) {
         "completed",
         "archived",
         "inactive",
+        "trial",
+        "suspended",
+        "cancelled",
         "blocked",
       ].includes(value.toLowerCase()),
     ) ?? "Active"
@@ -6091,19 +6130,21 @@ function renderCell(value: string) {
       "in progress",
       "under review",
       "documents",
+      "trial",
     ].includes(normalized)
   )
     return <span className="badge warn">{formatBadgeLabel(value)}</span>;
-  if (["urgent", "high", "hot", "blocked"].includes(normalized))
+  if (
+    ["urgent", "high", "hot", "blocked", "archived", "cancelled"].includes(
+      normalized,
+    )
+  )
     return <span className="badge danger">{formatBadgeLabel(value)}</span>;
   return value;
 }
 
 function formatBadgeLabel(value: string) {
-  return formatStatus(value)
-    .split(" ")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(" ");
+  return formatStatus(value);
 }
 
 function getRolePermissionNames(record: unknown) {

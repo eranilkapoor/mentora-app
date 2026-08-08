@@ -53,33 +53,37 @@ export class DashboardService {
     ]);
     const organizations =
       (organizationResult as { items?: Record<string, unknown>[] }).items ?? [];
-    const resolvedContexts =
-      contexts.length > 0 || !roles.includes(Role.SUPER_ADMIN)
-        ? contexts
-        : [
-            {
-              role: Role.SUPER_ADMIN,
-              status: 'active',
-              organizationId: null,
-              branchIds: [],
-              organization: {
-                name: 'All Organizations',
-                code: 'ALL',
-                status: 'active',
-              },
-              branches: [],
-              permissions: [],
-            },
-          ];
-    const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
+    const globalSuperAdminContext = {
+      role: Role.SUPER_ADMIN,
+      status: 'active',
+      organizationId: null,
+      branchIds: [],
+      organization: {
+        name: 'All Organizations',
+        code: 'ALL',
+        status: 'active',
+      },
+      branches: [],
+      permissions: [],
+    };
     const isSuperAdmin = roles.includes(Role.SUPER_ADMIN);
+    const resolvedContexts = isSuperAdmin
+      ? [
+          globalSuperAdminContext,
+          ...contexts.filter(
+            (context) => this.getContextOrganizationId(context) !== '',
+          ),
+        ]
+      : contexts;
+    const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
     const contextOrganizationId = this.getContextOrganizationId(
       resolvedContexts[0],
     );
     const activeOrganizationId =
       organizationId ??
-      contextOrganizationId ??
-      (isSuperAdmin ? '' : this.getRecordId(organizations[0]));
+      (isSuperAdmin
+        ? ''
+        : (contextOrganizationId ?? this.getRecordId(organizations[0])));
 
     return {
       activeOrganizationId,

@@ -21,6 +21,9 @@ export const COLLECTION_NAMES = {
   PAYMENT: 'payments',
   PROMOTION_COUPON: 'promotion_coupons',
   PAYMENT_INVOICE: 'payment_invoices',
+  PAYMENT_CREDIT_NOTE: 'payment_credit_notes',
+  BILLING_CONTRACT: 'billing_contracts',
+  BILLING_DUNNING_EVENT: 'billing_dunning_events',
   WALLET_TRANSACTION: 'wallet_transactions',
   REFERRAL_REWARD: 'referral_rewards',
 

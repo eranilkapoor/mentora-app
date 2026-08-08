@@ -389,6 +389,7 @@ const dedicatedCrmRoutes: Record<string, string> = {
   "lead-sources": adminPath("/lead-sources"),
   "lead-stages": adminPath("/lead-stages"),
   automation: adminPath("/workflows/rules"),
+  billing: adminPath("/plans/organization/billing"),
   reports: adminPath("/reports/definitions"),
   scholarship: adminPath("/scholarships"),
   support: "/admin/support/tickets",
@@ -505,6 +506,7 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       alternatePhone: payload.alternatePhone || undefined,
       budgetRange: payload.budgetRange || undefined,
       campaign: payload.campaign || undefined,
+      captureChannel: payload.captureChannel || undefined,
       campus: payload.preferredCampus || payload.campus || undefined,
       city: payload.city || undefined,
       consentStatus: payload.consentStatus || undefined,
@@ -531,10 +533,12 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
         : undefined,
       landingPage: payload.landingPage || undefined,
       lastName: payload.lastName || fallbackLastNameParts.join(" ") || "Lead",
+      leadType: payload.leadType || undefined,
       lostReason: payload.lostReason || undefined,
       middleName: payload.middleName || undefined,
       partner: payload.partner || undefined,
       percentageOrCgpa: payload.percentageCgpa || undefined,
+      persona: payload.persona || undefined,
       phone: payload.phone || undefined,
       postalCode: payload.postalCode || undefined,
       preferredLanguage: payload.preferredLanguage || undefined,
@@ -1141,6 +1145,9 @@ export const loadDedicatedCrmRecords = createAsyncThunk(
     if (moduleKey === "emails") query.set("channel", "email");
     if (moduleKey === "sms") query.set("channel", "sms");
     const records = await getJson(`${route}?${query.toString()}`);
+    if (moduleKey === "billing") {
+      return { moduleKey, records: [normalizeApiObject(records)] };
+    }
     return { moduleKey, records };
   },
 );
@@ -2120,10 +2127,15 @@ const crmWorkspaceSlice = createSlice({
           organizations?: unknown;
         };
         const organizations = normalizeApiData(data.organizations);
-        state.activeOrganizationId =
+        const requestedOrganizationId = action.meta.arg?.organizationId;
+        if (typeof requestedOrganizationId === "string") {
+          state.activeOrganizationId = requestedOrganizationId;
+        } else if (
+          !state.activeOrganizationId &&
           typeof data.activeOrganizationId === "string"
-            ? data.activeOrganizationId
-            : state.activeOrganizationId;
+        ) {
+          state.activeOrganizationId = data.activeOrganizationId;
+        }
         state.activeBranchId = "";
         state.branches = [];
         state.departments = [];

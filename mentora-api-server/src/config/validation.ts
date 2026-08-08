@@ -489,6 +489,19 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .falsy('false')
     .default(false),
 
+  AUTH_MICROSOFT_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  MICROSOFT_CLIENT_ID: optionalString,
+
+  MICROSOFT_CLIENT_SECRET: optionalString,
+
+  AUTH_SAML_ENABLED: Joi.boolean().truthy('true').falsy('false').default(false),
+
+  AUTH_SAML_METADATA_URL: optionalUri,
+
   AUTH_MAGIC_LINK_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')
@@ -707,6 +720,16 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   PAYMENT_WEBHOOK_SECRET: optionalString,
 
+  RAZORPAY_KEY_ID: optionalString,
+
+  RAZORPAY_KEY_SECRET: optionalString,
+
+  STRIPE_PUBLISHABLE_KEY: optionalString,
+
+  STRIPE_SECRET_KEY: optionalString,
+
+  STRIPE_WEBHOOK_SECRET: optionalString,
+
   PAYMENT_ALLOW_UNSIGNED_VERIFICATION: Joi.boolean()
     .truthy('true')
     .falsy('false')
@@ -858,6 +881,111 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   NOTIFICATION_PUSH_FCM_CLIENT_EMAIL: optionalEmail,
 
   NOTIFICATION_PUSH_FCM_PRIVATE_KEY: optionalString,
+
+  INTEGRATION_DEMO_MODE: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AI_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AI_PROVIDER: optionalString.default('openai'),
+
+  AI_PROVIDER_API_KEY: optionalString,
+
+  OPENAI_API_KEY: optionalString,
+
+  AI_PROVIDER_BASE_URL: optionalUri,
+
+  AI_PROVIDER_MODEL: optionalString,
+
+  WHATSAPP_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  WHATSAPP_PROVIDER: optionalString.default('meta'),
+
+  WHATSAPP_ACCESS_TOKEN: optionalString,
+
+  WHATSAPP_PHONE_NUMBER_ID: optionalString,
+
+  WHATSAPP_BUSINESS_ACCOUNT_ID: optionalString,
+
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: optionalString,
+
+  WHATSAPP_APP_SECRET: optionalString,
+
+  CALENDAR_SYNC_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  GOOGLE_CALENDAR_CLIENT_ID: optionalString,
+
+  GOOGLE_CALENDAR_CLIENT_SECRET: optionalString,
+
+  MICROSOFT_CALENDAR_CLIENT_ID: optionalString,
+
+  MICROSOFT_CALENDAR_CLIENT_SECRET: optionalString,
+
+  DIALER_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  DIALER_PROVIDER: optionalString,
+
+  DIALER_PROVIDER_API_KEY: optionalString,
+
+  DIALER_PROVIDER_BASE_URL: optionalUri,
+
+  DIALER_WEBHOOK_SECRET: optionalString,
+
+  OCR_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  OCR_PROVIDER: optionalString,
+
+  OCR_PROVIDER_API_KEY: optionalString,
+
+  OCR_PROVIDER_BASE_URL: optionalUri,
+
+  GEO_TELEMETRY_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  GEO_TELEMETRY_PROVIDER: optionalString.default('google_maps'),
+
+  GEO_TELEMETRY_API_KEY: optionalString,
+
+  WEBINAR_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  WEBINAR_PROVIDER: optionalString,
+
+  WEBINAR_PROVIDER_API_KEY: optionalString,
+
+  WEBINAR_PROVIDER_BASE_URL: optionalUri,
+
+  ACCOUNTING_EXPORT_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  ACCOUNTING_EXPORT_PROVIDER: optionalString,
+
+  ACCOUNTING_EXPORT_API_KEY: optionalString,
+
+  ACCOUNTING_EXPORT_BASE_URL: optionalUri,
 
   CHAT_PROFANITY_FILTER_ENABLED: Joi.boolean()
     .truthy('true')

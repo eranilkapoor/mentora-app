@@ -12,6 +12,60 @@ import {
   Min,
 } from 'class-validator';
 
+export const LEAD_TYPES = [
+  'student_enquiry',
+  'parent_enquiry',
+  'organization_demo',
+  'institution_admission',
+  'course_enquiry',
+  'exam_prep',
+  'partner_referral',
+  'walk_in',
+  'support_to_sales',
+  'other',
+] as const;
+
+export const LEAD_PERSONAS = [
+  'student',
+  'parent',
+  'guardian',
+  'organization_admin',
+  'school',
+  'college',
+  'university',
+  'coaching_institute',
+  'partner',
+  'agent',
+  'other',
+] as const;
+
+export const LEAD_CAPTURE_CHANNELS = [
+  'website',
+  'landing_page',
+  'google_ads',
+  'meta_ads',
+  'whatsapp',
+  'call',
+  'walk_in',
+  'education_fair',
+  'referral',
+  'partner',
+  'import',
+  'api',
+  'mobile_app',
+  'public_website',
+  'other',
+] as const;
+
+export const LEAD_STATUSES = [
+  'new',
+  'open',
+  'won',
+  'lost',
+  'duplicate',
+  'archived',
+] as const;
+
 export class CreateLeadDto {
   @IsMongoId()
   organizationId!: string;
@@ -30,6 +84,14 @@ export class CreateLeadDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_TYPES)
+  leadType?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_PERSONAS)
+  persona?: string;
 
   @IsOptional()
   @IsString()
@@ -122,6 +184,10 @@ export class CreateLeadDto {
   @IsOptional()
   @IsString()
   formSource?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_CAPTURE_CHANNELS)
+  captureChannel?: string;
 
   @IsOptional()
   @IsArray()
@@ -265,7 +331,7 @@ export class ListLeadsDto {
   search?: string;
 
   @IsOptional()
-  @IsIn(['new', 'open', 'won', 'lost', 'duplicate', 'archived'])
+  @IsIn(LEAD_STATUSES)
   status?: string;
 
   @IsOptional()
@@ -282,6 +348,14 @@ export class ListLeadsDto {
 
   @IsOptional()
   @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
   sourceId?: string;
 
   @IsOptional()
@@ -291,6 +365,26 @@ export class ListLeadsDto {
   @IsOptional()
   @IsString()
   tag?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_TYPES)
+  leadType?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_PERSONAS)
+  persona?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_CAPTURE_CHANNELS)
+  captureChannel?: string;
+
+  @IsOptional()
+  @IsString()
+  campaign?: string;
+
+  @IsOptional()
+  @IsString()
+  interestedCourse?: string;
 
   @IsOptional()
   @IsString()
@@ -333,6 +427,14 @@ export class UpdateLeadDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_TYPES)
+  leadType?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_PERSONAS)
+  persona?: string;
 
   @IsOptional()
   @IsString()
@@ -427,6 +529,10 @@ export class UpdateLeadDto {
   formSource?: string;
 
   @IsOptional()
+  @IsIn(LEAD_CAPTURE_CHANNELS)
+  captureChannel?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   interestedPrograms?: string[];
@@ -511,7 +617,7 @@ export class UpdateLeadDto {
   temperature?: string;
 
   @IsOptional()
-  @IsIn(['new', 'open', 'won', 'lost', 'duplicate', 'archived'])
+  @IsIn(LEAD_STATUSES)
   status?: string;
 
   @IsOptional()

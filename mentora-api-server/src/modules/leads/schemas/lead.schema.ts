@@ -54,6 +54,43 @@ export class Lead {
   @Prop({ trim: true, index: true })
   leadNumber?: string;
 
+  @Prop({
+    enum: [
+      'student_enquiry',
+      'parent_enquiry',
+      'organization_demo',
+      'institution_admission',
+      'course_enquiry',
+      'exam_prep',
+      'partner_referral',
+      'walk_in',
+      'support_to_sales',
+      'other',
+    ],
+    default: 'student_enquiry',
+    index: true,
+  })
+  leadType!: string;
+
+  @Prop({
+    enum: [
+      'student',
+      'parent',
+      'guardian',
+      'organization_admin',
+      'school',
+      'college',
+      'university',
+      'coaching_institute',
+      'partner',
+      'agent',
+      'other',
+    ],
+    default: 'student',
+    index: true,
+  })
+  persona!: string;
+
   @Prop({ lowercase: true, trim: true, index: true })
   email?: string;
 
@@ -125,6 +162,29 @@ export class Lead {
 
   @Prop({ trim: true })
   formSource?: string;
+
+  @Prop({
+    enum: [
+      'website',
+      'landing_page',
+      'google_ads',
+      'meta_ads',
+      'whatsapp',
+      'call',
+      'walk_in',
+      'education_fair',
+      'referral',
+      'partner',
+      'import',
+      'api',
+      'mobile_app',
+      'public_website',
+      'other',
+    ],
+    default: 'website',
+    index: true,
+  })
+  captureChannel!: string;
 
   @Prop({ type: [String], default: [] })
   interestedPrograms!: string[];
@@ -256,3 +316,7 @@ LeadSchema.index({
 LeadSchema.index({ organizationId: 1, nextFollowUpAt: 1 });
 LeadSchema.index({ organizationId: 1, tags: 1 });
 LeadSchema.index({ organizationId: 1, score: -1, temperature: 1 });
+LeadSchema.index({ organizationId: 1, leadType: 1, status: 1, createdAt: -1 });
+LeadSchema.index({ organizationId: 1, captureChannel: 1, createdAt: -1 });
+LeadSchema.index({ organizationId: 1, campaign: 1, createdAt: -1 });
+LeadSchema.index({ organizationId: 1, departmentId: 1, teamId: 1 });

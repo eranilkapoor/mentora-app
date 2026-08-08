@@ -91,6 +91,34 @@ export class CreatePlanDto {
 
   @IsOptional()
   @IsString()
+  audience?: 'consumer' | 'organization';
+
+  @IsOptional()
+  @IsString({ each: true })
+  enabledModules?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  userLimit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  branchLimit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  leadLimit?: number;
+
+  @IsOptional()
+  @IsNumber()
+  storageLimitGb?: number;
+
+  @IsOptional()
+  @IsNumber()
+  aiCreditLimit?: number;
+
+  @IsOptional()
+  @IsString()
   currency?: string;
 
   @IsOptional()

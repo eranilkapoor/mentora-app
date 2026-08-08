@@ -141,7 +141,11 @@ const providerCatalog: ProviderCatalogItem[] = [
       'MICROSOFT_CALENDAR_CLIENT_ID',
       'MICROSOFT_CALENDAR_CLIENT_SECRET',
     ],
-    requiredConfigPaths: ['integrations.calendar.enabled'],
+    requiredConfigPaths: [
+      'integrations.calendar.enabled',
+      'integrations.calendar.googleClientId',
+      'integrations.calendar.googleClientSecret',
+    ],
   },
   {
     key: 'webinar_provider',
@@ -153,7 +157,11 @@ const providerCatalog: ProviderCatalogItem[] = [
       'WEBINAR_PROVIDER_API_KEY',
       'WEBINAR_PROVIDER_BASE_URL',
     ],
-    requiredConfigPaths: [],
+    requiredConfigPaths: [
+      'integrations.webinar.enabled',
+      'integrations.webinar.apiKey',
+      'integrations.webinar.baseUrl',
+    ],
   },
   {
     key: 'ocr_verification',
@@ -197,7 +205,11 @@ const providerCatalog: ProviderCatalogItem[] = [
       'ACCOUNTING_EXPORT_API_KEY',
       'ACCOUNTING_EXPORT_BASE_URL',
     ],
-    requiredConfigPaths: [],
+    requiredConfigPaths: [
+      'integrations.accounting.enabled',
+      'integrations.accounting.apiKey',
+      'integrations.accounting.baseUrl',
+    ],
   },
   {
     key: 'payment_reconciliation',
@@ -209,8 +221,15 @@ const providerCatalog: ProviderCatalogItem[] = [
       'PAYMENT_WEBHOOK_SECRET',
       'RAZORPAY_KEY_ID',
       'RAZORPAY_KEY_SECRET',
+      'STRIPE_SECRET_KEY',
     ],
-    requiredConfigPaths: ['payments.signatureSecret', 'payments.webhookSecret'],
+    requiredConfigPaths: [
+      'payments.signatureSecret',
+      'payments.webhookSecret',
+      'payments.razorpay.keyId',
+      'payments.razorpay.keySecret',
+      'payments.stripe.secretKey',
+    ],
   },
   {
     key: 'ai_provider_metering',
@@ -247,17 +266,26 @@ export class IntegrationsService {
       .lean();
     return providerCatalog.map((provider) => {
       const config = configs.find((item) => item.providerKey === provider.key);
+      const configuredByEnv = this.isConfiguredByEnv(provider);
+      const demoMode = this.isDemoMode();
+      const computedStatus = configuredByEnv
+        ? demoMode
+          ? 'sandbox_configured'
+          : 'healthy'
+        : 'not_configured';
       return {
         ...provider,
-        configuredByEnv: this.isConfiguredByEnv(provider),
+        configuredByEnv,
+        demoMode,
         missingEnvKeys: this.missingEnvKeys(provider),
         requiredEnvKeys: provider.envKeys,
-        status: config?.status ?? 'not_configured',
+        status: config?.status ?? computedStatus,
         settings: config?.settings ?? {},
         health: {
           ...(config?.health ?? {}),
           checkedBy: 'integration_catalog',
-          readyForLive: this.isConfiguredByEnv(provider),
+          readyForDemo: configuredByEnv,
+          readyForLive: configuredByEnv && !demoMode,
         },
         lastCheckedAt: config?.lastCheckedAt,
       };
@@ -278,10 +306,17 @@ export class IntegrationsService {
       organizationId,
       providerKey,
       module: provider.module,
-      readyForLive: missingEnvKeys.length === 0,
+      demoMode: this.isDemoMode(),
+      readyForDemo: missingEnvKeys.length === 0,
+      readyForLive: missingEnvKeys.length === 0 && !this.isDemoMode(),
       missingEnvKeys,
       requiredEnvKeys: provider.envKeys,
-      status: missingEnvKeys.length === 0 ? 'healthy' : 'not_configured',
+      status:
+        missingEnvKeys.length === 0
+          ? this.isDemoMode()
+            ? 'sandbox_configured'
+            : 'healthy'
+          : 'not_configured',
       checkedAt: new Date().toISOString(),
     };
   }
@@ -324,6 +359,10 @@ export class IntegrationsService {
 
   private isConfiguredByEnv(provider: ProviderCatalogItem) {
     return this.missingEnvKeys(provider).length === 0;
+  }
+
+  private isDemoMode() {
+    return this.configService.get<boolean>('integrations.demoMode', false);
   }
 
   private missingEnvKeys(provider: ProviderCatalogItem) {

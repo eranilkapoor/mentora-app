@@ -33,6 +33,8 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. A
 - [Task Roadmap](planning/TASK-ROADMAP.md): implementation checklist from copied foundation to Mentora learning platform.
 - [Mobile App Flow Plan](planning/FLOW-PLAN.md): student, parent, registration, scheduling, AI tutor, subscription, and learning journeys.
 - [CRM Flow Plan](planning/CRM-FLOW-PLAN.md): admin CRM, organization, lead, application, admission, communication, operations, reporting, security, and CRM API journeys.
+- [CRM And App Role Operations](planning/CRM-AND-APP-ROLE-OPERATIONS.md): role-by-role CRM and app permissions for platform users, organization users, students, parents, and partners.
+- [SaaS Billing Plan](planning/SAAS-BILLING-PLAN.md): consumer and organization plan catalog, subscriptions, invoices, payments, CRM billing operations, and enterprise billing gaps.
 - [Student Profile Model](planning/STUDENT-PROFILE-MODEL.md): complete student profile sections, why they are needed, API direction, and mobile screen direction.
 - [Color Palette](planning/COLOR-PLATE.md): visual direction for the mobile and public web experience.
 - `../mentora-public-website`: Next.js public website source for brand, plans, lead capture, support, privacy, terms, account deletion, and community guidelines.

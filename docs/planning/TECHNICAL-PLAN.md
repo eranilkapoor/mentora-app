@@ -36,6 +36,36 @@ Organization-scoped CRM users are stored as `users` plus `user_memberships`. A m
 
 IAM APIs include `admin/branches`, `admin/departments`, `admin/teams`, `admin/organization-users`, `admin/rbac`, and `admin/identity/hierarchy`. The CRM should use `GET /api/v1/admin/identity/hierarchy?organizationId=...` to hydrate all hierarchy dropdowns from server data.
 
+See [CRM And App Role Operations](CRM-AND-APP-ROLE-OPERATIONS.md) for the role-by-role operation matrix covering what platform users, organization users, and app users can see, list, filter, add, edit, change status, archive, restore, export, or manage.
+
+See [SaaS Billing Plan](SAAS-BILLING-PLAN.md) for the split between consumer student/parent subscriptions and organization CRM SaaS subscriptions, including plan limits, organization billing ownership, payment/invoice scoping, and enterprise billing gaps.
+
+## Super Admin CRM Behavior
+
+Platform super admins operate globally, but organization-owned writes still require a selected organization context.
+
+- Default login context: `All organizations` and `All branches`.
+- Platform-wide modules are available immediately: Dashboard, Organizations, Users, Roles, Permissions, Security, Integrations, Reports/Audit-style platform views.
+- Hierarchy modules are visible immediately: Branches, Departments, and Teams. They require selecting a specific organization before listing, creating, editing, archiving, restoring, or exporting records.
+- Organization-owned modules such as Leads, Applications, Admissions, Campaigns, Communications, Tasks, Documents, Finance, Events, Field Force, Workflows, and Programs require a selected organization before create/update/status/archive operations.
+
+## RBAC Readiness
+
+Roles and Permissions are code-side ready for controlled MVP demos.
+
+Implemented:
+
+- Create, list, search/filter through CRM, get by ID, update, active/inactive status changes, and role-to-permission mapping.
+- Backend role/permission delete endpoints now soft-disable records by setting `isActive=false`; they do not physically delete RBAC definitions.
+- Permission disable is blocked when the permission is assigned to an active role.
+- Role disable is blocked when the role is assigned to users.
+
+Remaining production hardening:
+
+- Add audit writes for RBAC create/update/disable.
+- Add immutable protection for seeded system roles and system permissions if required by product policy.
+- Add E2E access tests for super admin, organization admin, branch admin, counselor, finance, and support.
+
 ## CRM Product Layers
 
 Backend module coverage and admin CRM navigation are aligned to five layers:

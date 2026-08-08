@@ -13,6 +13,7 @@ import { CreatePlanDto } from '../dto/create-plan.dto';
 import { UpdatePlanDto } from '../dto/update-plan.dto';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { AssignFeatureDto } from '../dto/assign-feature.dto';
+import { PlanType } from '@/common/enums';
 import { ErrorCode } from '@/common/constants';
 import {
   throwConflict,
@@ -73,10 +74,28 @@ export class PlanService {
       .exec();
   }
 
+  async getOrganizationPlans(): Promise<LeanPlan[]> {
+    return this.planModel
+      .find({
+        isActive: true,
+        $or: [
+          { audience: 'organization' },
+          { planType: PlanType.ORGANIZATION },
+        ],
+      })
+      .sort({ sortOrder: 1 })
+      .lean<LeanPlan[]>()
+      .exec();
+  }
+
   async getActivePlansWithFeatures() {
     const [plans, allPlanFeatures] = await Promise.all([
       this.planModel
-        .find({ isActive: true })
+        .find({
+          isActive: true,
+          planType: { $ne: PlanType.ORGANIZATION },
+          audience: { $ne: 'organization' },
+        })
         .sort({ sortOrder: 1 })
         .lean<LeanPlan[]>()
         .exec(),

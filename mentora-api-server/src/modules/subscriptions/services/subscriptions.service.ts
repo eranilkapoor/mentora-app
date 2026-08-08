@@ -15,8 +15,12 @@ import { PlanTier, PlanType, SubscriptionStatus } from '@/common/enums';
 import { PaymentGateway } from '@/modules/payments/enums/payment-gateway.enum';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { ErrorCode } from '@/common/constants';
-import { throwNotFound } from '@/common/exceptions/throw-app-exception';
+import {
+  throwBadRequest,
+  throwNotFound,
+} from '@/common/exceptions/throw-app-exception';
 import type { GooglePlaySubscriptionLifecycle } from '@/modules/payments/services/store-receipt-verifier.service';
+import { AssignOrganizationSubscriptionDto } from '../dto/organization-subscription.dto';
 
 @Injectable()
 export class SubscriptionsService {
@@ -37,6 +41,7 @@ export class SubscriptionsService {
     userId: string,
     planId: string,
     options?: {
+      organizationId?: string;
       paymentId?: string;
       paymentProvider?: PaymentGateway;
       autoRenew?: boolean;
@@ -60,11 +65,21 @@ export class SubscriptionsService {
         reason: 'plan_not_found_or_inactive',
       });
     }
+    const isOrganizationPlan = plan.planType === PlanType.ORGANIZATION;
+    const organizationId = options?.organizationId;
+    if (isOrganizationPlan && !organizationId) {
+      return throwBadRequest(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'organization_subscription_requires_organization_id',
+      });
+    }
 
     // Expire any existing active subscription for this user
+    const subscriptionOwnerFilter = isOrganizationPlan
+      ? { organizationId: new Types.ObjectId(organizationId) }
+      : { userId: new Types.ObjectId(userId) };
     await this.subModel.updateMany(
       {
-        userId: new Types.ObjectId(userId),
+        ...subscriptionOwnerFilter,
         status: {
           $in: [
             SubscriptionStatus.ACTIVE,
@@ -88,6 +103,9 @@ export class SubscriptionsService {
 
     const subscription = await this.subModel.create({
       userId: new Types.ObjectId(userId),
+      organizationId: options?.organizationId
+        ? new Types.ObjectId(options.organizationId)
+        : undefined,
       planId: new Types.ObjectId(planId),
       startDate,
       endDate,
@@ -106,15 +124,17 @@ export class SubscriptionsService {
       storeLastVerifiedAt: options?.storeLastVerifiedAt,
     });
 
-    // Sync user membership tier for fast reads
-    await this.userRepo.updateMembership(userId, {
-      tier: plan.tier ?? PlanTier.FREE,
-      status: options?.status ?? SubscriptionStatus.ACTIVE,
-      startDate,
-      expiresAt: endDate,
-      autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
-      planId: planId,
-    });
+    if (!isOrganizationPlan) {
+      // Sync user membership tier for fast reads
+      await this.userRepo.updateMembership(userId, {
+        tier: plan.tier ?? PlanTier.FREE,
+        status: options?.status ?? SubscriptionStatus.ACTIVE,
+        startDate,
+        expiresAt: endDate,
+        autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
+        planId: planId,
+      });
+    }
 
     return { success: true, subscription };
   }
@@ -488,6 +508,180 @@ export class SubscriptionsService {
         autoRenew: Boolean(currentSubscription?.autoRenew),
       },
     };
+  }
+
+  async getOrganizationBillingSummary(organizationId: string) {
+    const organizationObjectId = new Types.ObjectId(organizationId);
+    const now = new Date();
+    const [currentPlan, subscriptions, payments, totals] = await Promise.all([
+      this.getActiveOrganizationSubscription(organizationId),
+      this.subModel
+        .find({ organizationId: organizationObjectId })
+        .populate('planId')
+        .sort({ startDate: -1, createdAt: -1 })
+        .limit(25)
+        .lean()
+        .exec(),
+      this.paymentModel
+        .find({ organizationId: organizationObjectId })
+        .populate('planId')
+        .sort({ createdAt: -1, initiatedAt: -1 })
+        .limit(25)
+        .select('-gatewayPayload')
+        .lean()
+        .exec(),
+      this.paymentModel
+        .aggregate<{
+          _id: string;
+          totalPaid: number;
+          paymentCount: number;
+          lastPaymentAt?: Date;
+        }>([
+          {
+            $match: {
+              organizationId: organizationObjectId,
+              status: PaymentStatus.SUCCESS,
+            },
+          },
+          {
+            $group: {
+              _id: '$currency',
+              totalPaid: { $sum: '$netAmount' },
+              paymentCount: { $sum: 1 },
+              lastPaymentAt: { $max: '$paidAt' },
+            },
+          },
+          { $sort: { totalPaid: -1 } },
+        ])
+        .exec(),
+    ]);
+    const primaryTotal = totals[0];
+    const currentSubscription = currentPlan as
+      | (Record<string, unknown> & {
+          endDate?: Date | string;
+          autoRenew?: boolean;
+        })
+      | null;
+    const plan = currentSubscription?.planId as
+      | Record<string, unknown>
+      | undefined;
+
+    return {
+      organizationId,
+      currentPlan,
+      subscriptions,
+      payments,
+      billing: {
+        currency: primaryTotal?._id ?? payments[0]?.currency ?? 'INR',
+        totalPaid: primaryTotal?.totalPaid ?? 0,
+        successfulPayments: primaryTotal?.paymentCount ?? 0,
+        lastPaymentAt: primaryTotal?.lastPaymentAt,
+        nextRenewalAt:
+          currentSubscription?.autoRenew &&
+          currentSubscription?.endDate &&
+          new Date(currentSubscription.endDate) > now
+            ? currentSubscription.endDate
+            : null,
+        autoRenew: Boolean(currentSubscription?.autoRenew),
+      },
+      limits: {
+        userLimit: plan?.userLimit ?? 0,
+        branchLimit: plan?.branchLimit ?? 0,
+        leadLimit: plan?.leadLimit ?? 0,
+        storageLimitGb: plan?.storageLimitGb ?? 0,
+        aiCreditLimit: plan?.aiCreditLimit ?? 0,
+        enabledModules: Array.isArray(plan?.enabledModules)
+          ? plan.enabledModules
+          : [],
+      },
+    };
+  }
+
+  async getActiveOrganizationSubscription(organizationId: string) {
+    const now = new Date();
+    const organizationObjectId = new Types.ObjectId(organizationId);
+    const overdueFilter = {
+      organizationId: organizationObjectId,
+      status: {
+        $in: [
+          SubscriptionStatus.ACTIVE,
+          SubscriptionStatus.TRIAL,
+          SubscriptionStatus.GRACE_PERIOD,
+        ],
+      },
+      endDate: { $lte: now },
+    };
+    await this.subModel.updateMany(overdueFilter, {
+      $set: { status: SubscriptionStatus.EXPIRED },
+    });
+
+    return this.subModel
+      .findOne({
+        organizationId: organizationObjectId,
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
+        endDate: { $gt: now },
+      })
+      .populate('planId')
+      .sort({ endDate: -1, createdAt: -1 })
+      .lean()
+      .exec();
+  }
+
+  async assignOrganizationSubscription(
+    actorId: string,
+    dto: AssignOrganizationSubscriptionDto,
+  ) {
+    const plan = await this.planModel.findById(dto.planId).lean().exec();
+    if (!plan || !plan.isActive || plan.planType !== PlanType.ORGANIZATION) {
+      return throwBadRequest(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'organization_plan_not_found_or_inactive',
+      });
+    }
+
+    const startDate = dto.startDate ? new Date(dto.startDate) : new Date();
+    const endDate = dto.endDate
+      ? new Date(dto.endDate)
+      : new Date(startDate.getTime() + plan.durationDays * 86_400_000);
+
+    await this.subModel.updateMany(
+      {
+        organizationId: new Types.ObjectId(dto.organizationId),
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
+      },
+      {
+        $set: {
+          status: SubscriptionStatus.EXPIRED,
+          cancelledAt: new Date(),
+          cancelledReason: 'replaced_by_new_organization_subscription',
+        },
+      },
+    );
+
+    return this.subModel.create({
+      userId: new Types.ObjectId(actorId),
+      organizationId: new Types.ObjectId(dto.organizationId),
+      planId: new Types.ObjectId(dto.planId),
+      startDate,
+      endDate,
+      status: dto.status ?? SubscriptionStatus.ACTIVE,
+      autoRenew: dto.autoRenew ?? Boolean(plan.autoRenewDefault),
+      paymentProvider: dto.paymentProvider ?? PaymentGateway.MANUAL,
+      source: 'admin_crm',
+      reason: dto.reason,
+      createdBy: new Types.ObjectId(actorId),
+    });
   }
 
   async cancelSubscription(userId: string, reason?: string) {

@@ -55,6 +55,27 @@ export class Plan {
   @Prop({ default: false })
   isCustom!: boolean;
 
+  @Prop({ default: 'consumer', enum: ['consumer', 'organization'] })
+  audience!: 'consumer' | 'organization';
+
+  @Prop({ type: [String], default: [] })
+  enabledModules!: string[];
+
+  @Prop({ default: 1, min: 0 })
+  userLimit!: number;
+
+  @Prop({ default: 1, min: 0 })
+  branchLimit!: number;
+
+  @Prop({ default: 0, min: 0 })
+  leadLimit!: number;
+
+  @Prop({ default: 0, min: 0 })
+  storageLimitGb!: number;
+
+  @Prop({ default: 0, min: 0 })
+  aiCreditLimit!: number;
+
   @Prop({ default: 'INR' })
   currency!: string;
 
@@ -98,6 +119,7 @@ export const PlanSchema = SchemaFactory.createForClass(Plan);
 
 PlanSchema.index({ tier: 1 });
 PlanSchema.index({ planType: 1, sortOrder: 1 });
+PlanSchema.index({ audience: 1, isActive: 1, sortOrder: 1 });
 PlanSchema.index({ price: 1 });
 PlanSchema.index({ isActive: 1 });
 PlanSchema.index({ sortOrder: 1 });

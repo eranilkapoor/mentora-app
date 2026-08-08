@@ -15,6 +15,9 @@ export class Payment {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ required: true, unique: true, index: true })
   orderId!: string;
 
@@ -163,6 +166,8 @@ export type PaymentDocument = HydratedDocument<Payment>;
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 PaymentSchema.index({ userId: 1, createdAt: -1 });
+PaymentSchema.index({ organizationId: 1, createdAt: -1 });
+PaymentSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
 PaymentSchema.index({ status: 1, createdAt: -1 });
 PaymentSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 PaymentSchema.index({ legalHoldUntil: 1 });

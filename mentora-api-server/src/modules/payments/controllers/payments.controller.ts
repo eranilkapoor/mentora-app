@@ -59,6 +59,17 @@ export class PaymentsController {
     );
   }
 
+  @Post('organization/order')
+  async createOrganizationOrder(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateOrderDto & { organizationId: string },
+  ) {
+    return successResponse(
+      await this.paymentsService.createOrganizationCheckout(req.user.sub, dto),
+      SuccessCode.PAYMENT_CREATED,
+    );
+  }
+
   @Post('verify')
   async verify(
     @Req() req: AuthenticatedRequest,
@@ -111,6 +122,30 @@ export class PaymentsController {
   ) {
     return successResponse(
       await this.paymentsService.processWebhook(dto, signature),
+      SuccessCode.PAYMENT_WEBHOOK_PROCESSED,
+    );
+  }
+
+  @Public()
+  @Post('webhook/razorpay')
+  async razorpayWebhook(
+    @Body() payload: Record<string, unknown>,
+    @Headers('x-razorpay-signature') signature?: string,
+  ) {
+    return successResponse(
+      await this.paymentsService.processRazorpayWebhook(payload, signature),
+      SuccessCode.PAYMENT_WEBHOOK_PROCESSED,
+    );
+  }
+
+  @Public()
+  @Post('webhook/stripe')
+  async stripeWebhook(
+    @Body() payload: Record<string, unknown>,
+    @Headers('stripe-signature') signature?: string,
+  ) {
+    return successResponse(
+      await this.paymentsService.processStripeWebhook(payload, signature),
       SuccessCode.PAYMENT_WEBHOOK_PROCESSED,
     );
   }

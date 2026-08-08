@@ -13,6 +13,10 @@ import {
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { ActorScopeService } from '@/common/rbac/actor-scope.service';
 import { buildScopeFilter, ScopeFieldMap } from '@/common/rbac/data-scope.util';
+import {
+  LeadStage,
+  LeadStageDocument,
+} from '@/common/crm/schemas/lead-stage.schema';
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AddLeadActivityDto,
@@ -59,6 +63,8 @@ export class LeadsService {
     private readonly activities: Model<LeadActivityDocument>,
     @InjectModel(LeadAssignment.name)
     private readonly assignments: Model<LeadAssignmentDocument>,
+    @InjectModel(LeadStage.name)
+    private readonly stages: Model<LeadStageDocument>,
     private readonly auditService: AdminAuditService,
     private readonly actorScope: ActorScopeService,
   ) {}
@@ -68,11 +74,23 @@ export class LeadsService {
       userId && Types.ObjectId.isValid(userId)
         ? new Types.ObjectId(userId)
         : undefined;
+    const stage = dto.stageId
+      ? await this.getStageOrThrow(dto.organizationId, dto.stageId)
+      : await this.findInitialStage(dto.organizationId);
+    const normalizedEmail = dto.email?.trim().toLowerCase();
+    const normalizedPhone = this.normalizePhone(dto.phone);
+    const duplicateIndicator = await this.hasExistingDuplicate(
+      dto.organizationId,
+      normalizedEmail,
+      normalizedPhone,
+    );
     const lead = await this.leads.create({
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
+      email: normalizedEmail,
+      phone: normalizedPhone,
       sourceId: toOptionalObjectId(dto.sourceId),
-      stageId: toOptionalObjectId(dto.stageId),
+      stageId: stage?._id,
       branchId: toOptionalObjectId(dto.branchId),
       assignedTo: toOptionalObjectId(dto.assignedTo),
       dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
@@ -80,9 +98,11 @@ export class LeadsService {
       leadNumber: await this.generateLeadNumber(dto.organizationId),
       teamId: toOptionalObjectId(dto.teamId),
       tags: this.normalizeTags(dto.tags),
+      duplicateIndicator,
       nextFollowUpAt: dto.nextFollowUpAt
         ? new Date(dto.nextFollowUpAt)
         : undefined,
+      slaDueAt: this.resolveSlaDueAt(stage),
       createdBy,
     });
     await this.addLeadActivity(userId, String(lead._id), {
@@ -116,11 +136,22 @@ export class LeadsService {
       ...(query.branchId
         ? { branchId: toRequiredObjectId(query.branchId) }
         : {}),
+      ...(query.departmentId
+        ? { departmentId: toRequiredObjectId(query.departmentId) }
+        : {}),
+      ...(query.teamId ? { teamId: toRequiredObjectId(query.teamId) } : {}),
       ...(query.sourceId
         ? { sourceId: toRequiredObjectId(query.sourceId) }
         : {}),
       ...(query.stageId ? { stageId: toRequiredObjectId(query.stageId) } : {}),
       ...(query.status ? { status: query.status } : {}),
+      ...(query.leadType ? { leadType: query.leadType } : {}),
+      ...(query.persona ? { persona: query.persona } : {}),
+      ...(query.captureChannel ? { captureChannel: query.captureChannel } : {}),
+      ...(query.campaign ? { campaign: query.campaign } : {}),
+      ...(query.interestedCourse
+        ? { interestedCourse: query.interestedCourse }
+        : {}),
       ...(query.tag ? { tags: query.tag.trim().toLowerCase() } : {}),
       ...(query.temperature ? { temperature: query.temperature } : {}),
     };
@@ -247,12 +278,13 @@ export class LeadsService {
   async updateLead(userId: string, leadId: string, dto: UpdateLeadDto) {
     const update: Record<string, unknown> = {
       ...dto,
+      ...(dto.email ? { email: dto.email.trim().toLowerCase() } : {}),
+      ...(dto.phone ? { phone: this.normalizePhone(dto.phone) } : {}),
       ...(dto.branchId ? { branchId: toRequiredObjectId(dto.branchId) } : {}),
       ...(dto.departmentId
         ? { departmentId: toRequiredObjectId(dto.departmentId) }
         : {}),
       ...(dto.sourceId ? { sourceId: toRequiredObjectId(dto.sourceId) } : {}),
-      ...(dto.stageId ? { stageId: toRequiredObjectId(dto.stageId) } : {}),
       ...(dto.teamId ? { teamId: toRequiredObjectId(dto.teamId) } : {}),
       ...(dto.assignedTo
         ? { assignedTo: toRequiredObjectId(dto.assignedTo) }
@@ -263,6 +295,13 @@ export class LeadsService {
         ? { nextFollowUpAt: new Date(dto.nextFollowUpAt) }
         : {}),
     };
+    if (dto.stageId) {
+      const stage = await this.getStageOrThrow(dto.organizationId, dto.stageId);
+      update.stageId = stage._id;
+      update.slaDueAt = this.resolveSlaDueAt(stage);
+      if (stage.isConverted) update.status = 'won';
+      if (stage.isLost) update.status = 'lost';
+    }
     delete update.organizationId;
     const updateFilter = await this.applyScope(
       {
@@ -574,12 +613,36 @@ export class LeadsService {
       userId,
       dto.organizationId,
     );
-    const lead = await this.leads.findOneAndUpdate(
-      filter,
-      { stageId: toRequiredObjectId(dto.stageId) },
-      { new: true },
+    const existingLead = await this.leads.findOne(filter);
+    if (!existingLead) {
+      throw new NotFoundException('Education CRM lead not found');
+    }
+    const nextStage = await this.getStageOrThrow(
+      dto.organizationId,
+      dto.stageId,
     );
-    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    const currentStage = existingLead.stageId
+      ? await this.stages.findOne({
+          _id: existingLead.stageId,
+          organizationId,
+        })
+      : null;
+    this.validateStageTransition(
+      existingLead,
+      currentStage,
+      nextStage,
+      dto.reason,
+    );
+    existingLead.set({
+      stageId: nextStage._id,
+      slaDueAt: this.resolveSlaDueAt(nextStage),
+      status: nextStage.isConverted
+        ? 'won'
+        : nextStage.isLost
+          ? 'lost'
+          : 'open',
+    });
+    await existingLead.save();
     await this.addLeadActivity(userId, leadId, {
       organizationId: dto.organizationId,
       type: 'stage_changed',
@@ -591,14 +654,14 @@ export class LeadsService {
       userId,
       'lead.stage_changed',
       dto.organizationId,
-      lead._id,
+      existingLead._id,
       {
-        after: this.toAuditRecord(lead.toObject()),
+        after: this.toAuditRecord(existingLead.toObject()),
         reason: dto.reason,
         metadata: { stageId: dto.stageId },
       },
     );
-    return lead;
+    return existingLead;
   }
 
   async addLeadActivity(
@@ -871,6 +934,109 @@ export class LeadsService {
           .filter((tag) => tag.length > 0),
       ),
     ];
+  }
+
+  private normalizePhone(phone: string | undefined): string | undefined {
+    if (!phone) return undefined;
+    return phone.replace(/[^\d+]/g, '').trim() || undefined;
+  }
+
+  private async hasExistingDuplicate(
+    organizationId: string,
+    email: string | undefined,
+    phone: string | undefined,
+  ): Promise<boolean> {
+    const conditions: FilterQuery<LeadDocument>[] = [];
+    if (email) conditions.push({ email });
+    if (phone) conditions.push({ phone });
+    if (conditions.length === 0) return false;
+
+    return Boolean(
+      await this.leads.exists({
+        organizationId: toOrganizationObjectId(organizationId),
+        status: { $ne: 'archived' },
+        $or: conditions,
+      }),
+    );
+  }
+
+  private async findInitialStage(
+    organizationId: string,
+  ): Promise<LeadStageDocument | null> {
+    return this.stages
+      .findOne({
+        organizationId: toOrganizationObjectId(organizationId),
+        status: 'active',
+        isInitial: true,
+      })
+      .sort({ order: 1, _id: 1 });
+  }
+
+  private async getStageOrThrow(
+    organizationId: string,
+    stageId: string,
+  ): Promise<LeadStageDocument> {
+    const stage = await this.stages.findOne({
+      _id: toRequiredObjectId(stageId),
+      organizationId: toOrganizationObjectId(organizationId),
+      status: 'active',
+    });
+    if (!stage) throw new NotFoundException('Lead stage not found');
+    return stage;
+  }
+
+  private resolveSlaDueAt(stage: LeadStageDocument | null): Date | undefined {
+    if (!stage?.slaDurationHours || stage.slaDurationHours <= 0) {
+      return undefined;
+    }
+    return new Date(Date.now() + stage.slaDurationHours * 60 * 60 * 1000);
+  }
+
+  private validateStageTransition(
+    lead: LeadDocument,
+    currentStage: LeadStageDocument | null,
+    nextStage: LeadStageDocument,
+    reason: string | undefined,
+  ) {
+    const allowedNextStageIds = Array.isArray(currentStage?.allowedNextStageIds)
+      ? currentStage.allowedNextStageIds.map(String)
+      : [];
+
+    if (nextStage.requiresRemarks && !reason?.trim()) {
+      throw new BadRequestException('Stage change remarks are required');
+    }
+
+    const missingFields = (nextStage.mandatoryFieldsBeforeEntry ?? []).filter(
+      (field) => !this.hasLeadValue(lead, field),
+    );
+    if (missingFields.length > 0) {
+      throw new BadRequestException(
+        `Mandatory lead fields missing before stage change: ${missingFields.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    if (
+      currentStage &&
+      allowedNextStageIds.length > 0 &&
+      !allowedNextStageIds.includes(String(nextStage._id))
+    ) {
+      throw new BadRequestException(
+        'Lead cannot be moved to the requested stage from its current stage',
+      );
+    }
+  }
+
+  private hasLeadValue(lead: LeadDocument, field: string): boolean {
+    const value = lead.get(field) as unknown;
+    if (value === undefined || value === null) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    if (value instanceof Date) return !Number.isNaN(value.getTime());
+    if (typeof value === 'string') return value.trim() !== '';
+    if (typeof value === 'number' || typeof value === 'boolean') return true;
+    if (typeof value === 'object') return true;
+    return false;
   }
 
   private async generateLeadNumber(organizationId: string): Promise<string> {
