@@ -5,6 +5,7 @@ export type OrganizationSetupKind =
   "branch" | "department" | "team" | "branding" | "channel";
 
 export const dedicatedAdminModuleIds = new Set([
+  "activities",
   "admissions",
   "applications",
   "assignments",
@@ -18,15 +19,19 @@ export const dedicatedAdminModuleIds = new Set([
   "events",
   "field-force",
   "finance",
+  "follow-ups",
+  "imports-exports",
   "interview",
   "leads",
   "lead-sources",
   "lead-stages",
+  "meetings",
   "programs",
   "reports",
   "scholarship",
   "support",
   "sms",
+  "tags",
   "tasks",
   "whatsapp",
 ]);
@@ -208,6 +213,53 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Assigned To",
       "Reminder At",
       "Recurring Rule",
+    ];
+  }
+  if (module.id === "activities") {
+    return [
+      "Entity",
+      "Entity Type",
+      "Activity Type",
+      "Owner",
+      "Channel",
+      "Outcome",
+      "Next Step",
+    ];
+  }
+  if (module.id === "follow-ups") {
+    return [
+      "Entity",
+      "Follow-up Type",
+      "Due",
+      "Owner",
+      "Priority",
+      "Reminder Channel",
+      "Escalation Rule",
+    ];
+  }
+  if (module.id === "meetings") {
+    return [
+      "Type",
+      "Entity",
+      "Attendees",
+      "Start",
+      "Owner",
+      "Location",
+      "Provider",
+    ];
+  }
+  if (module.id === "tags") {
+    return ["Color", "Module", "Scope", "Owner", "Usage Rule"];
+  }
+  if (module.id === "imports-exports") {
+    return [
+      "Module",
+      "Operation",
+      "Rows",
+      "File",
+      "Owner",
+      "Error Policy",
+      "Callback Status",
     ];
   }
   if (module.id === "documents") {
@@ -516,6 +568,11 @@ export const moduleActions: Record<string, string[]> = {
     "Reassign",
     "Complete",
   ],
+  activities: ["Create Activity", "Export Timeline"],
+  "follow-ups": ["Create Follow-up", "Export Follow-ups"],
+  meetings: ["Create Meeting", "Export Meetings"],
+  tags: ["Create Tag", "Export Tags"],
+  "imports-exports": ["Create Import/Export Job", "Export Jobs"],
   payments: [
     "Application Fee",
     "Admission Fee",

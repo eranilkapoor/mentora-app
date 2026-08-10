@@ -42,6 +42,17 @@ GET /api/v1/admin/integrations/providers/:providerKey/test?organizationId=<organ
 
 The provider catalogue reports required environment keys, missing keys, organization configuration status, and whether the provider is ready for live use. A provider should not be enabled for production workflows until this readiness check passes in the target environment.
 
+## Sandbox Callback Placeholders
+
+The API now exposes placeholder-ready configuration for the remaining external callback surfaces:
+
+- `calendar_sync`: calendar OAuth settings, reminder webhook URL, and callback secret.
+- `dialer_recording`: dialer API credentials, call callback URL, recording callback URL, and webhook secret.
+- `import_export_storage`: CSV/file transfer provider, base URL, API key, and callback secret.
+- `notification_callbacks`: email, SMS, and push delivery callback URLs plus callback secrets.
+
+Local/demo mode uses `*.mentora.test` sandbox placeholders so the admin CRM provider health checks can pass without real credentials. Production deployments must replace these values with provider console URLs/secrets and should keep `INTEGRATION_DEMO_MODE=false`.
+
 For mobile build-time public variables:
 
 ```bash

@@ -1,4 +1,11 @@
-import { IsIn, IsMongoId, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsIn,
+  IsMongoId,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateCommunicationDto {
   @IsMongoId()
@@ -57,4 +64,25 @@ export class UpdateCommunicationDto {
     'archived',
   ])
   status?: string;
+}
+
+export class BulkUpdateCommunicationStatusDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMongoId({ each: true })
+  recordIds!: string[];
+
+  @IsIn([
+    'queued',
+    'sent',
+    'delivered',
+    'read',
+    'failed',
+    'bounced',
+    'archived',
+  ])
+  status!: string;
 }

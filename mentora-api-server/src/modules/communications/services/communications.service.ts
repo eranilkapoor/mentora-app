@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   toRequiredObjectId,
   toOrganizationObjectId,
@@ -8,6 +8,7 @@ import {
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   CreateCommunicationDto,
+  BulkUpdateCommunicationStatusDto,
   UpdateCommunicationDto,
 } from '../dto/communications.dto';
 import {
@@ -131,6 +132,34 @@ export class CommunicationsService {
       { $set: { status: 'archived' } },
       { new: true },
     );
+  }
+
+  restoreCommunication(communicationId: string, organizationId: string) {
+    return this.communications.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(communicationId),
+        organizationId: toOrganizationObjectId(organizationId),
+      },
+      { $set: { status: 'queued' } },
+      { new: true },
+    );
+  }
+
+  async bulkUpdateStatus(dto: BulkUpdateCommunicationStatusDto) {
+    const result = await this.communications.updateMany(
+      {
+        _id: {
+          $in: dto.recordIds.map((recordId) => new Types.ObjectId(recordId)),
+        },
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: { status: dto.status } },
+    );
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
   }
 
   private resolveSortBy(value?: string) {

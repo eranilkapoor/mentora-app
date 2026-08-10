@@ -1713,11 +1713,57 @@ select:focus-visible {
   color: var(--brand);
 }
 
-.action-row .bulk-status-select {
-  flex: 0 0 154px;
+.action-row .action-select {
+  appearance: none;
+  background-color: var(--surface-action);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentcolor 50%),
+    linear-gradient(135deg, currentcolor 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 12px) 50%;
+  background-repeat: no-repeat;
+  background-size:
+    5px 5px,
+    5px 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  color: var(--brand);
+  cursor: pointer;
+  flex: 0 0 auto;
   font-size: 12px;
   font-weight: 800;
   min-height: 36px;
+  padding: 0 32px 0 12px;
+}
+
+.action-row .action-select:hover:not(:disabled),
+.action-row .action-select:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  outline: 0;
+}
+
+.action-row .action-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.action-row .bulk-status-select {
+  min-width: 142px;
+}
+
+.theme-dark .action-row .action-select,
+.theme-system .action-row .action-select {
+  background-color: transparent;
+  border-color: var(--line-strong);
+  color: var(--muted);
+}
+
+.theme-dark .action-row .action-select option,
+.theme-system .action-row .action-select option {
+  background: var(--surface);
+  color: var(--text);
 }
 
 .action-row > span {

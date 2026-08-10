@@ -287,6 +287,49 @@ export function recordsToRows(
         (key === "message" ? (object.subject ?? object.title) : undefined) ??
         (key === "time" ? (object.createdAt ?? object.updatedAt) : undefined) ??
         (key === "task" ? object.title : undefined) ??
+        (key === "activity" ? object.title : undefined) ??
+        (key === "activityType"
+          ? (payload.activityType ?? object.type ?? object.kind)
+          : undefined) ??
+        (key === "entity"
+          ? (payload.entity ??
+            object.entityName ??
+            resolveRecordName(object.entityId) ??
+            object.entityType)
+          : undefined) ??
+        (key === "entityType" ? object.entityType : undefined) ??
+        (key === "channel" ? (object.channel ?? payload.channel) : undefined) ??
+        (key === "outcome" ? (payload.outcome ?? object.outcome) : undefined) ??
+        (key === "nextStep" ? payload.nextStep : undefined) ??
+        (key === "followUp"
+          ? (object.title ?? payload.followUp ?? payload.followUpType)
+          : undefined) ??
+        (key === "followUpType"
+          ? (payload.followUpType ?? object.type ?? object.kind)
+          : undefined) ??
+        (key === "due" ? (object.dueAt ?? payload.due) : undefined) ??
+        (key === "reminderChannel"
+          ? (payload.reminderChannel ?? object.reminderChannel)
+          : undefined) ??
+        (key === "escalationRule"
+          ? (payload.escalationRule ?? object.escalationRule)
+          : undefined) ??
+        (key === "meeting" ? object.title : undefined) ??
+        (key === "start" ? (object.dueAt ?? payload.start) : undefined) ??
+        (key === "attendees" ? payload.attendees : undefined) ??
+        (key === "location" ? payload.location : undefined) ??
+        (key === "provider" ? payload.provider : undefined) ??
+        (key === "tag" ? object.title : undefined) ??
+        (key === "color" ? payload.color : undefined) ??
+        (key === "module" ? payload.module : undefined) ??
+        (key === "scope" ? payload.scope : undefined) ??
+        (key === "usageRule" ? payload.usageRule : undefined) ??
+        (key === "job" ? object.title : undefined) ??
+        (key === "operation" ? payload.operation : undefined) ??
+        (key === "rows" ? payload.rows : undefined) ??
+        (key === "file" ? payload.file : undefined) ??
+        (key === "errorPolicy" ? payload.errorPolicy : undefined) ??
+        (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
         (key === "document" ? (object.name ?? object.title) : undefined) ??
         (key === "report" ? (object.name ?? object.title) : undefined) ??
         (key === "workflow" ? (object.name ?? object.title) : undefined) ??

@@ -21,6 +21,12 @@ export default () => ({
       enabled: process.env.NOTIFICATION_EMAIL_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_EMAIL_PROVIDER || 'log',
       from: process.env.NOTIFICATION_EMAIL_FROM || 'support@mentora.test',
+      deliveryCallbackUrl:
+        process.env.NOTIFICATION_EMAIL_DELIVERY_CALLBACK_URL ||
+        'https://sandbox-notifications.mentora.test/email/callback',
+      deliveryCallbackSecret:
+        process.env.NOTIFICATION_EMAIL_DELIVERY_CALLBACK_SECRET ||
+        (demoMode ? 'demo-email-callback-secret' : ''),
       apiKey:
         process.env.NOTIFICATION_EMAIL_API_KEY ||
         (demoMode ? 'demo-email-api-key' : ''),
@@ -58,6 +64,12 @@ export default () => ({
     sms: {
       enabled: process.env.NOTIFICATION_SMS_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_SMS_PROVIDER || 'log',
+      deliveryCallbackUrl:
+        process.env.NOTIFICATION_SMS_DELIVERY_CALLBACK_URL ||
+        'https://sandbox-notifications.mentora.test/sms/callback',
+      deliveryCallbackSecret:
+        process.env.NOTIFICATION_SMS_DELIVERY_CALLBACK_SECRET ||
+        (demoMode ? 'demo-sms-callback-secret' : ''),
       msg91: {
         authKey:
           process.env.NOTIFICATION_SMS_MSG91_AUTH_KEY ||
@@ -80,6 +92,12 @@ export default () => ({
     push: {
       enabled: process.env.NOTIFICATION_PUSH_ENABLED === 'true' || demoMode,
       provider: process.env.NOTIFICATION_PUSH_PROVIDER || 'log',
+      deliveryCallbackUrl:
+        process.env.NOTIFICATION_PUSH_DELIVERY_CALLBACK_URL ||
+        'https://sandbox-notifications.mentora.test/push/callback',
+      deliveryCallbackSecret:
+        process.env.NOTIFICATION_PUSH_DELIVERY_CALLBACK_SECRET ||
+        (demoMode ? 'demo-push-callback-secret' : ''),
       serverKey:
         process.env.NOTIFICATION_PUSH_SERVER_KEY ||
         (demoMode ? 'demo-fcm-server-key' : ''),

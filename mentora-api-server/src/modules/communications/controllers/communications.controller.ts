@@ -19,6 +19,7 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   CreateCommunicationDto,
+  BulkUpdateCommunicationStatusDto,
   UpdateCommunicationDto,
 } from '../dto/communications.dto';
 import { CommunicationsService } from '../services/communications.service';
@@ -99,6 +100,16 @@ export class CommunicationsController {
     );
   }
 
+  @Post('operations/bulk-status')
+  @Permissions(Permission.COMMUNICATION_MANAGE)
+  async bulkStatus(@Body() dto: BulkUpdateCommunicationStatusDto) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(dto),
+      'EDUCATION_PLATFORM_COMMUNICATIONS_BULK_STATUS_UPDATED',
+      'Communications updated',
+    );
+  }
+
   @Delete(':communicationId')
   @Permissions(Permission.COMMUNICATION_MANAGE)
   async archiveCommunication(
@@ -109,6 +120,19 @@ export class CommunicationsController {
       await this.service.archiveCommunication(communicationId, organizationId),
       'EDUCATION_PLATFORM_COMMUNICATION_ARCHIVED',
       'Communication archived',
+    );
+  }
+
+  @Post(':communicationId/restore')
+  @Permissions(Permission.COMMUNICATION_MANAGE)
+  async restoreCommunication(
+    @Param('communicationId') communicationId: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.restoreCommunication(communicationId, organizationId),
+      'EDUCATION_PLATFORM_COMMUNICATION_RESTORED',
+      'Communication restored',
     );
   }
 }

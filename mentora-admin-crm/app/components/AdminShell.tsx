@@ -639,6 +639,17 @@ export default function AdminDashboardPage() {
   async function runAction(label: string) {
     const normalized = label.toLowerCase();
 
+    if (
+      normalized.startsWith("create ") &&
+      activeId !== "leads" &&
+      activeId !== "organizations" &&
+      activeId !== "users" &&
+      !organizationStructureModuleIds.has(activeId)
+    ) {
+      setRecordForm({ mode: "create" });
+      return;
+    }
+
     if (activeId === "leads") {
       if (!apiSyncEnabled || !activeOrganizationId) {
         dispatch(
@@ -3329,32 +3340,6 @@ function ModulePanel(props: {
 
       <div className="navigationlist">
         <div className="action-row">
-          {module.id !== "organizations" &&
-          !isRbacModule &&
-          !module.actions?.some((action) =>
-            action.toLowerCase().startsWith("create "),
-          ) ? (
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                const createAction = module.actions?.find((action) =>
-                  action.toLowerCase().startsWith("create "),
-                );
-                if (
-                  createAction &&
-                  organizationStructureModuleIds.has(module.id)
-                ) {
-                  void props.runAction(createAction);
-                  return;
-                }
-                props.openRecordForm({ mode: "create" });
-              }}
-              type="button"
-            >
-              <Icon name="check" />
-              New Record
-            </button>
-          ) : null}
           {module.actions?.map((action, index) => (
             <button
               className={
@@ -3408,7 +3393,7 @@ function ModulePanel(props: {
           {props.bulkStatusEnabled && !isRbacModule ? (
             <select
               aria-label="Bulk update selected status"
-              className="form-select form-select-sm bulk-status-select"
+              className="action-select bulk-status-select"
               disabled={props.selectedCount === 0}
               onChange={(event) => {
                 const value = event.target.value;

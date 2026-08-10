@@ -20,6 +20,7 @@ import { LoggerModule } from '@/common/logger/logger.module';
 import { MonitoringModule } from '@/common/monitoring/monitoring.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ActivitiesModule } from './modules/activities/activities.module';
 import { AdmissionsModule } from './modules/admissions/admissions.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { CallCenterModule } from './modules/call-center/call-center.module';
@@ -32,6 +33,7 @@ import { SupportModule } from './modules/support/support.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 import { FieldForceModule } from './modules/field-force/field-force.module';
 import { FinanceLedgersModule } from './modules/finance-ledgers/finance-ledgers.module';
+import { FollowUpsModule } from './modules/follow-ups/follow-ups.module';
 import { LearningModule } from './modules/learning/learning.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
@@ -42,6 +44,8 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { EventsModule } from './modules/events/events.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { ImportsExportsModule } from './modules/imports-exports/imports-exports.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ModuleRecordsModule } from './modules/module-records/module-records.module';
@@ -49,6 +53,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { ScholarshipsModule } from './modules/scholarships/scholarships.module';
 import { SecurityPoliciesModule } from './modules/security-policies/security-policies.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { TagsModule } from './modules/tags/tags.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
@@ -95,6 +100,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     ProfilesModule,
     AdminModule,
     AnalyticsModule,
+    ActivitiesModule,
     AdmissionsModule,
     ChatModule,
     CallCenterModule,
@@ -103,6 +109,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     ReferralsModule,
     FieldForceModule,
     FinanceLedgersModule,
+    FollowUpsModule,
     LearningModule,
     ContextsModule,
     OrganizationsModule,
@@ -115,11 +122,14 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     EventsModule,
     InterviewsModule,
     IntegrationsModule,
+    ImportsExportsModule,
+    MeetingsModule,
     ProgramsModule,
     ModuleRecordsModule,
     ScholarshipsModule,
     SecurityPoliciesModule,
     WhatsappModule,
+    TagsModule,
     DashboardModule,
     WorkflowsModule,
     ReportsModule,

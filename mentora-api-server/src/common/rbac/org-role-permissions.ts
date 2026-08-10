@@ -11,6 +11,8 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
 > = {
   organization_admin: [
     'organization:',
+    'activity:',
+    'follow_up:',
     'lead:',
     'application:',
     'task:',
@@ -29,6 +31,8 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
   ],
   branch_admin: [
     'lead:',
+    'activity:',
+    'follow_up:',
     'application:',
     'task:',
     'campaign:',
@@ -42,6 +46,8 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
   ],
   admission_manager: [
     'application:',
+    'activity:',
+    'follow_up:',
     'document:',
     'task:',
     'lead:view',
@@ -54,6 +60,8 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
     'lead:update',
     'lead:assign',
     'task:',
+    'activity:',
+    'follow_up:',
     'communication:',
     'application:view',
     'document:view',
@@ -66,10 +74,30 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
     'report:view',
     'analytics:view',
   ],
-  sales_executive: ['lead:', 'task:', 'communication:view'],
-  'call-center': ['lead:view', 'lead:update', 'communication:', 'task:view'],
+  sales_executive: [
+    'lead:',
+    'task:',
+    'activity:',
+    'follow_up:',
+    'communication:view',
+  ],
+  'call-center': [
+    'lead:view',
+    'lead:update',
+    'activity:',
+    'follow_up:',
+    'communication:',
+    'task:view',
+  ],
   finance: ['payment:', 'subscription:view', 'report:view', 'analytics:view'],
-  field_agent: ['lead:view', 'lead:update', 'task:view', 'communication:view'],
+  field_agent: [
+    'lead:view',
+    'lead:update',
+    'activity:',
+    'follow_up:view',
+    'task:view',
+    'communication:view',
+  ],
   mentor: ['student:view', 'schedule:view', 'task:view', 'communication:view'],
 };
 

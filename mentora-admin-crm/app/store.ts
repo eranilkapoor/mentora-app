@@ -369,6 +369,7 @@ function adminPath(path: string) {
 }
 
 const dedicatedCrmRoutes: Record<string, string> = {
+  activities: adminPath("/activities"),
   admissions: adminPath("/admissions"),
   applications: adminPath("/applications"),
   assignments: adminPath("/leads/operations/assignments"),
@@ -382,18 +383,22 @@ const dedicatedCrmRoutes: Record<string, string> = {
   events: adminPath("/events"),
   "field-force": adminPath("/field-force"),
   finance: adminPath("/finance-ledgers"),
+  "follow-ups": adminPath("/follow-ups"),
+  "imports-exports": adminPath("/imports-exports"),
   interview: adminPath("/interviews"),
   leads: adminPath("/leads"),
   organizations: adminPath("/organizations"),
   programs: adminPath("/programs"),
   "lead-sources": adminPath("/lead-sources"),
   "lead-stages": adminPath("/lead-stages"),
+  meetings: adminPath("/meetings"),
   automation: adminPath("/workflows/rules"),
   billing: adminPath("/plans/organization/billing"),
   reports: adminPath("/reports/definitions"),
   scholarship: adminPath("/scholarships"),
   support: "/admin/support/tickets",
   sms: adminPath("/communications"),
+  tags: adminPath("/tags"),
   tasks: adminPath("/tasks"),
   teams: adminPath("/teams"),
   whatsapp: adminPath("/whatsapp"),
@@ -464,6 +469,7 @@ const allAdminModuleIds = [
 ];
 
 const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
+  activities: "PUT",
   admissions: "POST",
   applications: "PUT",
   "call-center": "POST",
@@ -473,11 +479,15 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   events: "POST",
   "field-force": "POST",
   finance: "POST",
+  "follow-ups": "PUT",
+  "imports-exports": "POST",
   interview: "POST",
   "lead-sources": "POST",
   "lead-stages": "POST",
+  meetings: "POST",
   scholarship: "POST",
   support: "PATCH",
+  tags: "POST",
   tasks: "PUT",
   whatsapp: "POST",
 };
@@ -765,6 +775,59 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       status:
         draft.status === "archived"
           ? "cancelled"
+          : draft.status === "completed"
+            ? "completed"
+            : draft.status === "in_progress"
+              ? "in_progress"
+              : "open",
+      title: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "activities") {
+    return {
+      organizationId: draft.organizationId,
+      activityType: draft.payload.activityType || "note",
+      channel: draft.payload.channel || "in_app",
+      description: draft.description,
+      entityId: draft.payload.entityId || undefined,
+      entityName: draft.payload.entity || undefined,
+      entityType: draft.payload.entityType || "general",
+      metadata: { source: "admin-crm" },
+      nextStep: draft.payload.nextStep || undefined,
+      occurredAt: draft.dueAt || undefined,
+      outcome: draft.payload.outcome || undefined,
+      ownerId: draft.payload.ownerId || undefined,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "in_progress"
+            ? "in_progress"
+            : draft.status === "open"
+              ? "open"
+              : "completed",
+      title: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "follow-ups") {
+    return {
+      organizationId: draft.organizationId,
+      description: draft.description,
+      dueAt: draft.dueAt || draft.payload.due || undefined,
+      entityId: draft.payload.entityId || undefined,
+      entityName: draft.payload.entity || undefined,
+      entityType: draft.payload.entityType || "lead",
+      escalationRule: draft.payload.escalationRule || undefined,
+      followUpType: draft.payload.followUpType || "call",
+      metadata: { source: "admin-crm" },
+      ownerId: draft.payload.ownerId || undefined,
+      priority: draft.priority,
+      reminderAt: draft.payload.reminderAt || undefined,
+      reminderChannel: draft.payload.reminderChannel || "in_app",
+      status:
+        draft.status === "archived"
+          ? "archived"
           : draft.status === "completed"
             ? "completed"
             : draft.status === "in_progress"

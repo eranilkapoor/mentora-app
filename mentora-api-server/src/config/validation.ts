@@ -806,6 +806,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   NOTIFICATION_EMAIL_API_KEY: optionalString,
 
+  NOTIFICATION_EMAIL_DELIVERY_CALLBACK_URL: optionalUri,
+
+  NOTIFICATION_EMAIL_DELIVERY_CALLBACK_SECRET: optionalString,
+
   NOTIFICATION_EMAIL_SES_REGION: awsRegionSchema.empty('').optional(),
 
   NOTIFICATION_EMAIL_SES_ACCESS_KEY_ID: optionalString,
@@ -847,6 +851,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .valid('log', 'msg91')
     .default('log'),
 
+  NOTIFICATION_SMS_DELIVERY_CALLBACK_URL: optionalUri,
+
+  NOTIFICATION_SMS_DELIVERY_CALLBACK_SECRET: optionalString,
+
   NOTIFICATION_SMS_MSG91_AUTH_KEY: optionalString,
 
   NOTIFICATION_SMS_MSG91_TEMPLATE_ID: optionalString,
@@ -871,6 +879,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .default('log'),
 
   NOTIFICATION_PUSH_SERVER_KEY: optionalString,
+
+  NOTIFICATION_PUSH_DELIVERY_CALLBACK_URL: optionalUri,
+
+  NOTIFICATION_PUSH_DELIVERY_CALLBACK_SECRET: optionalString,
 
   NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON: optionalString,
 
@@ -924,6 +936,8 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .falsy('false')
     .default(false),
 
+  CALENDAR_SYNC_PROVIDER: optionalString,
+
   GOOGLE_CALENDAR_CLIENT_ID: optionalString,
 
   GOOGLE_CALENDAR_CLIENT_SECRET: optionalString,
@@ -931,6 +945,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   MICROSOFT_CALENDAR_CLIENT_ID: optionalString,
 
   MICROSOFT_CALENDAR_CLIENT_SECRET: optionalString,
+
+  CALENDAR_REMINDER_WEBHOOK_URL: optionalUri,
+
+  CALENDAR_CALLBACK_SECRET: optionalString,
 
   DIALER_PROVIDER_ENABLED: Joi.boolean()
     .truthy('true')
@@ -944,6 +962,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   DIALER_PROVIDER_BASE_URL: optionalUri,
 
   DIALER_WEBHOOK_SECRET: optionalString,
+
+  DIALER_CALLBACK_URL: optionalUri,
+
+  DIALER_RECORDING_CALLBACK_URL: optionalUri,
 
   OCR_PROVIDER_ENABLED: Joi.boolean()
     .truthy('true')
@@ -986,6 +1008,19 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   ACCOUNTING_EXPORT_API_KEY: optionalString,
 
   ACCOUNTING_EXPORT_BASE_URL: optionalUri,
+
+  IMPORT_EXPORT_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  IMPORT_EXPORT_PROVIDER: optionalString,
+
+  IMPORT_EXPORT_PROVIDER_API_KEY: optionalString,
+
+  IMPORT_EXPORT_PROVIDER_BASE_URL: optionalUri,
+
+  IMPORT_EXPORT_CALLBACK_SECRET: optionalString,
 
   CHAT_PROFANITY_FILTER_ENABLED: Joi.boolean()
     .truthy('true')

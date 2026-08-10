@@ -22,6 +22,7 @@ export default () => ({
     },
     calendar: {
       enabled: bool(process.env.CALENDAR_SYNC_ENABLED) || demoMode,
+      provider: process.env.CALENDAR_SYNC_PROVIDER || 'demo_calendar',
       googleClientId: demo(
         process.env.GOOGLE_CALENDAR_CLIENT_ID,
         'demo-google-calendar-client-id',
@@ -38,6 +39,13 @@ export default () => ({
         process.env.MICROSOFT_CALENDAR_CLIENT_SECRET,
         'demo-microsoft-calendar-client-secret',
       ),
+      reminderWebhookUrl:
+        process.env.CALENDAR_REMINDER_WEBHOOK_URL ||
+        'https://sandbox-calendar.mentora.test/reminders',
+      callbackSecret: demo(
+        process.env.CALENDAR_CALLBACK_SECRET,
+        'demo-calendar-callback-secret',
+      ),
     },
     dialer: {
       enabled: bool(process.env.DIALER_PROVIDER_ENABLED) || demoMode,
@@ -50,6 +58,12 @@ export default () => ({
         process.env.DIALER_WEBHOOK_SECRET,
         'demo-dialer-webhook-secret',
       ),
+      callbackUrl:
+        process.env.DIALER_CALLBACK_URL ||
+        'https://sandbox-dialer.mentora.test/webhooks/calls',
+      recordingCallbackUrl:
+        process.env.DIALER_RECORDING_CALLBACK_URL ||
+        'https://sandbox-dialer.mentora.test/webhooks/recordings',
     },
     geo: {
       enabled: bool(process.env.GEO_TELEMETRY_ENABLED) || demoMode,
@@ -130,6 +144,21 @@ export default () => ({
       baseUrl:
         process.env.ACCOUNTING_EXPORT_BASE_URL ||
         'https://sandbox-accounting.mentora.test',
+    },
+    importExport: {
+      enabled: bool(process.env.IMPORT_EXPORT_PROVIDER_ENABLED) || demoMode,
+      provider: process.env.IMPORT_EXPORT_PROVIDER || 'demo_csv_storage',
+      apiKey: demo(
+        process.env.IMPORT_EXPORT_PROVIDER_API_KEY,
+        'demo-import-export-api-key',
+      ),
+      baseUrl:
+        process.env.IMPORT_EXPORT_PROVIDER_BASE_URL ||
+        'https://sandbox-import-export.mentora.test',
+      callbackSecret: demo(
+        process.env.IMPORT_EXPORT_CALLBACK_SECRET,
+        'demo-import-export-callback-secret',
+      ),
     },
   },
 });
