@@ -1,5 +1,6 @@
 import {
   IsIn,
+  IsArray,
   IsMongoId,
   IsNumber,
   IsObject,
@@ -7,7 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 
-export class CreateCrmDocumentDto {
+export class CreateDocumentDto {
   @IsMongoId()
   organizationId!: string;
 
@@ -36,7 +37,7 @@ export class CreateCrmDocumentDto {
   size?: number;
 }
 
-export class VerifyCrmDocumentDto {
+export class VerifyDocumentDto {
   @IsMongoId()
   organizationId!: string;
 
@@ -52,7 +53,7 @@ export class VerifyCrmDocumentDto {
   ocrResult?: Record<string, unknown>;
 }
 
-export class UpdateCrmDocumentDto {
+export class UpdateDocumentDto {
   @IsMongoId()
   organizationId!: string;
 
@@ -86,4 +87,23 @@ export class UpdateCrmDocumentDto {
     'archived',
   ])
   status?: string;
+}
+
+export class BulkUpdateDocumentStatusDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  ids!: string[];
+
+  @IsIn([
+    'required',
+    'submitted',
+    'verified',
+    'rejected',
+    'expired',
+    'archived',
+  ])
+  status!: string;
 }

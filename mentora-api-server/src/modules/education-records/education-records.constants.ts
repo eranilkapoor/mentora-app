@@ -31,4 +31,9 @@ export const EDUCATION_RECORD_MODULES = [
     resource: 'fee_record',
     collection: COLLECTION_NAMES.FEE_RECORD,
   },
+  {
+    path: 'admin/learning',
+    resource: 'learning_operation',
+    collection: COLLECTION_NAMES.LEARNING_OPERATION,
+  },
 ] as const;

@@ -7,11 +7,15 @@ import {
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
-  CreateCrmDocumentDto,
-  UpdateCrmDocumentDto,
-  VerifyCrmDocumentDto,
+  BulkUpdateDocumentStatusDto,
+  CreateDocumentDto,
+  UpdateDocumentDto,
+  VerifyDocumentDto,
 } from '../dto/documents.dto';
-import { CrmDocument, CrmDocumentDocument } from '../schemas/documents.schema';
+import {
+  DocumentRecord,
+  DocumentRecordDocument,
+} from '../schemas/documents.schema';
 
 type DocumentListOptions = {
   category?: string;
@@ -29,11 +33,11 @@ type DocumentListOptions = {
 @Injectable()
 export class DocumentsService {
   constructor(
-    @InjectModel(CrmDocument.name)
-    private readonly documents: Model<CrmDocumentDocument>,
+    @InjectModel(DocumentRecord.name)
+    private readonly documents: Model<DocumentRecordDocument>,
   ) {}
 
-  createDocument(userId: string, dto: CreateCrmDocumentDto) {
+  createDocument(userId: string, dto: CreateDocumentDto) {
     return this.documents.create({
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
@@ -100,7 +104,7 @@ export class DocumentsService {
     );
   }
 
-  async updateDocument(documentId: string, dto: UpdateCrmDocumentDto) {
+  async updateDocument(documentId: string, dto: UpdateDocumentDto) {
     const update: Record<string, unknown> = { ...dto };
     delete update.organizationId;
     const document = await this.documents.findOneAndUpdate(
@@ -128,10 +132,40 @@ export class DocumentsService {
     return document;
   }
 
+  async restoreDocument(documentId: string, organizationId: string) {
+    const document = await this.documents.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(documentId),
+        organizationId: toOrganizationObjectId(organizationId),
+      },
+      { $set: { status: 'submitted' } },
+      { new: true },
+    );
+    if (!document) throw new NotFoundException('Document not found');
+    return document;
+  }
+
+  async bulkUpdateStatus(dto: BulkUpdateDocumentStatusDto) {
+    const ids = dto.ids.map((id) => toRequiredObjectId(id));
+    const result = await this.documents.updateMany(
+      {
+        _id: { $in: ids },
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: { status: dto.status } },
+      { runValidators: true },
+    );
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
+  }
+
   async verifyDocument(
     userId: string,
     documentId: string,
-    dto: VerifyCrmDocumentDto,
+    dto: VerifyDocumentDto,
   ) {
     const document = await this.documents.findOneAndUpdate(
       {

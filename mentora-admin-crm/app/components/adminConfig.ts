@@ -29,6 +29,7 @@ export const dedicatedAdminModuleIds = new Set([
   "leads",
   "lead-sources",
   "lead-stages",
+  "learning",
   "meetings",
   "programs",
   "reports",
@@ -295,7 +296,101 @@ export function getEditableModuleColumns(module: AdminModule) {
     return ["Fee", "Student", "Amount", "Due", "Ledger", "Gateway"];
   }
   if (module.id === "documents") {
-    return ["Entity Type", "Entity Id", "Category", "Url", "Mime Type", "Size"];
+    return [
+      "Document Name",
+      "Entity Type",
+      "Entity Id",
+      "Category",
+      "Url",
+      "Mime Type",
+      "Size",
+      "Verification Status",
+      "OCR Provider",
+      "Verification Note",
+    ];
+  }
+  if (module.id === "applications") {
+    return [
+      "Applicant Name",
+      "Lead",
+      "Program",
+      "Course",
+      "Specialization",
+      "Academic Session",
+      "Form Template",
+      "Reviewer",
+      "Review Stage",
+      "Documents Status",
+      "Interview Status",
+      "Offer Status",
+      "Admission Status",
+      "Reviewer Notes",
+    ];
+  }
+  if (module.id === "admissions") {
+    return [
+      "Application",
+      "Student",
+      "Program",
+      "Course",
+      "Fee Plan",
+      "Payment Status",
+      "Batch",
+      "Learning Plan",
+      "Onboarding Checklist",
+      "ERP Handoff",
+      "LMS Handoff",
+      "Enrollment Status",
+    ];
+  }
+  if (module.id === "scholarship") {
+    return [
+      "Student",
+      "Program",
+      "Scholarship Rule",
+      "Eligibility Status",
+      "Verification Status",
+      "Approval Stage",
+      "Award Amount",
+      "Payment Plan Impact",
+      "Approver",
+      "Audit Note",
+    ];
+  }
+  if (module.id === "interview") {
+    return [
+      "Applicant",
+      "Application",
+      "Interview Type",
+      "Interviewer",
+      "Panel",
+      "Scheduled Start",
+      "Scheduled End",
+      "Mode",
+      "Meeting Link",
+      "Score",
+      "Result",
+      "Remarks",
+      "Offer Recommendation",
+      "Admission Handoff",
+    ];
+  }
+  if (module.id === "learning") {
+    return [
+      "Student",
+      "Program",
+      "Subject",
+      "Study Plan",
+      "Tutor Type",
+      "Tutor",
+      "Classroom",
+      "Schedule",
+      "Entitlement",
+      "AI Credits",
+      "Progress Rule",
+      "Parent Summary",
+      "Safety Status",
+    ];
   }
   if (module.id === "reports") {
     return ["Module Key", "Report Type", "Columns", "Filters", "Schedule"];

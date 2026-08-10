@@ -7,6 +7,7 @@ import {
   CoursesController,
   EnrollmentController,
   FeesController,
+  LearningOperationsController,
   SpecializationsController,
 } from './controllers/education-records.controller';
 import { EducationRecordsService } from './services/education-records.service';
@@ -20,6 +21,7 @@ import { EducationRecordsService } from './services/education-records.service';
     SpecializationsController,
     EnrollmentController,
     FeesController,
+    LearningOperationsController,
   ],
   providers: [EducationRecordsService],
   exports: [EducationRecordsService],

@@ -115,6 +115,7 @@ export const COLLECTION_NAMES = {
   SPECIALIZATION: 'specializations',
   ENROLLMENT: 'enrollments',
   FEE_RECORD: 'fee_records',
+  LEARNING_OPERATION: 'learning_operations',
   TASK: 'tasks',
   CAMPAIGN: 'campaigns',
   COMMUNICATION: 'communications',

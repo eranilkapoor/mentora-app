@@ -20,9 +20,10 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
-  CreateCrmDocumentDto,
-  UpdateCrmDocumentDto,
-  VerifyCrmDocumentDto,
+  BulkUpdateDocumentStatusDto,
+  CreateDocumentDto,
+  UpdateDocumentDto,
+  VerifyDocumentDto,
 } from '../dto/documents.dto';
 import { DocumentsService } from '../services/documents.service';
 
@@ -36,7 +37,7 @@ export class DocumentsController {
   @Permissions(Permission.DOCUMENT_MANAGE)
   async createDocument(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: CreateCrmDocumentDto,
+    @Body() dto: CreateDocumentDto,
   ) {
     return successResponse(
       await this.service.createDocument(req.user.sub, dto),
@@ -91,12 +92,22 @@ export class DocumentsController {
   @Permissions(Permission.DOCUMENT_MANAGE)
   async updateDocument(
     @Param('documentId') documentId: string,
-    @Body() dto: UpdateCrmDocumentDto,
+    @Body() dto: UpdateDocumentDto,
   ) {
     return successResponse(
       await this.service.updateDocument(documentId, dto),
       'DOCUMENT_UPDATED',
       'Document updated',
+    );
+  }
+
+  @Post('operations/bulk-status')
+  @Permissions(Permission.DOCUMENT_MANAGE)
+  async bulkUpdateStatus(@Body() dto: BulkUpdateDocumentStatusDto) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(dto),
+      'DOCUMENTS_BULK_STATUS_UPDATED',
+      'Documents updated',
     );
   }
 
@@ -113,12 +124,25 @@ export class DocumentsController {
     );
   }
 
+  @Post(':documentId/restore')
+  @Permissions(Permission.DOCUMENT_MANAGE)
+  async restoreDocument(
+    @Param('documentId') documentId: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.restoreDocument(documentId, organizationId),
+      'DOCUMENT_RESTORED',
+      'Document restored',
+    );
+  }
+
   @Post(':documentId/verify')
   @Permissions(Permission.DOCUMENT_MANAGE)
   async verifyDocument(
     @Req() req: AuthenticatedRequest,
     @Param('documentId') documentId: string,
-    @Body() dto: VerifyCrmDocumentDto,
+    @Body() dto: VerifyDocumentDto,
   ) {
     return successResponse(
       await this.service.verifyDocument(req.user.sub, documentId, dto),

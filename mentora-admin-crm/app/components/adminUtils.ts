@@ -356,6 +356,84 @@ export function recordsToRows(
         (key === "ledger" ? payload.ledger : undefined) ??
         (key === "gateway" ? payload.gateway : undefined) ??
         (key === "document" ? (object.name ?? object.title) : undefined) ??
+        (key === "documentName" ? object.name : undefined) ??
+        (key === "verificationStatus"
+          ? (payload.verificationStatus ?? object.status)
+          : undefined) ??
+        (key === "ocrProvider"
+          ? (payload.ocrProvider ??
+            normalizeResponseObject(object.verification).ocrProvider)
+          : undefined) ??
+        (key === "applicant"
+          ? (payload.applicant ?? payload.applicantName ?? object.title)
+          : undefined) ??
+        (key === "applicantName"
+          ? (payload.applicantName ??
+            normalizeResponseObject(object.applicantProfile).applicantName ??
+            object.title)
+          : undefined) ??
+        (key === "application"
+          ? (payload.application ??
+            resolveRecordName(object.relatedApplicationId))
+          : undefined) ??
+        (key === "reviewStage"
+          ? (payload.reviewStage ??
+            normalizeResponseObject(object.formResponses).reviewStage)
+          : undefined) ??
+        (key === "documentsStatus"
+          ? (payload.documentsStatus ??
+            normalizeResponseObject(object.formResponses).documentsStatus)
+          : undefined) ??
+        (key === "interviewStatus"
+          ? (payload.interviewStatus ??
+            normalizeResponseObject(object.formResponses).interviewStatus)
+          : undefined) ??
+        (key === "offerStatus"
+          ? (payload.offerStatus ??
+            normalizeResponseObject(object.formResponses).offerStatus)
+          : undefined) ??
+        (key === "admissionStatus"
+          ? (payload.admissionStatus ?? object.status)
+          : undefined) ??
+        (key === "feePlan" ? payload.feePlan : undefined) ??
+        (key === "paymentStatus" ? payload.paymentStatus : undefined) ??
+        (key === "learningPlan" ? payload.learningPlan : undefined) ??
+        (key === "onboardingChecklist"
+          ? payload.onboardingChecklist
+          : undefined) ??
+        (key === "erpHandoff" ? payload.erpHandoff : undefined) ??
+        (key === "lmsHandoff" ? payload.lmsHandoff : undefined) ??
+        (key === "enrollmentStatus" ? payload.enrollmentStatus : undefined) ??
+        (key === "scholarshipRule" ? payload.scholarshipRule : undefined) ??
+        (key === "eligibilityStatus" ? payload.eligibilityStatus : undefined) ??
+        (key === "approvalStage" ? payload.approvalStage : undefined) ??
+        (key === "awardAmount" ? payload.awardAmount : undefined) ??
+        (key === "paymentPlanImpact" ? payload.paymentPlanImpact : undefined) ??
+        (key === "approver" ? payload.approver : undefined) ??
+        (key === "interviewType" ? payload.interviewType : undefined) ??
+        (key === "interviewer" ? payload.interviewer : undefined) ??
+        (key === "scheduledStart"
+          ? (payload.scheduledStart ?? object.dueAt)
+          : undefined) ??
+        (key === "scheduledEnd" ? payload.scheduledEnd : undefined) ??
+        (key === "meetingLink" ? payload.meetingLink : undefined) ??
+        (key === "score" ? payload.score : undefined) ??
+        (key === "result" ? payload.result : undefined) ??
+        (key === "offerRecommendation"
+          ? payload.offerRecommendation
+          : undefined) ??
+        (key === "admissionHandoff" ? payload.admissionHandoff : undefined) ??
+        (key === "subject" ? payload.subject : undefined) ??
+        (key === "studyPlan" ? payload.studyPlan : undefined) ??
+        (key === "tutorType" ? payload.tutorType : undefined) ??
+        (key === "tutor" ? payload.tutor : undefined) ??
+        (key === "classroom" ? payload.classroom : undefined) ??
+        (key === "schedule" ? payload.schedule : undefined) ??
+        (key === "entitlement" ? payload.entitlement : undefined) ??
+        (key === "aiCredits" ? payload.aiCredits : undefined) ??
+        (key === "progressRule" ? payload.progressRule : undefined) ??
+        (key === "parentSummary" ? payload.parentSummary : undefined) ??
+        (key === "safetyStatus" ? payload.safetyStatus : undefined) ??
         (key === "report" ? (object.name ?? object.title) : undefined) ??
         (key === "workflow" ? (object.name ?? object.title) : undefined) ??
         (key === "lastRun"

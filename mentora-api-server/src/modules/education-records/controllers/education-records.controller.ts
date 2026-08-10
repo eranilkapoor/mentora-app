@@ -215,3 +215,11 @@ export class FeesController extends EducationRecordController {
     super(service, 'fee_record', 'Fee record');
   }
 }
+
+@UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
+@Controller('admin/learning')
+export class LearningOperationsController extends EducationRecordController {
+  constructor(service: EducationRecordsService) {
+    super(service, 'learning_operation', 'Learning operation');
+  }
+}

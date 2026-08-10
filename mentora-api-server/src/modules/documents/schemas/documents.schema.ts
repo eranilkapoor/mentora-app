@@ -3,10 +3,10 @@ import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { Organization } from '@/modules/organizations/schemas/organizations.schema';
 
-export type CrmDocumentDocument = HydratedDocument<CrmDocument>;
+export type DocumentRecordDocument = HydratedDocument<DocumentRecord>;
 
 @Schema({ collection: COLLECTION_NAMES.DOCUMENT, timestamps: true })
-export class CrmDocument {
+export class DocumentRecord {
   @Prop({
     type: Types.ObjectId,
     ref: Organization.name,
@@ -77,19 +77,20 @@ export class CrmDocument {
   verifiedAt?: Date;
 }
 
-export const CrmDocumentSchema = SchemaFactory.createForClass(CrmDocument);
-CrmDocumentSchema.index({ organizationId: 1, updatedAt: -1 });
-CrmDocumentSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
-CrmDocumentSchema.index({
+export const DocumentRecordSchema =
+  SchemaFactory.createForClass(DocumentRecord);
+DocumentRecordSchema.index({ organizationId: 1, updatedAt: -1 });
+DocumentRecordSchema.index({ organizationId: 1, status: 1, updatedAt: -1 });
+DocumentRecordSchema.index({
   organizationId: 1,
   entityType: 1,
   entityId: 1,
   status: 1,
 });
-CrmDocumentSchema.index({
+DocumentRecordSchema.index({
   organizationId: 1,
   entityType: 1,
   entityId: 1,
   updatedAt: -1,
 });
-CrmDocumentSchema.index({ organizationId: 1, category: 1, status: 1 });
+DocumentRecordSchema.index({ organizationId: 1, category: 1, status: 1 });

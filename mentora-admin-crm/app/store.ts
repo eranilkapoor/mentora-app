@@ -391,6 +391,7 @@ const dedicatedCrmRoutes: Record<string, string> = {
   "imports-exports": adminPath("/imports-exports"),
   interview: adminPath("/interviews"),
   leads: adminPath("/leads"),
+  learning: adminPath("/learning"),
   organizations: adminPath("/organizations"),
   programs: adminPath("/programs"),
   "lead-sources": adminPath("/lead-sources"),
@@ -494,6 +495,7 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   interview: "POST",
   "lead-sources": "POST",
   "lead-stages": "POST",
+  learning: "POST",
   meetings: "POST",
   scholarship: "POST",
   specializations: "POST",
@@ -600,26 +602,56 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
   }
 
   if (draft.moduleKey === "applications") {
+    const payload = draft.payload ?? {};
+    const status =
+      payload.admissionStatus === "confirmed"
+        ? "admission_confirmed"
+        : payload.offerStatus === "issued"
+          ? "offer_issued"
+          : payload.reviewStage === "review"
+            ? "under_review"
+            : payload.reviewStage === "submitted"
+              ? "submitted"
+              : payload.reviewStage === "rejected"
+                ? "rejected"
+                : payload.reviewStage === "withdrawn"
+                  ? "withdrawn"
+                  : draft.status === "archived"
+                    ? "withdrawn"
+                    : draft.status === "completed"
+                      ? "admission_confirmed"
+                      : draft.status === "in_progress"
+                        ? "under_review"
+                        : "draft";
     return {
       organizationId: draft.organizationId,
-      courseOffering: draft.title || "Mentora Program Application",
+      courseOffering:
+        payload.course ||
+        payload.program ||
+        draft.title ||
+        "Mentora Program Application",
+      leadId: payload.lead || undefined,
       applicantProfile: {
-        source: "admin-crm",
+        applicantName: payload.applicantName || draft.title,
+        academicSession: payload.academicSession || undefined,
+        program: payload.program || undefined,
+        specialization: payload.specialization || undefined,
+        source: "admin",
         summary: draft.description,
         priority: draft.priority,
-        ...(draft.payload ?? {}),
+        ...payload,
       },
       formResponses: {
         dueAt: draft.dueAt,
+        documentsStatus: payload.documentsStatus || undefined,
+        formTemplate: payload.formTemplate || undefined,
+        interviewStatus: payload.interviewStatus || undefined,
+        offerStatus: payload.offerStatus || undefined,
+        reviewer: payload.reviewer || undefined,
+        reviewerNotes: payload.reviewerNotes || draft.description || undefined,
+        reviewStage: payload.reviewStage || undefined,
       },
-      status:
-        draft.status === "archived"
-          ? "withdrawn"
-          : draft.status === "completed"
-            ? "admission_confirmed"
-            : draft.status === "in_progress"
-              ? "under_review"
-              : "draft",
+      status,
     };
   }
 
@@ -731,19 +763,48 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       entityId: draft.payload.entityId || "000000000000000000000000",
       entityType: draft.payload.entityType || "application",
       mimeType: draft.payload.mimeType || "application/pdf",
-      name: draft.title || "CRM document",
+      name: draft.payload.documentName || draft.title || "Mentora document",
+      size: draft.payload.size ? Number(draft.payload.size) : undefined,
       status:
-        draft.status === "completed"
+        draft.payload.verificationStatus ||
+        (draft.status === "completed"
           ? "verified"
           : draft.status === "archived"
             ? "archived"
-            : "submitted",
+            : "submitted"),
       url:
         draft.payload.url ||
         "https://cdn.mentora.test/documents/admin-upload-placeholder.pdf",
       verification: {
-        note: draft.description,
-        source: "admin-crm",
+        note: draft.payload.verificationNote || draft.description,
+        ocrProvider: draft.payload.ocrProvider || "sandbox",
+        source: "admin",
+      },
+    };
+  }
+
+  if (
+    ["admissions", "scholarship", "interview", "learning"].includes(
+      draft.moduleKey,
+    )
+  ) {
+    const payload = draft.payload ?? {};
+    const tags = payload.tags
+      ? payload.tags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : undefined;
+    return {
+      ...body,
+      ownerId:
+        payload.ownerId || payload.owner || payload.approver || undefined,
+      relatedApplicationId: payload.application || undefined,
+      relatedLeadId: payload.lead || undefined,
+      tags,
+      payload: {
+        source: "admin",
+        ...payload,
       },
     };
   }
