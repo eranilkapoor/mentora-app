@@ -60,6 +60,7 @@ const moduleTitles: Record<
   interview: 'Interviews',
   events: 'Events',
   'field-force': 'Field Force',
+  support: 'Support',
   reports: 'Reports',
   dashboard: 'Dashboard',
   analytics: 'Analytics',
@@ -460,8 +461,8 @@ const readinessByModule: Partial<
   },
   'landing-pages': {
     layer: 'growth_automation',
-    backendStatus: 'workflow_ready',
-    frontendStatus: 'workflow_ready',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
     storage: 'campaigns,lead_sources,module_records',
     apiSurface: ['campaigns', 'leads/capture', 'admin/module-records'],
     productionBlockers: ['external_landing_page_hosting'],
@@ -492,8 +493,8 @@ const readinessByModule: Partial<
   },
   chatbots: {
     layer: 'growth_automation',
-    backendStatus: 'workflow_ready',
-    frontendStatus: 'workflow_ready',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
     storage: 'workflow_rules,whatsapp_conversations,ai_tutor_sessions',
     apiSurface: ['workflows', 'whatsapp', 'learning/ai-tutor'],
     productionBlockers: ['external_bot_model_provider'],
@@ -700,6 +701,26 @@ const readinessByModule: Partial<
     storage: 'documents',
     apiSurface: ['documents', 'documents/:id/verify'],
     productionBlockers: ['live_ocr_provider'],
+  },
+  support: {
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'support_tickets,notifications',
+    apiSurface: [
+      'support/tickets',
+      'admin/support/tickets',
+      'admin/support/tickets/operations/export',
+      'admin/support/tickets/operations/bulk-status',
+    ],
+    productionBlockers: ['live_support_sla_notification_provider'],
+  },
+  settings: {
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage:
+      'account_settings,privacy_settings,notification_settings,communication_settings,security_settings,localization_settings,accessibility_settings,media_settings,ai_settings,user_consents,channel_settings',
+    apiSurface: ['settings', 'admin/channel-settings', 'admin/module-records'],
+    productionBlockers: [],
   },
   payments: {
     backendStatus: 'product_ready',

@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsIn,
   IsOptional,
   IsString,
@@ -61,6 +62,15 @@ export class AdminReplySupportTicketDto {
 }
 
 export class UpdateSupportTicketStatusDto {
+  @IsIn(SUPPORT_TICKET_STATUSES)
+  status!: SupportTicketStatus;
+}
+
+export class BulkUpdateSupportTicketStatusDto {
+  @IsArray()
+  @IsString({ each: true })
+  recordIds!: string[];
+
   @IsIn(SUPPORT_TICKET_STATUSES)
   status!: SupportTicketStatus;
 }

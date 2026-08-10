@@ -206,12 +206,136 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Drip Steps",
     ];
   }
+  if (module.id === "marketing-automation") {
+    return [
+      "Journey Type",
+      "Audience Segment",
+      "Entry Trigger",
+      "Exit Rule",
+      "Drip Steps",
+      "Provider",
+      "Schedule",
+      "Conversion Goal",
+      "Suppression List",
+      "Approval Status",
+    ];
+  }
+  if (module.id === "landing-pages") {
+    return [
+      "Page Type",
+      "Slug",
+      "Campaign",
+      "Form Source",
+      "Lead Source",
+      "Utm Source",
+      "Conversion Tag",
+      "Owner",
+      "Publish Status",
+      "Provider",
+    ];
+  }
+  if (module.id === "lead-scoring") {
+    return [
+      "Model Type",
+      "Signal",
+      "Weight",
+      "Threshold",
+      "Temperature Rule",
+      "Sla Risk Rule",
+      "Next Best Action",
+      "Accuracy",
+      "Owner",
+      "Provider",
+    ];
+  }
+  if (module.id === "marketing-attribution") {
+    return [
+      "Source",
+      "Medium",
+      "Campaign",
+      "Spend",
+      "Revenue",
+      "Roi",
+      "Conversion Tag",
+      "Attribution Model",
+      "Callback Status",
+      "Provider",
+    ];
+  }
   if (
     module.id === "communications" ||
     module.id === "emails" ||
     module.id === "sms"
   ) {
-    return ["Channel", "Direction", "Entity Type", "Entity Id", "Content"];
+    return [
+      "Channel",
+      "Direction",
+      "Entity Type",
+      "Entity Id",
+      "Template",
+      "Provider",
+      "Subject",
+      "Content",
+      "Delivery Status",
+      "Opt In Status",
+      "Callback Status",
+    ];
+  }
+  if (module.id === "whatsapp") {
+    return [
+      "Template",
+      "Entity",
+      "Media",
+      "Buttons",
+      "Flow",
+      "Bulk Batch",
+      "Automation Rule",
+      "Delivery Status",
+      "Provider",
+      "Callback Status",
+    ];
+  }
+  if (module.id === "telephony") {
+    return [
+      "Queue",
+      "Provider",
+      "Direction",
+      "Disposition",
+      "Recording Policy",
+      "Routing Rule",
+      "Callback Number",
+      "Sla",
+      "Owner",
+      "Analytics Status",
+    ];
+  }
+  if (module.id === "chatbots") {
+    return [
+      "Bot Name",
+      "Channel",
+      "Intent Set",
+      "Knowledge Source",
+      "Escalation Rule",
+      "Fallback Owner",
+      "Model",
+      "Guardrail Policy",
+      "Training Status",
+      "Provider",
+    ];
+  }
+  if (module.id === "ai-features") {
+    return [
+      "Feature",
+      "Use Case",
+      "Model",
+      "Provider",
+      "Data Source",
+      "Guardrail Policy",
+      "Human Review",
+      "Usage Limit",
+      "Accuracy",
+      "Owner",
+    ];
   }
   if (module.id === "tasks") {
     return [
@@ -392,8 +516,127 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Safety Status",
     ];
   }
+  if (module.id === "mobile-app") {
+    return [
+      "Agent",
+      "Workspace",
+      "Device Policy",
+      "Offline Sync",
+      "Geo Check In",
+      "Voice Notes",
+      "Lead Updates",
+      "Task Queue",
+      "Report Access",
+      "Release Channel",
+    ];
+  }
+  if (module.id === "calendar") {
+    return [
+      "Event Type",
+      "Entity",
+      "Owner",
+      "Start Time",
+      "End Time",
+      "Reminder Rule",
+      "Recurring Rule",
+      "Provider",
+      "Sync Status",
+      "Location",
+    ];
+  }
+  if (module.id === "events") {
+    return [
+      "Event Type",
+      "Venue",
+      "Registration Limit",
+      "Registration Form",
+      "Webinar Provider",
+      "QR Check In",
+      "Attendance",
+      "Lead Capture",
+      "Owner",
+      "Start Time",
+    ];
+  }
+  if (module.id === "field-force") {
+    return [
+      "Visit Type",
+      "Agent",
+      "Route",
+      "Location",
+      "Check In",
+      "Check Out",
+      "Mileage",
+      "Geo Status",
+      "Outcome",
+      "Next Action",
+    ];
+  }
+  if (module.id === "support") {
+    return [
+      "Subject",
+      "Category",
+      "Requester",
+      "Assigned Agent",
+      "Priority",
+      "Sla",
+      "Message",
+      "Resolution",
+      "Escalation",
+      "Satisfaction",
+    ];
+  }
+  if (module.id === "finance") {
+    return [
+      "Entry Type",
+      "Student",
+      "Invoice",
+      "Amount",
+      "Tax",
+      "Payment Status",
+      "Due Date",
+      "Gateway",
+      "Reconciliation Status",
+      "Accounting Export",
+    ];
+  }
   if (module.id === "reports") {
-    return ["Module Key", "Report Type", "Columns", "Filters", "Schedule"];
+    return [
+      "Module Key",
+      "Report Type",
+      "Columns",
+      "Filters",
+      "Schedule",
+      "Format",
+      "Recipients",
+      "Owner",
+      "Export Status",
+    ];
+  }
+  if (module.id === "integrations") {
+    return [
+      "Provider Key",
+      "Provider",
+      "Module",
+      "Status",
+      "Mode",
+      "Webhook Url",
+      "Callback Status",
+      "Credential Status",
+      "Last Checked",
+    ];
+  }
+  if (module.id === "settings") {
+    return [
+      "Setting Area",
+      "Scope",
+      "Policy",
+      "Value",
+      "Owner",
+      "Approval Status",
+      "Effective From",
+      "Audit Required",
+    ];
   }
   if (module.id === "automation") {
     return [
@@ -522,6 +765,38 @@ export const moduleActions: Record<string, string[]> = {
     "Delivery Status",
     "Opt-in Controls",
   ],
+  "marketing-automation": [
+    "Create Journey",
+    "Configure Trigger",
+    "Add Drip Step",
+    "Test Journey",
+    "Pause",
+    "Export",
+  ],
+  "landing-pages": [
+    "Create Page",
+    "Configure Form",
+    "Attach Campaign",
+    "Publish",
+    "Capture Test Lead",
+    "Export",
+  ],
+  "lead-scoring": [
+    "Create Model",
+    "Add Signal",
+    "Test Score",
+    "Calibrate",
+    "Activate",
+    "Export",
+  ],
+  "marketing-attribution": [
+    "Create Attribution",
+    "Map UTM",
+    "Attach Conversion Tag",
+    "Sync Spend",
+    "ROI Report",
+    "Export",
+  ],
   documents: ["Load Documents", "Request Document", "Verify"],
   "mobile-app": [
     "Counselor Dashboard",
@@ -619,6 +894,14 @@ export const moduleActions: Record<string, string[]> = {
     "Export Report",
     "Role Report",
   ],
+  support: [
+    "Create Ticket",
+    "Assign Agent",
+    "Reply",
+    "Escalate",
+    "Resolve",
+    "Export",
+  ],
   security: [
     "Load Policy",
     "Update Policy",
@@ -654,6 +937,22 @@ export const moduleActions: Record<string, string[]> = {
     "Automation",
     "Delivery Report",
     "Conversation History",
+  ],
+  telephony: [
+    "Create Queue",
+    "Configure Provider",
+    "Route Calls",
+    "Recording Policy",
+    "Disposition Setup",
+    "Analytics",
+  ],
+  chatbots: [
+    "Create Bot",
+    "Train Intents",
+    "Attach Knowledge",
+    "Configure Escalation",
+    "Test Bot",
+    "Publish",
   ],
   emails: [
     "Template",
@@ -733,6 +1032,14 @@ export const moduleActions: Record<string, string[]> = {
     "Check-out",
     "Visit History",
     "Complete",
+  ],
+  settings: [
+    "Create Setting",
+    "Update Policy",
+    "Configure Template",
+    "Review Consent",
+    "Audit Change",
+    "Export",
   ],
   dashboard: [
     "CEO Dashboard",
@@ -900,6 +1207,15 @@ export const navGroups = [
       "calendar",
       "events",
       "field-force",
+      "mobile-app",
+      "calendar",
+      "events",
+      "support",
+      "finance",
+      "reports",
+      "integrations",
+      "settings",
+      "documents",
       "support",
       "finance",
       "reports",
@@ -2077,8 +2393,31 @@ export const productionModuleIds = new Set([
   "programs",
   "tasks",
   "campaigns",
+  "marketing-automation",
+  "landing-pages",
+  "lead-scoring",
+  "marketing-attribution",
   "communications",
+  "emails",
+  "sms",
+  "whatsapp",
+  "telephony",
+  "call-center",
+  "chatbots",
+  "automation",
   "notifications",
+  "analytics",
+  "ai-features",
+  "mobile-app",
+  "calendar",
+  "events",
+  "field-force",
+  "support",
+  "finance",
+  "reports",
+  "integrations",
+  "settings",
+  "documents",
   "organizations",
   "branches",
   "departments",
@@ -2089,9 +2428,7 @@ export const workflowModuleIds = new Set([
   "admissions",
   "automation",
   "payments",
-  "reports",
   "learning",
-  "settings",
   "analytics",
   "security",
 ]);

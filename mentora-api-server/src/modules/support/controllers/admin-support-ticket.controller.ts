@@ -21,6 +21,7 @@ import {
   AdminCreateSupportTicketDto,
   AdminListSupportTicketsDto,
   AdminReplySupportTicketDto,
+  BulkUpdateSupportTicketStatusDto,
   UpdateSupportTicketStatusDto,
 } from '../dto/admin-support-ticket.dto';
 import { SupportTicketService } from '../services/support-ticket.service';
@@ -74,6 +75,15 @@ export class AdminSupportTicketController {
     );
   }
 
+  @Post('operations/bulk-status')
+  async bulkUpdateStatus(@Body() dto: BulkUpdateSupportTicketStatusDto) {
+    return successResponse(
+      await this.service.bulkUpdateTicketStatus(dto),
+      SuccessCode.SUPPORT_TICKET_UPDATED,
+      'Support tickets updated',
+    );
+  }
+
   @Patch(':ticketId/status')
   async updateStatus(
     @Param('ticketId') ticketId: string,
@@ -92,6 +102,15 @@ export class AdminSupportTicketController {
       await this.service.updateTicketStatus(ticketId, { status: 'closed' }),
       SuccessCode.SUPPORT_TICKET_UPDATED,
       'Support ticket closed',
+    );
+  }
+
+  @Post(':ticketId/restore')
+  async restoreTicket(@Param('ticketId') ticketId: string) {
+    return successResponse(
+      await this.service.restoreTicket(ticketId),
+      SuccessCode.SUPPORT_TICKET_UPDATED,
+      'Support ticket restored',
     );
   }
 }

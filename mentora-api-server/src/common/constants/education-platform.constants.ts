@@ -54,6 +54,7 @@ export const EDUCATION_PLATFORM_MODULE_KEYS = [
   'interview',
   'events',
   'field-force',
+  'support',
   'reports',
   'dashboard',
   'analytics',

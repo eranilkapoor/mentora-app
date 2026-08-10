@@ -11,6 +11,7 @@ import {
   AdminCreateSupportTicketDto,
   AdminListSupportTicketsDto,
   AdminReplySupportTicketDto,
+  BulkUpdateSupportTicketStatusDto,
   UpdateSupportTicketStatusDto,
 } from '../dto/admin-support-ticket.dto';
 import { ListSupportTicketsDto } from '../dto/list-support-tickets.dto';
@@ -216,5 +217,22 @@ export class SupportTicketService {
     }
 
     return updated;
+  }
+
+  async restoreTicket(ticketId: string) {
+    return this.updateTicketStatus(ticketId, { status: 'open' });
+  }
+
+  async bulkUpdateTicketStatus(dto: BulkUpdateSupportTicketStatusDto) {
+    const updated = await Promise.all(
+      dto.recordIds.map((ticketId) =>
+        this.repo.updateStatus(ticketId, dto.status),
+      ),
+    );
+    return {
+      matched: updated.filter(Boolean).length,
+      modified: updated.filter(Boolean).length,
+      status: dto.status,
+    };
   }
 }

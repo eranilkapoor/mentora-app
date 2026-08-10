@@ -4,27 +4,27 @@
 
 Current local validation passed for the two active CRM delivery surfaces:
 
-| Area                | Command                                      | Result |
-| ------------------- | -------------------------------------------- | ------ |
-| API server lint     | `npm.cmd run lint:check`                     | Passed |
-| API server build    | `npm.cmd run build`                          | Passed |
-| Admin CRM typecheck | `npm.cmd run lint`                           | Passed |
-| Admin CRM build     | `npm.cmd run build`                          | Passed |
-| Public website typecheck | `npm.cmd run lint`                      | Passed |
-| Public website build | `npm.cmd run build`                         | Passed |
-| Mobile typecheck    | `npm.cmd run typecheck`                      | Passed |
-| Mobile lint         | `npm.cmd run lint`                           | Passed |
-| Mobile i18n         | `npm.cmd run i18n:check`                     | Passed for 1183 static keys |
+| Area                     | Command                  | Result                      |
+| ------------------------ | ------------------------ | --------------------------- |
+| API server lint          | `npm.cmd run lint:check` | Passed                      |
+| API server build         | `npm.cmd run build`      | Passed                      |
+| Admin CRM typecheck      | `npm.cmd run lint`       | Passed                      |
+| Admin CRM build          | `npm.cmd run build`      | Passed                      |
+| Public website typecheck | `npm.cmd run lint`       | Passed                      |
+| Public website build     | `npm.cmd run build`      | Passed                      |
+| Mobile typecheck         | `npm.cmd run typecheck`  | Passed                      |
+| Mobile lint              | `npm.cmd run lint`       | Passed                      |
+| Mobile i18n              | `npm.cmd run i18n:check` | Passed for 1183 static keys |
 
 Client-demo status:
 
-| Scope                     | Demo readiness                                                                                                     |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Admin CRM                 | Ready for controlled desktop/tablet MVP demos with seeded data and local/staging API credentials.                  |
-| API server                | Ready for controlled MVP demos for admin CRM, learning, CRM, admissions, payments, workflows, and integrations.    |
-| Public website            | Ready for controlled MVP demos after fresh typecheck/build verification.                                           |
-| Mobile app                | Ready for controlled MVP demos after fresh typecheck/lint/i18n verification; device smoke QA is still required.    |
-| Live production launch    | Not ready until P0 environment, provider, legal/security, backup, monitoring, and staging QA gates are complete.    |
+| Scope                  | Demo readiness                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Admin CRM              | Ready for controlled desktop/tablet MVP demos with seeded data and local/staging API credentials.                |
+| API server             | Ready for controlled MVP demos for admin CRM, learning, CRM, admissions, payments, workflows, and integrations.  |
+| Public website         | Ready for controlled MVP demos after fresh typecheck/build verification.                                         |
+| Mobile app             | Ready for controlled MVP demos after fresh typecheck/lint/i18n verification; device smoke QA is still required.  |
+| Live production launch | Not ready until P0 environment, provider, legal/security, backup, monitoring, and staging QA gates are complete. |
 
 Demo module count:
 
@@ -183,7 +183,7 @@ Roadmap status uses **Product Ready** for code-side readiness: module ownership,
 | Done   | Rework `mentora-admin-crm` to follow the existing Juaaree/Match Mate admin layout pattern: left menu, top welcome bar, action strip, filters, listing tables, row actions, and pagination.                                                              |
 | Done   | Add working admin CRM sections for leads, applications, admissions, tasks, campaigns, communications, automation, payments, reports, learning operations, organizations, and settings.                                                                  |
 | Done   | Expand `mentora-admin-crm` so all 30 CRM reference modules are visible and interactive in the frontend MVP.                                                                                                                                             |
-| Done   | Upgrade `mentora-admin-crm` from a basic demo shell to an enterprise-style SaaS console with icons, status chips, insight cards, stronger actions, improved dark/light themes, and consistent module detail drawers.                             |
+| Done   | Upgrade `mentora-admin-crm` from a basic demo shell to an enterprise-style SaaS console with icons, status chips, insight cards, stronger actions, improved dark/light themes, and consistent module detail drawers.                                    |
 | Done   | Add Bootstrap, Font Awesome React icons, Redux Toolkit, and React Redux to the admin CRM so UI components, icons, and shell state use standard frontend libraries.                                                                                      |
 | Done   | Add server-backed admin CRM state. The shell now uses authenticated dashboard bootstrap for contexts, organization scope, dashboard metrics, module coverage, and organization-scoped `module_records` rows through Redux async state.                  |
 | Done   | Make the admin CRM desktop/tablet-first responsive, including sidebar collapse, menu group collapse, stable tablet breakpoints, and list/grid module record views.                                                                                      |
@@ -276,28 +276,30 @@ Next production hardening tracks: add real communication providers and delivery 
 
 Completed production-readiness pass:
 
-| Status | Item                                                                                                                                                                                                                                                                      |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Done   | Added CRM-specific permissions for organizations, leads, applications, tasks, campaigns, communications, module records, reports, and workflows.                                                                                                                          |
-| Done   | Applied action-level `PermissionsGuard` checks across CRM controllers in addition to JWT and organization-membership guards.                                                                                                                                              |
-| Done   | Added lead duplicate lookup, duplicate merge, JSON bulk import, and CSV export APIs under `/api/v1/admin/leads/operations/*`.                                                                                                                                             |
-| Done   | Added CRM audit-log writes for lead create, assign, stage change, merge, import, and export operations.                                                                                                                                                                   |
-| Done   | Wired admin CRM Lead Management action buttons to real API calls for duplicate check, sample import, and export, with visible success/error toast state.                                                                                                                  |
-| Done   | Added shared module-record export API for CRM reports/operations and wired generic admin CRM export/report actions to it.                                                                                                                                                 |
-| Done   | Added module-record workflow execution endpoint with execution result metadata and audit logging for automation MVP records.                                                                                                                                              |
-| Done   | Added dedicated top-level `workflows` module with schemas, DTOs, controller, service, organization guard, permissions, execution logging, and audit writes.                                                                                                               |
-| Done   | Added dedicated top-level `reports` module with report definitions, export jobs, controller, service, organization guard, permissions, and audit writes.                                                                                                                  |
-| Done   | Wired admin CRM Automation actions to dedicated workflow rule creation/execution APIs and Reports actions to report definition/export flows.                                                                                                                              |
-| Done   | Added dedicated `admissions`, `call-center`, `whatsapp`, `scholarships`, `interviews`, `events`, `field-force`, and `finance-ledgers` modules with collections, schemas, services, controllers, organization guards, permission guards, lifecycle APIs, and audit writes. |
-| Done   | Routed admin CRM load/save behavior for admissions, call center, WhatsApp, scholarships, interviews, events, field force, and finance modules to their dedicated APIs instead of `module_records`.                                                                        |
-| Done   | Added dedicated `integrations` and `security-policies` modules with organization-scoped provider readiness, policy configuration APIs, permission guards, and audit writes.                                                                                               |
-| Done   | Wired admin CRM Integrations and Security actions to real backend APIs for provider checks/configuration and organization policy load/update flows.                                                                                                                       |
-| Done   | Expanded User Management and Organization Management with organization users plus first-class Branches, Departments, and Teams pages backed by create/list/archive/restore APIs, hierarchy refresh, branding, and channel settings.                                       |
-| Done   | Expanded Lead Management with tags, attachments, voice notes, deterministic scoring, transfer APIs, safer ObjectId route matching, and CRM enrichment actions.                                                                                                            |
-| Done   | Expanded Application, Admission, Marketing, Task, Workflow, Document, Finance, and Scholarship modules with dedicated lifecycle/depth APIs and CRM action wiring.                                                                                                         |
-| Done   | Added module-specific admin form fields and payload mapping for Applications, Admissions, Documents, Scholarships, Interviews, and Learning Ops so create/edit/view no longer uses generic lead-like fields.                                                               |
-| Done   | Promoted Learning Ops to a dedicated `/api/v1/admin/learning` surface backed by the `learning_operations` collection, with create/list/update/archive/restore/bulk-status/export lifecycle support.                                                                        |
-| Done   | Completed Documents lifecycle parity with restore and bulk-status APIs, while keeping storage in the `documents` collection and removing visible `CrmDocument` type naming from the Documents module.                                                                      |
+| Status | Item                                                                                                                                                                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done   | Added CRM-specific permissions for organizations, leads, applications, tasks, campaigns, communications, module records, reports, and workflows.                                                                                                                                |
+| Done   | Applied action-level `PermissionsGuard` checks across CRM controllers in addition to JWT and organization-membership guards.                                                                                                                                                    |
+| Done   | Added lead duplicate lookup, duplicate merge, JSON bulk import, and CSV export APIs under `/api/v1/admin/leads/operations/*`.                                                                                                                                                   |
+| Done   | Added CRM audit-log writes for lead create, assign, stage change, merge, import, and export operations.                                                                                                                                                                         |
+| Done   | Wired admin CRM Lead Management action buttons to real API calls for duplicate check, sample import, and export, with visible success/error toast state.                                                                                                                        |
+| Done   | Added shared module-record export API for CRM reports/operations and wired generic admin CRM export/report actions to it.                                                                                                                                                       |
+| Done   | Added module-record workflow execution endpoint with execution result metadata and audit logging for automation MVP records.                                                                                                                                                    |
+| Done   | Added dedicated top-level `workflows` module with schemas, DTOs, controller, service, organization guard, permissions, execution logging, and audit writes.                                                                                                                     |
+| Done   | Added dedicated top-level `reports` module with report definitions, export jobs, controller, service, organization guard, permissions, and audit writes.                                                                                                                        |
+| Done   | Wired admin CRM Automation actions to dedicated workflow rule creation/execution APIs and Reports actions to report definition/export flows.                                                                                                                                    |
+| Done   | Added dedicated `admissions`, `call-center`, `whatsapp`, `scholarships`, `interviews`, `events`, `field-force`, and `finance-ledgers` modules with collections, schemas, services, controllers, organization guards, permission guards, lifecycle APIs, and audit writes.       |
+| Done   | Routed admin CRM load/save behavior for admissions, call center, WhatsApp, scholarships, interviews, events, field force, and finance modules to their dedicated APIs instead of `module_records`.                                                                              |
+| Done   | Added dedicated `integrations` and `security-policies` modules with organization-scoped provider readiness, policy configuration APIs, permission guards, and audit writes.                                                                                                     |
+| Done   | Wired admin CRM Integrations and Security actions to real backend APIs for provider checks/configuration and organization policy load/update flows.                                                                                                                             |
+| Done   | Expanded User Management and Organization Management with organization users plus first-class Branches, Departments, and Teams pages backed by create/list/archive/restore APIs, hierarchy refresh, branding, and channel settings.                                             |
+| Done   | Expanded Lead Management with tags, attachments, voice notes, deterministic scoring, transfer APIs, safer ObjectId route matching, and CRM enrichment actions.                                                                                                                  |
+| Done   | Expanded Application, Admission, Marketing, Task, Workflow, Document, Finance, and Scholarship modules with dedicated lifecycle/depth APIs and CRM action wiring.                                                                                                               |
+| Done   | Added module-specific admin form fields and payload mapping for Applications, Admissions, Documents, Scholarships, Interviews, and Learning Ops so create/edit/view no longer uses generic lead-like fields.                                                                    |
+| Done   | Promoted Learning Ops to a dedicated `/api/v1/admin/learning` surface backed by the `learning_operations` collection, with create/list/update/archive/restore/bulk-status/export lifecycle support.                                                                             |
+| Done   | Completed Documents lifecycle parity with restore and bulk-status APIs, while keeping storage in the `documents` collection and removing visible `CrmDocument` type naming from the Documents module.                                                                           |
+| Done   | Promoted Growth & Automation admin UX status and forms to product-ready for Campaigns, Marketing Automation, Landing Pages, Email, SMS, WhatsApp, Telephony, Call Center, Lead Scoring, Marketing Attribution, Notifications, Automation, Analytics, Chatbots, and AI Features. |
+| Done   | Promoted Operations admin UX/status/forms to product-ready for Mobile App, Calendar, Events, Field Force, Support, Finance, Reports, Integrations, and Settings; added Support restore and bulk status API parity for shared CRM row actions.                                   |
 
 Remaining production hardening tracks:
 
