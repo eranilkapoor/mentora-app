@@ -44,12 +44,16 @@ export function findModuleCoverage(
 }
 
 export function formatReadiness(coverage: ModuleCoverage): ModuleStatus {
-  if (coverage.productionReady) return "Active";
   if (
-    coverage.backendStatus === "workflow_ready" ||
-    coverage.frontendStatus === "workflow_ready" ||
+    coverage.productionReady ||
     (coverage.backendStatus === "product_ready" &&
       coverage.frontendStatus === "product_ready")
+  ) {
+    return "Active";
+  }
+  if (
+    coverage.backendStatus === "workflow_ready" ||
+    coverage.frontendStatus === "workflow_ready"
   ) {
     return "Configured";
   }
