@@ -1022,6 +1022,44 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   IMPORT_EXPORT_CALLBACK_SECRET: optionalString,
 
+  EDUCATION_FORM_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  EDUCATION_FORM_PROVIDER: optionalString,
+
+  EDUCATION_FORM_PROVIDER_API_KEY: optionalString,
+
+  EDUCATION_LMS_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  EDUCATION_LMS_PROVIDER: optionalString,
+
+  EDUCATION_LMS_PROVIDER_API_KEY: optionalString,
+
+  EDUCATION_CLASSROOM_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  EDUCATION_CLASSROOM_PROVIDER: optionalString,
+
+  EDUCATION_CLASSROOM_PROVIDER_API_KEY: optionalString,
+
+  EDUCATION_TAX_PROVIDER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  EDUCATION_TAX_PROVIDER: optionalString,
+
+  EDUCATION_TAX_PROVIDER_API_KEY: optionalString,
+
+  EDUCATION_OPS_CALLBACK_SECRET: optionalString,
+
   CHAT_PROFANITY_FILTER_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')

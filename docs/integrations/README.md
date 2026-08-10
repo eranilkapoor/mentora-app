@@ -49,6 +49,7 @@ The API now exposes placeholder-ready configuration for the remaining external c
 - `calendar_sync`: calendar OAuth settings, reminder webhook URL, and callback secret.
 - `dialer_recording`: dialer API credentials, call callback URL, recording callback URL, and webhook secret.
 - `import_export_storage`: CSV/file transfer provider, base URL, API key, and callback secret.
+- `education_ops`: application form builder, LMS/ERP handoff, live classroom, tax provider, and callback secret placeholders.
 - `notification_callbacks`: email, SMS, and push delivery callback URLs plus callback secrets.
 
 Local/demo mode uses `*.mentora.test` sandbox placeholders so the admin CRM provider health checks can pass without real credentials. Production deployments must replace these values with provider console URLs/secrets and should keep `INTEGRATION_DEMO_MODE=false`.

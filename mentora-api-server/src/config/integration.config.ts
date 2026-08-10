@@ -160,5 +160,40 @@ export default () => ({
         'demo-import-export-callback-secret',
       ),
     },
+    educationOps: {
+      formProviderEnabled:
+        bool(process.env.EDUCATION_FORM_PROVIDER_ENABLED) || demoMode,
+      formProvider: process.env.EDUCATION_FORM_PROVIDER || 'demo_form_builder',
+      formProviderApiKey: demo(
+        process.env.EDUCATION_FORM_PROVIDER_API_KEY,
+        'demo-form-provider-api-key',
+      ),
+      lmsProviderEnabled:
+        bool(process.env.EDUCATION_LMS_PROVIDER_ENABLED) || demoMode,
+      lmsProvider: process.env.EDUCATION_LMS_PROVIDER || 'demo_lms',
+      lmsProviderApiKey: demo(
+        process.env.EDUCATION_LMS_PROVIDER_API_KEY,
+        'demo-lms-provider-api-key',
+      ),
+      classroomProviderEnabled:
+        bool(process.env.EDUCATION_CLASSROOM_PROVIDER_ENABLED) || demoMode,
+      classroomProvider:
+        process.env.EDUCATION_CLASSROOM_PROVIDER || 'demo_classroom',
+      classroomProviderApiKey: demo(
+        process.env.EDUCATION_CLASSROOM_PROVIDER_API_KEY,
+        'demo-classroom-provider-api-key',
+      ),
+      taxProviderEnabled:
+        bool(process.env.EDUCATION_TAX_PROVIDER_ENABLED) || demoMode,
+      taxProvider: process.env.EDUCATION_TAX_PROVIDER || 'demo_tax',
+      taxProviderApiKey: demo(
+        process.env.EDUCATION_TAX_PROVIDER_API_KEY,
+        'demo-tax-provider-api-key',
+      ),
+      callbackSecret: demo(
+        process.env.EDUCATION_OPS_CALLBACK_SECRET,
+        'demo-education-ops-callback-secret',
+      ),
+    },
   },
 });

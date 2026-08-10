@@ -330,6 +330,31 @@ export function recordsToRows(
         (key === "file" ? payload.file : undefined) ??
         (key === "errorPolicy" ? payload.errorPolicy : undefined) ??
         (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
+        (key === "student" ? (payload.student ?? object.title) : undefined) ??
+        (key === "grade" ? payload.grade : undefined) ??
+        (key === "parent" ? payload.parent : undefined) ??
+        (key === "access" ? payload.access : undefined) ??
+        (key === "profileCompletion" ? payload.profileCompletion : undefined) ??
+        (key === "session" ? (payload.session ?? object.title) : undefined) ??
+        (key === "batch" ? payload.batch : undefined) ??
+        (key === "end" ? payload.end : undefined) ??
+        (key === "course" ? (payload.course ?? object.title) : undefined) ??
+        (key === "subjects" ? payload.subjects : undefined) ??
+        (key === "fee" ? (payload.fee ?? object.title) : undefined) ??
+        (key === "duration" ? payload.duration : undefined) ??
+        (key === "specialization"
+          ? (payload.specialization ?? object.title)
+          : undefined) ??
+        (key === "stream" ? payload.stream : undefined) ??
+        (key === "seats" ? payload.seats : undefined) ??
+        (key === "eligibility" ? payload.eligibility : undefined) ??
+        (key === "enrollment"
+          ? (payload.enrollment ?? object.title)
+          : undefined) ??
+        (key === "plan" ? payload.plan : undefined) ??
+        (key === "amount" ? payload.amount : undefined) ??
+        (key === "ledger" ? payload.ledger : undefined) ??
+        (key === "gateway" ? payload.gateway : undefined) ??
         (key === "document" ? (object.name ?? object.title) : undefined) ??
         (key === "report" ? (object.name ?? object.title) : undefined) ??
         (key === "workflow" ? (object.name ?? object.title) : undefined) ??

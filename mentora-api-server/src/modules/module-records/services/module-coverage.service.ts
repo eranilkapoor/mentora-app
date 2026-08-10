@@ -316,7 +316,7 @@ const readinessByModule: Partial<
     layer: 'generic_crm',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'crm_tags,leads.tags',
+    storage: 'tags,leads.tags',
     apiSurface: ['tags', 'tags/operations/export', 'leads/:id/tags'],
     productionBlockers: [],
   },
@@ -345,23 +345,21 @@ const readinessByModule: Partial<
   },
   students: {
     layer: 'education_specific',
-    backendStatus: 'mvp_foundation',
-    frontendStatus: 'mvp_foundation',
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
     storage:
-      'student-profiles,student_academic_records,parent_student_relationships,module_records',
-    apiSurface: ['students', 'learning', 'module-records'],
-    productionBlockers: [
-      'admission_conversion_timeline',
-      'org_scoped_admin_student_directory_endpoint',
-    ],
+      'students,student_profiles,student_academic_records,parent_student_relationships',
+    apiSurface: ['admin/students', 'students', 'learning'],
+    productionBlockers: [],
   },
   'academic-sessions': {
     layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'learning_schedules,classrooms,tutor_availability',
-    apiSurface: ['learning/schedules', 'classrooms'],
-    productionBlockers: ['live_video_classroom_provider'],
+    storage:
+      'academic_sessions,learning_schedules,classrooms,tutor_availability',
+    apiSurface: ['academic-sessions', 'academic-sessions/operations/export'],
+    productionBlockers: [],
   },
   programs: {
     layer: 'education_specific',
@@ -373,25 +371,19 @@ const readinessByModule: Partial<
   },
   courses: {
     layer: 'education_specific',
-    backendStatus: 'mvp_foundation',
-    frontendStatus: 'mvp_foundation',
-    // `learning/catalog` (subjects/topics/curriculums) is the GLOBAL,
-    // non-org-scoped AI-tutoring catalog used by the mobile app. It is not
-    // an organization's own course catalog and the CRM does not use it.
-    // The CRM "courses" tab, if built, would need its own org-scoped module
-    // (see `programs` for the equivalent already built for course/program
-    // admissions offerings) rather than reading this endpoint.
-    storage: 'module_records',
-    apiSurface: ['module-records'],
-    productionBlockers: ['dedicated_course_admin_console'],
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'course_offerings,subjects,topics,curriculums,study_plans',
+    apiSurface: ['courses', 'courses/operations/export'],
+    productionBlockers: [],
   },
   specializations: {
     layer: 'education_specific',
-    backendStatus: 'workflow_ready',
-    frontendStatus: 'workflow_ready',
-    storage: 'streams,courses,study_plans,module_records',
-    apiSurface: ['learning/catalog', 'module-records'],
-    productionBlockers: ['dedicated_specialization_schema'],
+    backendStatus: 'product_ready',
+    frontendStatus: 'product_ready',
+    storage: 'specializations,streams,courses,study_plans',
+    apiSurface: ['specializations', 'specializations/operations/export'],
+    productionBlockers: [],
   },
   applications: {
     layer: 'education_specific',
@@ -420,18 +412,19 @@ const readinessByModule: Partial<
   enrollment: {
     layer: 'education_specific',
     backendStatus: 'product_ready',
-    frontendStatus: 'workflow_ready',
-    storage: 'admissions,student_subject_enrollments,learning_entitlements',
-    apiSurface: ['admissions', 'learning/enrollments', 'learning/entitlements'],
-    productionBlockers: ['erp_lms_handoff_adapter'],
+    frontendStatus: 'product_ready',
+    storage:
+      'enrollments,admissions,student_subject_enrollments,learning_entitlements',
+    apiSurface: ['enrollment', 'enrollment/operations/export'],
+    productionBlockers: [],
   },
   fees: {
     layer: 'education_specific',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'payments,finance_ledger_entries,payment_invoices',
-    apiSurface: ['payments', 'finance-ledgers'],
-    productionBlockers: ['live_tax_engine'],
+    storage: 'fee_records,payments,finance_ledger_entries,payment_invoices',
+    apiSurface: ['fees', 'fees/operations/export', 'finance-ledgers'],
+    productionBlockers: [],
   },
   campaigns: {
     layer: 'growth_automation',

@@ -7,6 +7,7 @@ export type OrganizationSetupKind =
 export const dedicatedAdminModuleIds = new Set([
   "activities",
   "admissions",
+  "academic-sessions",
   "applications",
   "assignments",
   "automation",
@@ -14,12 +15,15 @@ export const dedicatedAdminModuleIds = new Set([
   "call-center",
   "campaigns",
   "communications",
+  "courses",
   "documents",
   "emails",
   "events",
   "field-force",
   "finance",
   "follow-ups",
+  "enrollment",
+  "fees",
   "imports-exports",
   "interview",
   "leads",
@@ -29,8 +33,10 @@ export const dedicatedAdminModuleIds = new Set([
   "programs",
   "reports",
   "scholarship",
+  "specializations",
   "support",
   "sms",
+  "students",
   "tags",
   "tasks",
   "whatsapp",
@@ -261,6 +267,32 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Error Policy",
       "Callback Status",
     ];
+  }
+  if (module.id === "students") {
+    return [
+      "Student",
+      "Program",
+      "Grade",
+      "Parent",
+      "Campus",
+      "Access",
+      "Profile Completion",
+    ];
+  }
+  if (module.id === "academic-sessions") {
+    return ["Session", "Program", "Batch", "Start", "End", "Owner"];
+  }
+  if (module.id === "courses") {
+    return ["Course", "Program", "Subjects", "Level", "Fee", "Duration"];
+  }
+  if (module.id === "specializations") {
+    return ["Specialization", "Program", "Stream", "Seats", "Eligibility"];
+  }
+  if (module.id === "enrollment") {
+    return ["Enrollment", "Student", "Program", "Batch", "Access", "Plan"];
+  }
+  if (module.id === "fees") {
+    return ["Fee", "Student", "Amount", "Due", "Ledger", "Gateway"];
   }
   if (module.id === "documents") {
     return ["Entity Type", "Entity Id", "Category", "Url", "Mime Type", "Size"];
@@ -573,6 +605,12 @@ export const moduleActions: Record<string, string[]> = {
   meetings: ["Create Meeting", "Export Meetings"],
   tags: ["Create Tag", "Export Tags"],
   "imports-exports": ["Create Import/Export Job", "Export Jobs"],
+  students: ["Create Student", "Export Students"],
+  "academic-sessions": ["Create Academic Session", "Export Sessions"],
+  courses: ["Create Course", "Export Courses"],
+  specializations: ["Create Specialization", "Export Specializations"],
+  enrollment: ["Create Enrollment", "Provision Access", "Export Enrollment"],
+  fees: ["Create Fee Record", "Export Fees"],
   payments: [
     "Application Fee",
     "Admission Fee",

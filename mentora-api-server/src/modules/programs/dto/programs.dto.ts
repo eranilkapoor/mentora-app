@@ -1,4 +1,6 @@
 import {
+  ArrayMinSize,
+  IsArray,
   IsIn,
   IsMongoId,
   IsNumber,
@@ -129,4 +131,17 @@ export class UpdateProgramDto {
   @IsOptional()
   @IsIn(['draft', 'active', 'inactive', 'archived'])
   status?: string;
+}
+
+export class BulkUpdateProgramStatusDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMongoId({ each: true })
+  recordIds!: string[];
+
+  @IsIn(['active', 'draft', 'inactive', 'archived'])
+  status!: string;
 }

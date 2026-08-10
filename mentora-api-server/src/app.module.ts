@@ -41,6 +41,7 @@ import { CommunicationsModule } from './modules/communications/communications.mo
 import { ContextsModule } from './modules/contexts/contexts.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { EducationRecordsModule } from './modules/education-records/education-records.module';
 import { EventsModule } from './modules/events/events.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
@@ -119,6 +120,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     CampaignsModule,
     CommunicationsModule,
     DocumentsModule,
+    EducationRecordsModule,
     EventsModule,
     InterviewsModule,
     IntegrationsModule,

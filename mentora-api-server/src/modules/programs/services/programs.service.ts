@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   toRequiredObjectId,
   toOrganizationObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
-import { CreateProgramDto, UpdateProgramDto } from '../dto/programs.dto';
+import {
+  BulkUpdateProgramStatusDto,
+  CreateProgramDto,
+  UpdateProgramDto,
+} from '../dto/programs.dto';
 import { Program, ProgramDocument } from '../schemas/programs.schema';
 
 type ProgramListOptions = {
@@ -138,6 +142,23 @@ export class ProgramsService {
     );
     if (!program) throw new NotFoundException('Program not found');
     return program;
+  }
+
+  async bulkUpdateStatus(dto: BulkUpdateProgramStatusDto) {
+    const result = await this.programs.updateMany(
+      {
+        _id: {
+          $in: dto.recordIds.map((recordId) => new Types.ObjectId(recordId)),
+        },
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: { status: dto.status } },
+    );
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
   }
 
   private resolveSortBy(value?: string) {

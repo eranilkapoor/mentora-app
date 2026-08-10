@@ -19,6 +19,7 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
 import {
   ApproveApplicationDto,
+  BulkUpdateApplicationStatusDto,
   CreateApplicationDto,
   UpdateApplicationDto,
   UpdateApplicationReviewDto,
@@ -104,6 +105,29 @@ export class ApplicationsController {
       await this.service.archiveApplication(applicationId, organizationId),
       'EDUCATION_PLATFORM_APPLICATION_ARCHIVED',
       'Application archived',
+    );
+  }
+
+  @Post('operations/bulk-status')
+  @Permissions(Permission.APPLICATION_MANAGE)
+  async bulkStatus(@Body() dto: BulkUpdateApplicationStatusDto) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(dto),
+      'EDUCATION_PLATFORM_APPLICATIONS_BULK_STATUS_UPDATED',
+      'Applications updated',
+    );
+  }
+
+  @Post(':applicationId/restore')
+  @Permissions(Permission.APPLICATION_MANAGE)
+  async restoreApplication(
+    @Param('applicationId') applicationId: string,
+    @Query('organizationId') organizationId: string,
+  ) {
+    return successResponse(
+      await this.service.restoreApplication(applicationId, organizationId),
+      'EDUCATION_PLATFORM_APPLICATION_RESTORED',
+      'Application restored',
     );
   }
 

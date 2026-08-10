@@ -3,14 +3,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AdminModule } from '../admin/admin.module';
 import { ContextsModule } from '../contexts/contexts.module';
 import { TagsController } from './controllers/tags.controller';
-import { CrmTag, CrmTagSchema } from './schemas/tags.schema';
+import { Tag, TagSchema } from './schemas/tags.schema';
 import { TagsService } from './services/tags.service';
 
 @Module({
   imports: [
     AdminModule,
     ContextsModule,
-    MongooseModule.forFeature([{ name: CrmTag.name, schema: CrmTagSchema }]),
+    MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
   ],
   controllers: [TagsController],
   providers: [TagsService],

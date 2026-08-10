@@ -1,5 +1,6 @@
 import {
   IsArray,
+  ArrayMinSize,
   IsBoolean,
   IsIn,
   IsMongoId,
@@ -112,4 +113,27 @@ export class ApproveApplicationDto {
   @IsOptional()
   @IsObject()
   offer?: Record<string, unknown>;
+}
+
+export class BulkUpdateApplicationStatusDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsMongoId({ each: true })
+  recordIds!: string[];
+
+  @IsIn([
+    'draft',
+    'submitted',
+    'under_review',
+    'document_verification',
+    'interview',
+    'offer_issued',
+    'admission_confirmed',
+    'rejected',
+    'withdrawn',
+  ])
+  status!: string;
 }

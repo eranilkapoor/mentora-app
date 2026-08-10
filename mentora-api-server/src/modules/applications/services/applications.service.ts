@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   toOptionalObjectId,
   toRequiredObjectId,
@@ -9,6 +9,7 @@ import {
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
   ApproveApplicationDto,
+  BulkUpdateApplicationStatusDto,
   CreateApplicationDto,
   UpdateApplicationDto,
   UpdateApplicationReviewDto,
@@ -134,6 +135,36 @@ export class ApplicationsService {
     );
     if (!application) throw new NotFoundException('CRM application not found');
     return application;
+  }
+
+  async restoreApplication(applicationId: string, organizationId: string) {
+    const application = await this.applications.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(applicationId),
+        organizationId: toOrganizationObjectId(organizationId),
+      },
+      { $set: { status: 'under_review', isLocked: false } },
+      { new: true },
+    );
+    if (!application) throw new NotFoundException('CRM application not found');
+    return application;
+  }
+
+  async bulkUpdateStatus(dto: BulkUpdateApplicationStatusDto) {
+    const result = await this.applications.updateMany(
+      {
+        _id: {
+          $in: dto.recordIds.map((recordId) => new Types.ObjectId(recordId)),
+        },
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: { status: dto.status } },
+    );
+    return {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      status: dto.status,
+    };
   }
 
   async updateReview(applicationId: string, dto: UpdateApplicationReviewDto) {

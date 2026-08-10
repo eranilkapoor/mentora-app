@@ -17,7 +17,11 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { OrganizationContextGuard } from '@/modules/contexts/guards/organization-context.guard';
-import { CreateProgramDto, UpdateProgramDto } from '../dto/programs.dto';
+import {
+  BulkUpdateProgramStatusDto,
+  CreateProgramDto,
+  UpdateProgramDto,
+} from '../dto/programs.dto';
 import { ProgramsService } from '../services/programs.service';
 
 @UseGuards(JwtAuthGuard, OrganizationContextGuard, PermissionsGuard)
@@ -97,6 +101,16 @@ export class ProgramsController {
       await this.service.archiveProgram(programId, organizationId),
       'EDUCATION_PLATFORM_PROGRAM_ARCHIVED',
       'Program archived',
+    );
+  }
+
+  @Post('operations/bulk-status')
+  @Permissions(Permission.PROGRAM_MANAGE)
+  async bulkStatus(@Body() dto: BulkUpdateProgramStatusDto) {
+    return successResponse(
+      await this.service.bulkUpdateStatus(dto),
+      'EDUCATION_PLATFORM_PROGRAMS_BULK_STATUS_UPDATED',
+      'Programs updated',
     );
   }
 
