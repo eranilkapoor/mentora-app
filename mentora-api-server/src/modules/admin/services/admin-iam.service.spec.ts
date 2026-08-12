@@ -43,6 +43,7 @@ const createFixture = () => {
   };
   const memberships = {
     find: jest.fn(),
+    findOne: jest.fn(),
     create: jest.fn().mockResolvedValue({ _id: new Types.ObjectId() }),
     findOneAndUpdate: jest.fn(),
   };
@@ -136,7 +137,7 @@ describe('AdminIamService', () => {
     it('assigns Role.ORG_STAFF and derived permissions instead of defaulting to Role.ADMIN', async () => {
       const { service, users } = createFixture();
 
-      await service.createUser(baseDto());
+      await service.createUser(baseDto(), new Types.ObjectId().toString());
 
       const calls = users.create.mock.calls as unknown[][];
       const created = calls[0][0] as { roles: Role[]; permissions: string[] };
@@ -150,8 +151,26 @@ describe('AdminIamService', () => {
       const { service, users } = createFixture();
 
       await expect(
-        service.createUser({ ...baseDto(), role: 'super_admin' }),
+        service.createUser(
+          { ...baseDto(), role: 'super_admin' },
+          new Types.ObjectId().toString(),
+        ),
       ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
+      expect(users.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects creating a user in an organization the actor cannot access', async () => {
+      const { service, users, memberships } = createFixture();
+      users.findById.mockReturnValue(
+        createQueryChain({ roles: [Role.ORG_STAFF] }),
+      );
+      memberships.find.mockReturnValue(createQueryChain([]));
+
+      await expect(
+        service.createUser(baseDto(), new Types.ObjectId().toString()),
+      ).rejects.toMatchObject({
+        message: 'Organization access denied',
+      });
       expect(users.create).not.toHaveBeenCalled();
     });
   });
@@ -171,11 +190,101 @@ describe('AdminIamService', () => {
       );
       sessions.find.mockReturnValue(createQueryChain([]));
 
-      await service.getAuthOverview(organizationId);
+      await service.getAuthOverview(
+        organizationId,
+        new Types.ObjectId().toString(),
+      );
 
       expect(users.countDocuments).toHaveBeenCalledWith({
         deletedAt: { $exists: false },
         _id: { $in: [membershipUserId, globalStaffId] },
+      });
+    });
+
+    it('does not include global platform staff in organization-admin overview counts', async () => {
+      const { service, users, sessions, memberships } = createFixture();
+      const organizationId = new Types.ObjectId();
+      const membershipUserId = new Types.ObjectId();
+
+      users.findById.mockReturnValue(
+        createQueryChain({ roles: [Role.ORG_STAFF] }),
+      );
+      memberships.find
+        .mockReturnValueOnce(createQueryChain([{ organizationId }]))
+        .mockReturnValueOnce(createQueryChain([{ userId: membershipUserId }]));
+      sessions.find.mockReturnValue(createQueryChain([]));
+
+      await service.getAuthOverview(
+        organizationId.toString(),
+        new Types.ObjectId().toString(),
+      );
+
+      const userFindCalls = users.find.mock.calls as Array<[unknown]>;
+      expect(
+        userFindCalls.some((call) =>
+          Object.prototype.hasOwnProperty.call(
+            call[0] as Record<string, unknown>,
+            'roles',
+          ),
+        ),
+      ).toBe(false);
+      expect(users.countDocuments).toHaveBeenCalledWith({
+        deletedAt: { $exists: false },
+        _id: { $in: [membershipUserId] },
+      });
+    });
+  });
+
+  describe('user access protection', () => {
+    it('rejects organization admin viewing a platform super admin user', async () => {
+      const { service, users, memberships } = createFixture();
+      const organizationId = new Types.ObjectId();
+      const targetUserId = new Types.ObjectId().toString();
+
+      users.findById
+        .mockReturnValueOnce(createQueryChain({ roles: [Role.ORG_STAFF] }))
+        .mockReturnValueOnce(createQueryChain({ roles: [Role.SUPER_ADMIN] }));
+      memberships.find.mockReturnValue(createQueryChain([{ organizationId }]));
+      memberships.findOne.mockReturnValue(createQueryChain({ _id: 'member' }));
+
+      await expect(
+        service.getUser(targetUserId, new Types.ObjectId().toString()),
+      ).rejects.toMatchObject({
+        message: 'Platform user access denied',
+      });
+    });
+
+    it('rejects organization admin updating a user from another organization', async () => {
+      const { service, users, memberships } = createFixture();
+      const actorOrganizationId = new Types.ObjectId();
+      const targetOrganizationId = new Types.ObjectId();
+      const targetUserId = new Types.ObjectId().toString();
+
+      users.findById
+        .mockReturnValueOnce(createQueryChain({ roles: [Role.ORG_STAFF] }))
+        .mockReturnValueOnce(
+          createQueryChain({
+            roles: [Role.ORG_STAFF],
+            save: jest.fn(),
+          }),
+        )
+        .mockReturnValueOnce(createQueryChain({ roles: [Role.ORG_STAFF] }));
+      memberships.find
+        .mockReturnValueOnce(
+          createQueryChain([{ organizationId: actorOrganizationId }]),
+        )
+        .mockReturnValueOnce(
+          createQueryChain([{ organizationId: targetOrganizationId }]),
+        );
+
+      await expect(
+        service.updateUser(
+          targetUserId,
+          { firstName: 'Blocked' },
+          new Types.ObjectId().toString(),
+        ),
+      ).rejects.toMatchObject({
+        message: 'User access denied',
       });
     });
   });

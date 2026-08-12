@@ -58,9 +58,12 @@ export class AdminIamController {
 
   @Get('users/:id')
   @Permissions(Permission.USER_VIEW)
-  async getUser(@Param('id') id: string): Promise<unknown> {
+  async getUser(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<unknown> {
     return successResponse(
-      await this.iamService.getUser(id),
+      await this.iamService.getUser(id, req.user.sub),
       'ADMIN_USER_FETCHED',
       'Admin user fetched',
     );
@@ -82,9 +85,12 @@ export class AdminIamController {
 
   @Post('users/:id/revoke-sessions')
   @Permissions(Permission.USER_UPDATE)
-  async revokeSessions(@Param('id') id: string): Promise<unknown> {
+  async revokeSessions(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<unknown> {
     return successResponse(
-      await this.iamService.revokeUserSessions(id),
+      await this.iamService.revokeUserSessions(id, req.user.sub),
       'ADMIN_USER_SESSIONS_REVOKED',
       'Admin user sessions revoked',
     );
@@ -94,9 +100,10 @@ export class AdminIamController {
   @Permissions(Permission.USER_VIEW)
   async getAuthOverview(
     @Query('organizationId') organizationId?: string,
+    @Req() req?: AuthenticatedRequest,
   ): Promise<unknown> {
     return successResponse(
-      await this.iamService.getAuthOverview(organizationId),
+      await this.iamService.getAuthOverview(organizationId, req?.user.sub),
       'ADMIN_AUTH_OVERVIEW_FETCHED',
       'Admin authentication overview fetched',
     );

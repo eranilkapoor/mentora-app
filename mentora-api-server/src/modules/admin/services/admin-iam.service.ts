@@ -97,7 +97,10 @@ export class AdminIamService {
     // branch filter is a deliberate structural drill-down, so it stays
     // strictly membership-scoped.
     const includeGlobalStaff = Boolean(
-      query.organizationId && !query.role && !query.branchId,
+      actorScope.isSuperAdmin &&
+      query.organizationId &&
+      !query.role &&
+      !query.branchId,
     );
     const scopeConditions: FilterQuery<UserDocument>[] = [];
     if (membershipUserIds) {
@@ -182,11 +185,12 @@ export class AdminIamService {
     dto: CreateAdminUserDto,
     actorId?: string,
   ): Promise<AdminApiObject> {
+    const assignment = this.resolveOrgRoleAssignment(dto.role);
+    await this.assertActorCanAccessOrganization(actorId, dto.organizationId);
     const email = dto.email.toLowerCase().trim();
     const existing = await this.users.findOne({ email }).lean().exec();
     if (existing) return throwConflict(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
 
-    const assignment = this.resolveOrgRoleAssignment(dto.role);
     const user = await this.users.create({
       authAccounts: [
         {
@@ -243,6 +247,7 @@ export class AdminIamService {
   ): Promise<AdminApiObject> {
     const user = await this.users.findById(userId).exec();
     if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
+    await this.assertActorCanManageUser(actorId, userId, dto.organizationId);
 
     if (dto.status) user.status = dto.status;
     if (dto.role) {
@@ -291,10 +296,11 @@ export class AdminIamService {
       await this.revokeUserSessions(userId);
     }
 
-    return this.getUser(userId);
+    return this.getUser(userId, actorId);
   }
 
-  async getUser(userId: string): Promise<AdminApiObject> {
+  async getUser(userId: string, actorId?: string): Promise<AdminApiObject> {
+    await this.assertActorCanViewUser(actorId, userId);
     const user = await this.users
       .findById(userId)
       .select('-authAccounts.passwordHash')
@@ -323,7 +329,11 @@ export class AdminIamService {
     return { ...user, memberships, sessions };
   }
 
-  async revokeUserSessions(userId: string): Promise<AdminApiObject> {
+  async revokeUserSessions(
+    userId: string,
+    actorId?: string,
+  ): Promise<AdminApiObject> {
+    await this.assertActorCanManageUser(actorId, userId);
     const result = await this.sessions.updateMany(
       { userId: toRequiredObjectId(userId), isActive: true },
       { $set: { isActive: false, loggedOutAt: new Date() } },
@@ -331,21 +341,43 @@ export class AdminIamService {
     return { revoked: result.modifiedCount };
   }
 
-  async getAuthOverview(organizationId?: string): Promise<AdminApiObject> {
+  async getAuthOverview(
+    organizationId?: string,
+    actorId?: string,
+  ): Promise<AdminApiObject> {
+    const actorScope = await this.resolveActorScope(actorId);
+    if (organizationId) {
+      const requestedOrganizationId = organizationId;
+      if (
+        !actorScope.isSuperAdmin &&
+        !actorScope.organizationIds.some((id) =>
+          id.equals(toRequiredObjectId(requestedOrganizationId)),
+        )
+      ) {
+        throw new ForbiddenException('Organization access denied');
+      }
+    } else if (actorId) {
+      if (!actorScope.isSuperAdmin) {
+        if (actorScope.organizationIds.length === 0) {
+          throw new ForbiddenException('No active organization access');
+        }
+        organizationId = String(actorScope.organizationIds[0]);
+      }
+    }
     let scopedUserIds: Types.ObjectId[] | undefined;
     if (organizationId) {
-      const [memberships, globalStaff] = await Promise.all([
-        this.memberships
-          .find({ organizationId: toRequiredObjectId(organizationId) })
-          .select('userId')
-          .lean()
-          .exec(),
-        this.users
-          .find({ roles: { $in: PLATFORM_ROLE_VALUES } })
-          .select('_id')
-          .lean()
-          .exec(),
-      ]);
+      const memberships = await this.memberships
+        .find({ organizationId: toRequiredObjectId(organizationId) })
+        .select('userId')
+        .lean()
+        .exec();
+      const globalStaff = actorScope.isSuperAdmin
+        ? await this.users
+            .find({ roles: { $in: PLATFORM_ROLE_VALUES } })
+            .select('_id')
+            .lean()
+            .exec()
+        : [];
       scopedUserIds = [
         ...memberships.map((item) => item.userId),
         ...globalStaff.map((item) => item._id),
@@ -428,6 +460,107 @@ export class AdminIamService {
       roles: [resolveSystemRoleForOrgRole(role)],
       permissions: resolveOrgRolePermissions(role),
     };
+  }
+
+  private async assertActorCanAccessOrganization(
+    actorId: string | undefined,
+    organizationId: string,
+  ): Promise<void> {
+    const actorScope = await this.resolveActorScope(actorId);
+    if (actorScope.isSuperAdmin) return;
+    if (
+      actorScope.organizationIds.some((id) =>
+        id.equals(toRequiredObjectId(organizationId)),
+      )
+    ) {
+      return;
+    }
+    throw new ForbiddenException('Organization access denied');
+  }
+
+  private async assertActorCanViewUser(
+    actorId: string | undefined,
+    userId: string,
+  ): Promise<void> {
+    const actorScope = await this.resolveActorScope(actorId);
+    if (actorScope.isSuperAdmin) return;
+    if (actorScope.organizationIds.length === 0) {
+      throw new ForbiddenException('No active organization access');
+    }
+    const [target, sharedMembership] = await Promise.all([
+      this.users.findById(userId).select('roles').lean().exec(),
+      this.memberships
+        .findOne({
+          organizationId: { $in: actorScope.organizationIds },
+          userId: toRequiredObjectId(userId),
+          status: { $ne: 'deleted' },
+        })
+        .select('_id')
+        .lean()
+        .exec(),
+    ]);
+    if (!target) return throwNotFound(ErrorCode.USER_NOT_FOUND);
+    if (this.hasPlatformRole(target.roles ?? [])) {
+      throw new ForbiddenException('Platform user access denied');
+    }
+    if (!sharedMembership) {
+      throw new ForbiddenException('User access denied');
+    }
+  }
+
+  private async assertActorCanManageUser(
+    actorId: string | undefined,
+    userId: string,
+    targetOrganizationId?: string,
+  ): Promise<void> {
+    const actorScope = await this.resolveActorScope(actorId);
+    if (actorScope.isSuperAdmin) {
+      if (targetOrganizationId) {
+        await this.assertActorCanAccessOrganization(
+          actorId,
+          targetOrganizationId,
+        );
+      }
+      return;
+    }
+    if (actorScope.organizationIds.length === 0) {
+      throw new ForbiddenException('No active organization access');
+    }
+    const [target, memberships] = await Promise.all([
+      this.users.findById(userId).select('roles').lean().exec(),
+      this.memberships
+        .find({
+          userId: toRequiredObjectId(userId),
+          status: { $ne: 'deleted' },
+        })
+        .select('organizationId')
+        .lean()
+        .exec(),
+    ]);
+    if (!target) return throwNotFound(ErrorCode.USER_NOT_FOUND);
+    if (this.hasPlatformRole(target.roles ?? [])) {
+      throw new ForbiddenException('Platform user modification denied');
+    }
+    if (
+      targetOrganizationId &&
+      !actorScope.organizationIds.some((id) =>
+        id.equals(toRequiredObjectId(targetOrganizationId)),
+      )
+    ) {
+      throw new ForbiddenException('Organization access denied');
+    }
+    const hasSharedOrganization = memberships.some((membership) =>
+      actorScope.organizationIds.some((id) =>
+        id.equals(toRequiredObjectId(String(membership.organizationId))),
+      ),
+    );
+    if (!hasSharedOrganization) {
+      throw new ForbiddenException('User access denied');
+    }
+  }
+
+  private hasPlatformRole(roles: readonly unknown[]): boolean {
+    return roles.map(String).some(isPlatformRole);
   }
 
   private async resolveActorScope(actorId?: string): Promise<{
