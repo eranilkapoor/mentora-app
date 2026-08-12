@@ -4,6 +4,10 @@
 >
 > Purpose: quick command reference for builds, local cleanup, verification, and common operational tasks.
 
+## Test credentials
+
+Seeded local/staging test accounts are documented in [TEST-CREDENTIALS.md](TEST-CREDENTIALS.md).
+
 ## Build APK for Android testers
 
 ```
