@@ -46,6 +46,7 @@ import {
   UpdateStudentProfileSectionDto,
   UpsertTopicProgressDto,
 } from '../dto/learning.dto';
+import { AiTutorProviderService } from './ai-tutor-provider.service';
 import {
   AcademicRecordDocument,
   AcademicBoard,
@@ -232,6 +233,11 @@ export class LearningService {
     @InjectModel(User.name)
     private readonly users: Model<UserDocument>,
     private readonly agePolicy: AgePolicyService = new AgePolicyService(),
+    private readonly aiTutorProvider: AiTutorProviderService = new AiTutorProviderService(
+      {
+        get: <T>(_key: string, fallback?: T) => fallback,
+      } as never,
+    ),
   ) {}
 
   async createStudent(userId: string, dto: CreateStudentDto) {
@@ -897,6 +903,7 @@ export class LearningService {
     });
 
     if (studyPlan) {
+      this.assertScheduleAllowedByStudyPlan(dto, studyPlan);
       await this.assertWithinStudyPlanLimits(studentId, studyPlan, occurrences);
     }
 
@@ -954,6 +961,54 @@ export class LearningService {
       return null;
     }
     return this.studyPlans.findById(entitlement.studyPlanId).lean();
+  }
+
+  private assertScheduleAllowedByStudyPlan(
+    dto: CreateScheduleDto,
+    studyPlan: Pick<
+      StudyPlan,
+      'deliveryModes' | 'scheduleFrequency' | 'subjectIds' | 'tutorTypes'
+    >,
+  ) {
+    if (
+      dto.subjectId &&
+      studyPlan.subjectIds.length > 0 &&
+      !studyPlan.subjectIds.some((id) => this.toIdString(id) === dto.subjectId)
+    ) {
+      throw new ForbiddenException(
+        'This subject is not included in the active study plan',
+      );
+    }
+
+    const tutorType = dto.tutorType ?? 'ai';
+    if (
+      studyPlan.tutorTypes.length > 0 &&
+      !studyPlan.tutorTypes.includes(tutorType)
+    ) {
+      throw new ForbiddenException(
+        `This study plan does not include ${tutorType} tutor sessions`,
+      );
+    }
+
+    const deliveryMode = dto.deliveryMode ?? 'chat';
+    if (
+      studyPlan.deliveryModes.length > 0 &&
+      !studyPlan.deliveryModes.includes(deliveryMode)
+    ) {
+      throw new ForbiddenException(
+        `This study plan does not include ${deliveryMode} sessions`,
+      );
+    }
+
+    if (
+      dto.recurrenceFrequency &&
+      studyPlan.scheduleFrequency !== 'custom' &&
+      dto.recurrenceFrequency !== studyPlan.scheduleFrequency
+    ) {
+      throw new ForbiddenException(
+        `This study plan allows ${studyPlan.scheduleFrequency} scheduling`,
+      );
+    }
   }
 
   private async assertWithinStudyPlanLimits(
@@ -1218,8 +1273,13 @@ export class LearningService {
       );
     }
 
-    let aiContent =
-      'Mentora AI tutor is ready for this subject. The full model provider integration will generate the next adaptive explanation here.';
+    const tutorContext = await this.buildAiTutorContext(userId, sessionId);
+    const tutorReply = this.aiTutorProvider.generateTutorReply({
+      context: tutorContext,
+      message: dto.content,
+      messageType: dto.messageType ?? 'text',
+    });
+    let aiContent = tutorReply.content;
     const outputModeration = this.moderateTutorMessage(aiContent);
     if (outputModeration.status === 'blocked') {
       aiContent =
@@ -1231,7 +1291,10 @@ export class LearningService {
       messageType: 'explanation',
       content: aiContent,
       metadata: {
-        placeholder: true,
+        provider: tutorReply.metadata.provider,
+        model: tutorReply.metadata.model,
+        demoMode: tutorReply.metadata.demoMode,
+        usage: tutorReply.metadata.usage,
         safetyReasons: outputModeration.reasons,
       },
       safetyStatus: outputModeration.status,

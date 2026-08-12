@@ -5,6 +5,7 @@ import { LearningController } from './controllers/learning.controller';
 import { StudentsController } from './controllers/students.controller';
 import { LearningService } from './services/learning.service';
 import { AgePolicyService } from './services/age-policy.service';
+import { AiTutorProviderService } from './services/ai-tutor-provider.service';
 import {
   AcademicBoard,
   AcademicBoardSchema,
@@ -138,7 +139,7 @@ import {
     ]),
   ],
   controllers: [StudentsController, LearningController],
-  providers: [LearningService, AgePolicyService],
+  providers: [LearningService, AgePolicyService, AiTutorProviderService],
   exports: [LearningService, AgePolicyService],
 })
 export class LearningModule {}

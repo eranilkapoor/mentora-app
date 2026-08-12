@@ -286,8 +286,20 @@ export default function LearningTabScreen({
       });
     }
   };
-  const handleComingSoon = (feature: string): void => {
-    showInfo({ title: feature, message: 'This is coming soon.' });
+  const handleOpenNotes = (): void => {
+    showInfo({
+      title: 'Class notes',
+      message:
+        'Notes are attached to the classroom transcript and shared files for this scheduled session.',
+    });
+    void handleStartTutor();
+  };
+  const handleOpenTests = (): void => {
+    showInfo({
+      title: 'Tests and quizzes',
+      message:
+        'Practice tests, quizzes, and recommendations are available from Progress for the selected student.',
+    });
   };
   const openMembership = (): void => {
     navigation.navigate('Settings', { screen: 'Membership' });
@@ -568,12 +580,12 @@ export default function LearningTabScreen({
                 {
                   icon: 'file-text',
                   label: 'Notes',
-                  onPress: () => handleComingSoon('Notes'),
+                  onPress: handleOpenNotes,
                 },
                 {
                   icon: 'check-square',
                   label: 'Tests',
-                  onPress: () => handleComingSoon('Tests'),
+                  onPress: handleOpenTests,
                 },
               ].map((action) => (
                 <Pressable

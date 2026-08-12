@@ -520,6 +520,14 @@ export class CreateScheduleDto {
   @IsMongoId()
   subjectId?: string;
 
+  @IsOptional()
+  @IsIn(['ai', 'human', 'hybrid'])
+  tutorType?: string;
+
+  @IsOptional()
+  @IsIn(['chat', 'audio', 'video', 'offline', 'in_person'])
+  deliveryMode?: string;
+
   @IsString()
   title!: string;
 
