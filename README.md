@@ -1,6 +1,6 @@
 # Mentora
 
-Mentora is a multi-oraganization Education CRM, Admissions, ERP, Student Engagement, and AI Learning SaaS platform for educational organizations, students, parents, counselors, administrators, mentors, and academic teams.
+Mentora is a multi-organization Education CRM, Admissions, ERP, Student Engagement, and AI Learning SaaS platform for educational organizations, students, parents, counselors, administrators, mentors, and academic teams.
 
 The platform combines institution-facing CRM and operational capabilities similar to modern enrollment platforms with direct-to-consumer student and parent learning applications.
 
@@ -80,7 +80,7 @@ Mentora is intended to support:
 - Online academies
 - Independent mentors and learning providers
 
-Each organization operates as an isolated oraganization with its own users, branches, teams, courses, leads, students, applications, workflows, branding, integrations, settings, and reports.
+Each organization operates as an isolated organization with its own users, branches, teams, courses, leads, students, applications, workflows, branding, integrations, settings, and reports.
 
 ---
 
@@ -113,7 +113,7 @@ Mentora Platform
 
 Oraganization-owned data must always be isolated by organization context.
 
-Typical oraganization-aware entities include:
+Typical organization-aware entities include:
 
 ```text
 organizationId
@@ -125,7 +125,7 @@ createdBy
 updatedBy
 ```
 
-Every oraganization-aware database query must enforce `organizationId` and the current user’s authorized data scope.
+Every organization-aware database query must enforce `organizationId` and the current user’s authorized data scope.
 
 ---
 
@@ -407,7 +407,7 @@ The public website includes:
 - Lead source tracking
 - Campaign attribution
 - UTM tracking
-- Course and campus interest
+- Course and branch/location interest
 - Lead stages
 - Lead statuses
 - Lead priorities
@@ -596,7 +596,7 @@ Planned capabilities include:
 - Submitted applications
 - Completion tracking
 - Application numbers
-- Course and campus selection
+- Course and branch/location selection
 - Assigned counselor
 - Assigned reviewer
 - Stage management
@@ -1166,7 +1166,7 @@ ParentStudentRelationship
   Optional parent or guardian relationship with granular permissions and consent.
 
 CourseOffering
-  Combination of academic session, campus, course, intake, seats, eligibility, fees, and application form.
+  Combination of academic session, branch/location, course, intake, seats, eligibility, fees, and application form.
 
 LearningSchedule
   Scheduled AI tutoring, revision, assessment, mentor session, live class, or event.
@@ -1339,7 +1339,7 @@ All reused code must follow Mentora terminology and must not retain unrelated pr
 
 ## Documentation
 
-- [Technical Plan](docs/planning/TECHNICAL-PLAN.md): architecture, module boundaries, API surfaces, tenancy, deployment, and migration strategy.
+- [Technical Plan](docs/planning/TECHNICAL-PLAN.md): architecture, module boundaries, API surfaces, multi-organization scope, deployment, and migration strategy.
 - [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for platform, organizations, CRM, admissions, students, academics, AI learning, payments, safety, and reporting.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product vision, scope, MVP, phases, assumptions, and non-goals.
 - [Project Management Pack](docs/project-management/README.md): charter, scope, requirements, WBS, schedule, cost, quality, resources, communications, risks, procurement, changes, and release acceptance.
@@ -1347,7 +1347,7 @@ All reused code must follow Mentora terminology and must not retain unrelated pr
 - [CRM And App Role Operations](docs/planning/CRM-AND-APP-ROLE-OPERATIONS.md): role-by-role operation matrix for platform users, organization users, students, parents, partners, and CRM QA.
 - [SaaS Billing Plan](docs/planning/SAAS-BILLING-PLAN.md): consumer and organization plan catalog, subscriptions, invoices, payments, CRM billing operations, and enterprise billing gaps.
 - [Student Profile Model](docs/planning/STUDENT-PROFILE-MODEL.md): complete student, academic, parent, document, payment, communication, and learning profile model.
-- [Education CRM Platform Plan](docs/planning/EDUCATION-CRM-PLATFORM-PLAN.md): oraganization administration, CRM, admissions, campaigns, payments, automation, analytics, and ERP expansion.
+- [Education CRM Platform Plan](docs/planning/EDUCATION-CRM-PLATFORM-PLAN.md): organization administration, CRM, admissions, campaigns, payments, automation, analytics, and ERP expansion.
 - [Task Roadmap](docs/planning/TASK-ROADMAP.md): phased implementation roadmap.
 - [Flow Plan](docs/planning/FLOW-PLAN.md): platform admin, organization, counselor, parent, and student journeys.
 - [Commands](docs/operations/COMMANDS.md): local development, validation, database, deployment, and maintenance commands.
@@ -1572,12 +1572,12 @@ db:migrate
 - Updated root package scripts and application metadata.
 - Updated mobile bundle identifiers and environment naming.
 - Added Mentora architecture, product, database, flow, launch, and roadmap documentation.
-- Added multi-oraganization organization foundations.
-- Added organization, branch, campus, department, and team concepts.
+- Added multi-organization foundations.
+- Added organization, branch, department, and team concepts.
 - Added user, role, permission, session, and audit foundations.
 - Added CRM modules for leads, contacts, assignments, activities, tasks, and follow-ups.
 - Added application, admission, document, interview, and offer foundations.
-- Added an academic subjects/curriculums/topics catalog (global, used by the AI tutoring product) and a dedicated organization-scoped Programs module for admissions course offerings; academic-sessions, course-offerings, and a separate courses module are not yet built.
+- Added an academic subjects/curriculums/topics catalog (global, used by the AI tutoring product) and a dedicated organization-scoped Programs module for admissions course offerings.
 - Added communication, campaign, workflow, integration, payment, and reporting foundations.
 - Added student, parent, relationship, parental-control, and consent foundations.
 - Added learning schedules, entitlements, AI tutor sessions, classrooms, tutors, and safety events.
@@ -1593,7 +1593,7 @@ db:migrate
 
 ### Current Priorities
 
-- Complete oraganization isolation and data-scope enforcement across all oraganization-owned repositories and services.
+- Complete organization isolation and data-scope enforcement across all organization-owned repositories and services.
 - Complete platform Super Admin and organization Admin user journeys.
 - Complete lead assignment, follow-up, activity timeline, and application conversion flows.
 - Complete configurable academic masters (academic-sessions, courses, course-offerings, specializations), application forms, stages, and workflows. Programs now has a real dedicated module; the rest are still on the generic module-records fallback with no dedicated backend.
@@ -1601,7 +1601,7 @@ db:migrate
 - Add organization scoping to the platform payments admin API so the CRM payments module can safely list and refund real orders per organization.
 - Complete student, parent, counselor, and reviewer role-based navigation.
 - Regenerate and review the OpenAPI contract from a running API.
-- Connect AI tutor placeholders to the selected model provider.
+- Activate the selected live AI tutor provider credentials and callback/usage evidence.
 - Add provider-level moderation and curriculum-based retrieval.
 - Complete organization SaaS billing and student/family learning billing.
 - Complete production communication providers for email, SMS, WhatsApp, and push.
@@ -1639,7 +1639,7 @@ db:migrate
 
 ### Oraganization Isolation
 
-Every oraganization-owned record must contain `organizationId`, and all reads and writes must validate organization access.
+Every organization-owned record must contain `organizationId`, and all reads and writes must validate organization access.
 
 ### Permission-Based Authorization
 

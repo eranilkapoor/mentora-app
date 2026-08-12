@@ -1,6 +1,6 @@
 # Mentora Product Goal Validation
 
-Last reviewed: 2026-08-07
+Last reviewed: 2026-08-12
 
 ## Goal
 
@@ -39,7 +39,7 @@ The product goal is still valid and the architecture is aligned with it. The cod
 
 Production launch still depends on:
 
-- Live AI provider, moderation, usage metering, and safety escalation.
+- Live AI provider credentials, callback evidence, production moderation policy, and safety escalation operations.
 - Production payment/store billing credentials and callback verification.
 - Email, SMS, WhatsApp, push, calendar, OCR, storage, monitoring, dialer, geo, webinar, and accounting provider activation as selected.
 - Legal/security review for child/student consent, self-managed student age/document validation, subscriptions, data retention, account deletion, and AI tutoring disclosures.
@@ -50,17 +50,20 @@ Production launch still depends on:
 Resolved since the 2026-07-29 review:
 
 - Entitlement usage metering is real: `sendAiTutorMessage` now increments `entitlement.usedQuantity` per exchange and rejects once a plan's quota is exhausted, instead of only checking quota at session start.
-- AI tutor replies now run through the same moderation check as student input (previously input-only), with a safe fallback message and a logged safety event when flagged.
+- AI tutor replies now run through the same moderation check as student input, with a safe fallback message and a logged safety event when flagged.
+- AI tutor replies are no longer hardcoded placeholders: a sandbox provider reads configured provider/model values, emits metered usage metadata, and keeps pre/post moderation in the same flow.
 - `LearningSchedule.recurrenceRule` is no longer a dead field: `createSchedule` accepts `recurrenceFrequency`/`recurrenceCount` and expands daily/weekly/monthly occurrences.
-- `StudyPlan.maxConcurrentSessions` and `sessionsPerWeek` are now enforced in `createSchedule` via a new `LearningEntitlement.studyPlanId` link (previously stored but never read by anything).
-- The mobile "class board" buttons (Q&A, Chat, Start AI tutor) now navigate to a real `AiTutorSession` screen with working message send/receive, instead of doing nothing on press.
+- `StudyPlan.maxConcurrentSessions` and `sessionsPerWeek` are now enforced in `createSchedule` via `LearningEntitlement.studyPlanId`.
+- Study-plan subjects, tutor type, delivery mode, recurrence frequency, entitlement usage, concurrent sessions, and weekly session limits are enforced in backend schedule/tutor flows.
+- Adult self-managed eligibility documents can be submitted by students and reviewed through the admin Documents verification/OCR workflow.
+- The mobile class-board actions for Q&A, Chat, Start AI tutor, Notes, and Tests now route users into tutor, notes, and practice entry points instead of silent no-ops.
 
 Still open, highest priority:
 
-- Replace the AI tutor's hardcoded placeholder reply with a real model provider call, provider-side moderation, and lesson memory fed back into generation. No LLM SDK is wired in yet.
-- Add document verification flow for self-managed student age/legal eligibility, not only DOB policy.
-- Notes and Tests on the mobile class board are explicit "coming soon" states now (previously silent no-ops) — no backend or screen exists for either yet.
-- Enforce plan-specific subjects, tutor type, minutes, and concurrent-device limits (`StudyPlan.maxDevicesPerStudent`) — concurrent-session and per-week limits are enforced, but there is no device-session model to check device count against.
+- Replace sandbox AI tutor response generation with the selected live model adapter and provider credentials.
+- Complete live OCR/provider evidence for age and document verification.
+- Deepen mobile Notes and Tests into dedicated screens when the learning product requires richer note-taking and quiz authoring UX.
+- Add device-session enforcement evidence for `StudyPlan.maxDevicesPerStudent`; the schedule, subject, tutor type, delivery mode, frequency, entitlement usage, concurrent-session, and per-week limits are enforced.
 - Add parent-only purchase approval controls and student self-purchase eligibility rules.
 - Add richer parent dashboard cards for attendance, ongoing class, test results, safety alerts, and payment usage.
 

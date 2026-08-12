@@ -216,7 +216,7 @@ Implemented starter Next.js CRM portal:
 mentora-admin-crm
 ```
 
-The admin portal now follows the existing Juaaree/Match Mate admin interaction model and has been upgraded into a more enterprise-style SaaS console:
+The admin portal now follows a dedicated Mentora enterprise SaaS console interaction model:
 
 - fixed left navigation groups
 - top welcome/logout bar

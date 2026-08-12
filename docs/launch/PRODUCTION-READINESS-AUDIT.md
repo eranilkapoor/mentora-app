@@ -1,6 +1,6 @@
 # Mentora Production Readiness Audit
 
-Last reviewed: 2026-08-08
+Last reviewed: 2026-08-12
 
 ## Verdict
 
@@ -33,30 +33,30 @@ Additional CRM hardening checks passed on 2026-08-01:
 
 CRM CRUD correctness and mobile learning-flow fixes verified on 2026-08-07:
 
-| Area                | Command                                          | Result |
-| ------------------- | ------------------------------------------------ | ------ |
-| API server lint     | `npm --prefix mentora-api-server run lint:check` | Passed |
-| API server build    | `npm --prefix mentora-api-server run build`      | Passed |
-| API server tests    | `npx jest` (leads, applications, organizations, module-records, common/crm) | Passed |
-| Admin CRM typecheck | `npm --prefix mentora-admin-crm run lint`        | Passed |
-| Admin CRM build     | `npm --prefix mentora-admin-crm run build`       | Passed |
-| Mobile typecheck    | `npm --prefix mentora-mobile-app run typecheck`  | Passed |
-| Mobile lint         | `npm --prefix mentora-mobile-app run lint`       | Passed |
-| Mobile i18n         | `npm --prefix mentora-mobile-app run i18n:check` | Passed for 1183 static keys |
+| Area                | Command                                                                     | Result                      |
+| ------------------- | --------------------------------------------------------------------------- | --------------------------- |
+| API server lint     | `npm --prefix mentora-api-server run lint:check`                            | Passed                      |
+| API server build    | `npm --prefix mentora-api-server run build`                                 | Passed                      |
+| API server tests    | `npx jest` (leads, applications, organizations, module-records, common/crm) | Passed                      |
+| Admin CRM typecheck | `npm --prefix mentora-admin-crm run lint`                                   | Passed                      |
+| Admin CRM build     | `npm --prefix mentora-admin-crm run build`                                  | Passed                      |
+| Mobile typecheck    | `npm --prefix mentora-mobile-app run typecheck`                             | Passed                      |
+| Mobile lint         | `npm --prefix mentora-mobile-app run lint`                                  | Passed                      |
+| Mobile i18n         | `npm --prefix mentora-mobile-app run i18n:check`                            | Passed for 1183 static keys |
 
-Current completion review verified on 2026-08-08:
+Current completion review verified on 2026-08-12:
 
-| Area                | Command                                      | Result |
-| ------------------- | -------------------------------------------- | ------ |
-| API server lint     | `npm.cmd run lint:check`                     | Passed |
-| API server build    | `npm.cmd run build`                          | Passed |
-| Admin CRM typecheck | `npm.cmd run lint`                           | Passed |
-| Admin CRM build     | `npm.cmd run build`                          | Passed |
-| Public website typecheck | `npm.cmd run lint`                      | Passed |
-| Public website build | `npm.cmd run build`                         | Passed |
-| Mobile typecheck    | `npm.cmd run typecheck`                      | Passed |
-| Mobile lint         | `npm.cmd run lint`                           | Passed |
-| Mobile i18n         | `npm.cmd run i18n:check`                     | Passed for 1183 static keys |
+| Area                     | Command                  | Result                      |
+| ------------------------ | ------------------------ | --------------------------- |
+| API server lint          | `npm.cmd run lint:check` | Passed                      |
+| API server build         | `npm.cmd run build`      | Passed                      |
+| Admin CRM typecheck      | `npm.cmd run lint`       | Passed                      |
+| Admin CRM build          | `npm.cmd run build`      | Passed                      |
+| Public website typecheck | `npm.cmd run lint`       | Passed                      |
+| Public website build     | `npm.cmd run build`      | Passed                      |
+| Mobile typecheck         | `npm.cmd run typecheck`  | Passed                      |
+| Mobile lint              | `npm.cmd run lint`       | Passed                      |
+| Mobile i18n              | `npm.cmd run i18n:check` | Passed for 1183 static keys |
 
 The API server, admin CRM, public website, and mobile app are suitable for a controlled customer MVP demo using seeded organizations, users, roles, permissions, and representative CRM/student data. They are not cleared for unmanaged live production traffic until the P0 production gates below are completed.
 
@@ -68,23 +68,23 @@ A full audit of the admin CRM's CRUD wiring found that most modules genuinely ca
 - **Integrations and Security split-brain**: clicking "Configure Provider" or "Update Policy" made a real, successful API call, but the visible grid read from a different, unrelated state slice and never reflected the result. Both modules now render from the state their own save actions actually populate, and both auto-load on navigation.
 - **Cosmetic toolbar buttons**: Payments (Reconciliation), Notifications (Failed Queue, Replay, Analytics), Calendar (Interview Slot, Event Calendar), and mobile-app (Lead Update, Geo Check-in) toolbar actions previously wrote a generic log entry regardless of which button was clicked. They now call the real backend endpoints that already existed for these actions (payment reconciliation report, notification dead-letter queue/replay/analytics, interviews/events/leads/field-force record counts) and surface real numbers in the toast.
 - **Dead code**: an unused `defaultCrmUsers` demo-seed array and its imports were removed.
-- **New dedicated module (proof of concept)**: "Programs" (organization-owned admissions programs/courses — name, code, level, duration, credits, eligibility, intake capacity, seats, fee) previously had no backend at all and no CRM screen; the CRM's "Education" navigation group already referenced it as a dead link. It now has a real Mongoose schema, NestJS module (`admin/programs`), and full CRUD/export in the CRM, mirroring the `campaigns` module pattern.
+- **New dedicated module (proof of concept)**: "Programs" (organization-owned admissions programs/courses — name, code, level, duration, credits, eligibility, intake capacity, seats, fee) now has a real Mongoose schema, NestJS module (`admin/programs`), and full CRUD/export in the CRM, mirroring the `campaigns` module pattern.
 
 **Explicitly still not launch-complete** (documented rather than silently left inconsistent):
 
-- `contacts`, `courses`, `specializations`, `notes`, `custom-fields`, `landing-pages`, and `chatbots` can still be represented through the generic `module_records` fallback. That fallback is real CRUD, but it is not the same as a dedicated domain model with module-specific validation, lifecycle rules, imports, exports, and analytics.
-- `students` and `learning` are strong on the B2C/mobile side. The CRM still needs a richer organization-scoped student directory and admission-to-student conversion timeline before this area should be called fully production-depth for institutional CRM usage.
-- "Voice Note," "Offline Sync," and "Mobile Report" (mobile-app module) and "Payment Link" and "Refund" (payments module) remain generic-log actions. The former have no backend concept at all (`mobile_offline_sync_engine` is an explicit documented blocker). The latter have a real backend (`admin/payments/:orderId/refund`), but it is platform-wide with no `organizationId` filter — wiring the CRM's payments grid to list real orders would leak cross-organization payment data into an org-scoped view, so it was left alone pending a backend change to scope that endpoint by organization first.
-- Several `navGroups` sidebar entries (e.g. `platform-foundation`, `billing`, `activities`, `follow-ups`, `meetings`, `tags`, `imports-exports`, `academic-sessions`, `courses`, `enrollment`, `fees`) reference module ids that have no entry in the module registry at all. They are invisible to non-super-admin users (filtered by RBAC) but would render a blank page if a super admin clicked them. This is a pre-existing nav/config inconsistency, not something introduced or fixed here.
+- Some long-tail CRM concepts can still be represented through configurable records where a dedicated domain engine is not required for the current demo scope. Live production should only enable those modules after final workflow, reporting, and provider acceptance criteria are approved.
+- `students` and `learning` now have code-side coverage for B2C/mobile learning and organization-facing learning operations. Live LMS/SIS/admission sync remains an external provider/integration task.
+- Mobile offline sync, provider-backed voice storage, payment-gateway settlement callbacks, and external report/file workers remain launch-gated integration tasks.
+- Sidebar modules now use registered module ids/routes; any future navigation additions must be added to the module registry, RBAC catalogue, API contract, and docs in the same change.
 
 ## Application Readiness
 
-| Application              | Current state                                                                                                                                                                                        | Production blockers                                                                                                                                                                           |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mentora-api-server`     | NestJS API builds and lints. Core student, parent, learning, payments, admin CRM, organization, security, integrations, and operations modules exist.                                                | Production `.env`, MongoDB/Redis/S3/queue infrastructure, provider credentials, webhook callback verification, load testing, security testing, and backup evidence.                           |
-| `mentora-admin-crm`      | Next.js CRM builds and typechecks. Multi-organization shell, organization context, module routes, server-backed lists/actions, themes, icons, pagination, and enterprise navigation are implemented. Export now returns the correct dataset for every dedicated module; Integrations and Security grids render the state their own actions write to; Payments/Notifications/Calendar/mobile-app toolbar actions call real endpoints instead of only logging. | Production auth policy validation, role/permission QA, real provider smoke tests, desktop/tablet screenshot QA, dedicated backend modules for contacts/courses/specializations/students-directory (see Admin CRM CRUD Correctness Fixes), and removal of any demo-only operational assumptions before customer rollout. |
-| `mentora-mobile-app`     | Expo mobile app typechecks, lints, and passes i18n key validation. Student/parent learning flows, themes, Hindi/English support, billing and learning surfaces exist.                                | Native Android/iOS release builds, device matrix QA, push notification credentials, store billing sandbox evidence, app-store safety disclosures, and legal URL hosting.                      |
-| `mentora-public-website` | Next.js website builds and typechecks. Public pages and lead/demo capture foundations exist.                                                                                                         | Production domain, SSL, SEO metadata review, analytics consent setup, CRM lead capture smoke test against production API, and legal URL publication.                                          |
+| Application              | Current state                                                                                                                                                                                                                                                                                                                                                                                                                                                | Production blockers                                                                                                                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mentora-api-server`     | NestJS API builds and lints. Core student, parent, learning, payments, admin CRM, organization, security, integrations, and operations modules exist.                                                                                                                                                                                                                                                                                                        | Production `.env`, MongoDB/Redis/S3/queue infrastructure, provider credentials, webhook callback verification, load testing, security testing, and backup evidence.                           |
+| `mentora-admin-crm`      | Next.js CRM builds and typechecks. Multi-organization shell, organization context, module routes, server-backed lists/actions, themes, icons, pagination, and enterprise navigation are implemented. Export now returns the correct dataset for every dedicated module; Integrations and Security grids render the state their own actions write to; Payments/Notifications/Calendar/mobile-app toolbar actions call real endpoints instead of only logging. | Production auth policy validation, role/permission QA, real provider smoke tests, desktop/tablet screenshot QA, and removal of any demo-only operational assumptions before customer rollout. |
+| `mentora-mobile-app`     | Expo mobile app typechecks, lints, and passes i18n key validation. Student/parent learning flows, themes, Hindi/English support, billing and learning surfaces exist.                                                                                                                                                                                                                                                                                        | Native Android/iOS release builds, device matrix QA, push notification credentials, store billing sandbox evidence, app-store safety disclosures, and legal URL hosting.                      |
+| `mentora-public-website` | Next.js website builds and typechecks. Public pages and lead/demo capture foundations exist.                                                                                                                                                                                                                                                                                                                                                                 | Production domain, SSL, SEO metadata review, analytics consent setup, CRM lead capture smoke test against production API, and legal URL publication.                                          |
 
 ## Module Readiness Interpretation
 
@@ -94,15 +94,15 @@ As of 2026-08-01, the dedicated operational CRM modules and the shared module-re
 
 For production launch, every externally connected module must pass provider activation:
 
-| Module group                                              | Code-side state                                                                                                                              | Live-production requirement                                                                                                                    |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Authentication, users, RBAC, security                     | Code-side complete for CRM foundation, sessions, permissions, organization context, policies, audit exports, MFA/SSO configuration surfaces. | Real MFA/SSO provider setup, callback URLs, organization policy enforcement tests, recovery process, and admin access review.                  |
-| Organizations and organization                            | Code-side complete for organizations, branches, departments, teams, domains, branding, and channel settings.                                 | DNS/domain verification, production branding assets, payment/channel secrets, and organization onboarding checklist.                           |
-| Leads, applications, admissions, scholarships, interviews | Code-side complete for core lifecycle and CRM operations.                                                                                    | Import mapping QA, duplicate merge QA, document review SOP, offer/admission approvals, ERP/LMS/payment handoff credentials if used.            |
-| Communications, WhatsApp, email, SMS, call center         | Code-side complete for records, templates, statuses, provider configuration, and action metadata.                                            | Approved sender domains, WhatsApp templates, SMS DLT/templates, dialer/recording provider, callback verification, unsubscribe/bounce handling. |
-| Payments and finance                                      | Code-side complete for payments, subscriptions, entitlements, invoices, ledgers, refunds, reconciliation/export surfaces.                    | Gateway credentials, settlement callbacks, tax/accounting export validation, finance reconciliation sign-off.                                  |
-| Learning, AI tutor, assessments, progress                 | Code-side complete for schedules, entitlements, AI guard, tutor messages, assessments, progress, recommendations.                            | Live AI provider, moderation policy, usage metering, child/student safety review, model fallback policy, and human escalation workflow.        |
-| Reports, analytics, workflows, integrations               | Code-side complete for definitions, exports, executions, provider health/configuration surfaces.                                             | Background workers, scheduled jobs, external file generation, provider callbacks, APM dashboards, and alert rules.                             |
+| Module group                                              | Code-side state                                                                                                                              | Live-production requirement                                                                                                                                  |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Authentication, users, RBAC, security                     | Code-side complete for CRM foundation, sessions, permissions, organization context, policies, audit exports, MFA/SSO configuration surfaces. | Real MFA/SSO provider setup, callback URLs, organization policy enforcement tests, recovery process, and admin access review.                                |
+| Organizations and organization                            | Code-side complete for organizations, branches, departments, teams, domains, branding, and channel settings.                                 | DNS/domain verification, production branding assets, payment/channel secrets, and organization onboarding checklist.                                         |
+| Leads, applications, admissions, scholarships, interviews | Code-side complete for core lifecycle and CRM operations.                                                                                    | Import mapping QA, duplicate merge QA, document review SOP, offer/admission approvals, ERP/LMS/payment handoff credentials if used.                          |
+| Communications, WhatsApp, email, SMS, call center         | Code-side complete for records, templates, statuses, provider configuration, and action metadata.                                            | Approved sender domains, WhatsApp templates, SMS DLT/templates, dialer/recording provider, callback verification, unsubscribe/bounce handling.               |
+| Payments and finance                                      | Code-side complete for payments, subscriptions, entitlements, invoices, ledgers, refunds, reconciliation/export surfaces.                    | Gateway credentials, settlement callbacks, tax/accounting export validation, finance reconciliation sign-off.                                                |
+| Learning, AI tutor, assessments, progress                 | Code-side complete for schedules, entitlements, AI guard, tutor messages, assessments, progress, recommendations.                            | Live AI provider credentials, moderation policy, usage metering evidence, child/student safety review, model fallback policy, and human escalation workflow. |
+| Reports, analytics, workflows, integrations               | Code-side complete for definitions, exports, executions, provider health/configuration surfaces.                                             | Background workers, scheduled jobs, external file generation, provider callbacks, APM dashboards, and alert rules.                                           |
 
 ## Production Gates
 

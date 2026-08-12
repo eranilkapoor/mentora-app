@@ -204,7 +204,7 @@ Still to complete before enterprise launch:
 3. Done - Build profile/onboarding around student academic and guardian context.
 4. Partial - Build Schedule list/create/reschedule/cancel; calendar-level UX still needs polish.
 5. Done - Build AI Tutor launch action with server-side access guard.
-6. Partial - Build AI tutor message service hooks and summaries; rich transcript/chat UI still needs provider integration.
+6. Done - Build AI tutor message service hooks and summaries; live model credentials and provider callback evidence remain external launch tasks.
 7. Done - Remove copied non-learning marketplace modules from active navigation/services.
 8. Planned - Build tutor mode only after B2C parent/student flow is stable.
 
