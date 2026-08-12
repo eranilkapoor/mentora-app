@@ -6,7 +6,6 @@ import addRetentionAuditIndexes from './202607160002-add-retention-audit-indexes
 import addCriticalQueryIndexes from './202607160003-add-critical-query-indexes.migration';
 import addMentoraLearningIndexes from './202607220001-add-mentora-learning-indexes.migration';
 import dropStaleSchemaIndexes from './202607280001-drop-stale-schema-indexes.migration';
-import renameOrganizationDomainFields from './202608010001-rename-organization-domain-fields.migration';
 import type { MongoMigration } from './migration.interface';
 
 export const MONGO_MIGRATIONS: readonly MongoMigration[] = [
@@ -18,5 +17,4 @@ export const MONGO_MIGRATIONS: readonly MongoMigration[] = [
   addCriticalQueryIndexes,
   addMentoraLearningIndexes,
   dropStaleSchemaIndexes,
-  renameOrganizationDomainFields,
 ];

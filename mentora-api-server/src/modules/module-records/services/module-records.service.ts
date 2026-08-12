@@ -115,8 +115,9 @@ export class ModuleRecordsService {
     recordId: string,
     dto: UpdateModuleRecordDto,
   ) {
+    const { moduleKey, ...updateDto } = dto;
     const update = {
-      ...dto,
+      ...updateDto,
       organizationId: toOrganizationObjectId(dto.organizationId),
       ownerId: toOptionalObjectId(dto.ownerId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
@@ -124,6 +125,7 @@ export class ModuleRecordsService {
     const record = await this.moduleRecords.findOneAndUpdate(
       {
         _id: toRequiredObjectId(recordId),
+        ...(moduleKey ? { moduleKey } : {}),
         organizationId: update.organizationId,
       },
       update,
@@ -206,6 +208,7 @@ export class ModuleRecordsService {
     const result = await this.moduleRecords.updateMany(
       {
         _id: { $in: recordIds },
+        ...(dto.moduleKey ? { moduleKey: dto.moduleKey } : {}),
         organizationId: toOrganizationObjectId(dto.organizationId),
       },
       { $set: { status: dto.status, updatedAt: new Date() } },
@@ -221,7 +224,7 @@ export class ModuleRecordsService {
           modified: result.modifiedCount,
           status: dto.status,
         },
-        metadata: { recordIds: dto.recordIds },
+        metadata: { moduleKey: dto.moduleKey, recordIds: dto.recordIds },
       },
     );
     return {

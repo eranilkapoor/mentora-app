@@ -55,6 +55,10 @@ export class UpdateModuleRecordDto {
   organizationId!: string;
 
   @IsOptional()
+  @IsIn(EDUCATION_PLATFORM_MODULE_KEYS)
+  moduleKey?: string;
+
+  @IsOptional()
   @IsString()
   title?: string;
 
@@ -104,6 +108,10 @@ export class ExecuteModuleRecordDto {
 export class BulkUpdateModuleRecordStatusDto {
   @IsMongoId()
   organizationId!: string;
+
+  @IsOptional()
+  @IsIn(EDUCATION_PLATFORM_MODULE_KEYS)
+  moduleKey?: string;
 
   @IsArray()
   @ArrayMinSize(1)

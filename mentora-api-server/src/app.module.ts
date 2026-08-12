@@ -38,7 +38,9 @@ import { LearningModule } from './modules/learning/learning.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
 import { ContextsModule } from './modules/contexts/contexts.module';
+import { CustomFieldsModule } from './modules/custom-fields/custom-fields.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { EducationRecordsModule } from './modules/education-records/education-records.module';
@@ -47,6 +49,7 @@ import { InterviewsModule } from './modules/interviews/interviews.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ImportsExportsModule } from './modules/imports-exports/imports-exports.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
+import { NotesModule } from './modules/notes/notes.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ModuleRecordsModule } from './modules/module-records/module-records.module';
@@ -119,6 +122,8 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     TasksModule,
     CampaignsModule,
     CommunicationsModule,
+    ContactsModule,
+    CustomFieldsModule,
     DocumentsModule,
     EducationRecordsModule,
     EventsModule,
@@ -126,6 +131,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     IntegrationsModule,
     ImportsExportsModule,
     MeetingsModule,
+    NotesModule,
     ProgramsModule,
     ModuleRecordsModule,
     ScholarshipsModule,

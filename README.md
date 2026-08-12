@@ -1593,19 +1593,15 @@ db:migrate
 
 ### Current Priorities
 
-- Complete organization isolation and data-scope enforcement across all organization-owned repositories and services.
-- Complete platform Super Admin and organization Admin user journeys.
-- Complete lead assignment, follow-up, activity timeline, and application conversion flows.
-- Complete configurable academic masters (academic-sessions, courses, course-offerings, specializations), application forms, stages, and workflows. Programs now has a real dedicated module; the rest are still on the generic module-records fallback with no dedicated backend.
-- Add an org-scoped admin student directory endpoint (the only current `/students` endpoint is B2C user-scoped, not usable by CRM staff) and a unified contacts view merging leads and students.
-- Add organization scoping to the platform payments admin API so the CRM payments module can safely list and refund real orders per organization.
-- Complete student, parent, counselor, and reviewer role-based navigation.
+- Keep organization isolation and data-scope enforcement covered by focused regression tests across every platform-only and organization-owned controller.
+- Continue hardening Super Admin, Organization Admin, Branch Admin, counselor, finance, support, parent, and student journeys with staging E2E coverage.
+- Validate lead capture, duplicate detection, assignment, follow-up, activity timeline, contact management, and application conversion flows against seeded and imported data.
+- Validate configurable academic masters, application forms, stages, workflows, programs, courses, specializations, enrollment, fees, and learning operations in staging.
 - Regenerate and review the OpenAPI contract from a running API.
-- Activate the selected live AI tutor provider credentials and callback/usage evidence.
-- Add provider-level moderation and curriculum-based retrieval.
-- Complete organization SaaS billing and student/family learning billing.
-- Complete production communication providers for email, SMS, WhatsApp, and push.
-- Add comprehensive seed data for organizations, roles, permissions, lead stages, academic levels, courses, subjects, and workflows.
+- Activate selected live AI tutor credentials, provider callback evidence, provider-level moderation, curriculum retrieval, and metering.
+- Complete production communication providers for email, SMS, WhatsApp, push, calendar, telephony, OCR, storage, analytics, and monitoring.
+- Validate organization SaaS billing, student/family learning billing, invoice storage, payment settlement, refunds, dunning, proration, and usage limits against live providers.
+- Keep seed data current for organizations, branches, departments, teams, roles, permissions, lead stages, academic levels, courses, subjects, workflows, plans, and demo users.
 - Complete API, CRM, mobile, and public-website end-to-end testing.
 - Complete production monitoring, backups, restore testing, security review, legal review, and deployment runbooks.
 

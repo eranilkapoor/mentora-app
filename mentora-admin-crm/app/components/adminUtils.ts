@@ -575,7 +575,7 @@ export function recordsToRows(
         (key === "interestedCourse"
           ? (object.interestedCourse ?? object.interestedPrograms)
           : undefined) ??
-        (key === "campus" ? object.campus : undefined) ??
+        (key === "preferredBranch" ? object.preferredBranch : undefined) ??
         (key === "leadStage" ? resolveRecordName(object.stageId) : undefined) ??
         (key === "leadStatus" ? object.status : undefined) ??
         (key === "source" ? resolveRecordName(object.sourceId) : undefined) ??

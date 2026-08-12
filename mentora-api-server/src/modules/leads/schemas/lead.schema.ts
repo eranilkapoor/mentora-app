@@ -143,7 +143,7 @@ export class Lead {
   teamId?: Types.ObjectId;
 
   @Prop({ trim: true })
-  campus?: string;
+  preferredBranch?: string;
 
   @Prop({ trim: true })
   campaign?: string;

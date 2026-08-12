@@ -41,7 +41,7 @@ export class LeadAssignment {
       'course_based',
       'branch_based',
       'location_based',
-      'campus_based',
+      'branch_preference_based',
       'source_based',
       'campaign_based',
       'language_based',

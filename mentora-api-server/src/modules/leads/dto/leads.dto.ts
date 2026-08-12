@@ -159,7 +159,7 @@ export class CreateLeadDto {
 
   @IsOptional()
   @IsString()
-  campus?: string;
+  preferredBranch?: string;
 
   @IsOptional()
   @IsString()
@@ -502,7 +502,7 @@ export class UpdateLeadDto {
 
   @IsOptional()
   @IsString()
-  campus?: string;
+  preferredBranch?: string;
 
   @IsOptional()
   @IsString()
@@ -725,7 +725,7 @@ export class AssignLeadDto {
     'course_based',
     'branch_based',
     'location_based',
-    'campus_based',
+    'branch_preference_based',
     'source_based',
     'campaign_based',
     'language_based',
