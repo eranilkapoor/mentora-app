@@ -92,6 +92,13 @@ export const COLLECTION_NAMES = {
   TUTOR_SESSION_NOTE: 'tutor_session_notes',
   SAFETY_EVENT: 'safety_events',
 
+  STUDENT_ATTENDANCE: 'student_attendances',
+  STAFF_ATTENDANCE: 'staff_attendances',
+  TIMETABLE: 'timetables',
+  EXAM: 'exams',
+  REPORT_CARD: 'report_cards',
+  TRANSCRIPT: 'transcripts',
+
   ORGANIZATION: 'organizations',
   BRANCH: 'branches',
   DEPARTMENT: 'departments',
@@ -136,5 +143,12 @@ export const COLLECTION_NAMES = {
   FINANCE_LEDGER_ENTRY: 'finance_ledger_entries',
   INTEGRATION_PROVIDER_CONFIG: 'integration_provider_configs',
   ORGANIZATION_SECURITY_POLICY: 'organization_security_policies',
+  CMS_ENTRY: 'cms_entries',
+  MENTOR_RECORD: 'mentor_records',
+  UNIVERSITY_PARTNER: 'university_partners',
+  COUNTRY_GUIDE: 'country_guides',
+  CHANNEL_PARTNER: 'channel_partners',
+  STUDY_MATERIAL: 'study_materials',
+  SERVICE_CATALOG_ITEM: 'service_catalog_items',
   USER_MEMBERSHIP: 'user_memberships',
 };

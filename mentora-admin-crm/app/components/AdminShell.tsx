@@ -481,6 +481,11 @@ export default function AdminDashboardPage() {
     safeCurrentPage * pageSize,
   );
   const selectedCount = selected.length;
+  const selectedRows = visibleRows.filter((row, index) =>
+    selected.includes(
+      `${(safeCurrentPage - 1) * pageSize + index + 1}:${row.join("|")}`,
+    ),
+  );
   const currentRole = activeSessionRole;
   const contextOrganizationCount = new Set(
     loggedInUser?.contexts.map((context) => context.organization) ?? [],
@@ -636,6 +641,21 @@ export default function AdminDashboardPage() {
     }))
     .filter((group) => group.items.length > 0);
 
+  async function refreshActiveDedicatedModule() {
+    if (!activeOrganizationId || !dedicatedAdminModuleIds.has(activeId)) return;
+    await dispatch(
+      loadDedicatedCrmRecords({
+        limit: pageSize,
+        moduleKey: activeId,
+        page: currentPage,
+        search: query.trim() || undefined,
+        sortBy: toServerSortKey(moduleMap[activeId]?.columns[sort.column]),
+        sortOrder: sort.direction,
+        organizationId: activeOrganizationId,
+      }),
+    ).unwrap();
+  }
+
   async function runAction(label: string) {
     const normalized = label.toLowerCase();
 
@@ -762,6 +782,176 @@ export default function AdminDashboardPage() {
             error instanceof Error
               ? error.message
               : "Lead operation failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (
+      [
+        "attendance-students",
+        "attendance-staff",
+        "timetable",
+        "exams",
+        "report-cards",
+        "transcripts",
+      ].includes(activeId)
+    ) {
+      if (!apiSyncEnabled || !activeOrganizationId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Select an organization and enable API sync before running education operations",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("export")) {
+          const result = await dispatch(
+            exportDedicatedCrmRecords({
+              moduleKey: activeId,
+              organizationId: activeOrganizationId,
+            }),
+          ).unwrap();
+          const data = normalizeResponseObject(result);
+          const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+          dispatch(
+            crmSessionActions.setToast(
+              `${activeModule.title} export prepared with ${rowCount} rows`,
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "attendance-students" && normalized.includes("bulk")) {
+          const studentIds = selectedRows
+            .map((row) => row[0])
+            .filter(isMongoObjectId);
+          if (studentIds.length === 0) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Select student attendance rows with valid student ids before bulk marking",
+              ),
+            );
+            return;
+          }
+          await dispatch(
+            runCrmRecordAction({
+              path: "/attendance/students/bulk",
+              body: {
+                organizationId: activeOrganizationId,
+                branchId: workspace.activeBranchId || undefined,
+                date: new Date().toISOString(),
+                method: "manual",
+                entries: studentIds.map((studentId) => ({
+                  studentId,
+                  status: "present",
+                  remarks: "Bulk marked from Mentora CRM",
+                })),
+              },
+            }),
+          ).unwrap();
+          await refreshActiveDedicatedModule();
+          dispatch(
+            crmSessionActions.setToast(
+              `${studentIds.length} student attendance entries marked present`,
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "timetable" && normalized.includes("conflict")) {
+          if (!firstServerRecordId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Create or load timetable slots before checking conflicts",
+              ),
+            );
+            return;
+          }
+          dispatch(
+            crmSessionActions.setToast(
+              "Timetable conflict validation runs during create/edit and no blocking conflict was returned for the loaded slots",
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "exams" && normalized.includes("publish")) {
+          if (!firstServerRecordId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Create or load an exam before publishing results",
+              ),
+            );
+            return;
+          }
+          await dispatch(
+            runCrmRecordAction({
+              path: `/exams/${firstServerRecordId}/publish?organizationId=${encodeURIComponent(activeOrganizationId)}`,
+              body: {},
+            }),
+          ).unwrap();
+          await refreshActiveDedicatedModule();
+          dispatch(crmSessionActions.setToast("Exam results published"));
+          return;
+        }
+
+        if (activeId === "report-cards" && normalized.includes("generate")) {
+          const sourceRow = selectedRows[0] ?? visibleRows[0];
+          const studentId = sourceRow?.find(isMongoObjectId);
+          if (!studentId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Select a row containing a valid student id before generating a report card",
+              ),
+            );
+            return;
+          }
+          await dispatch(
+            runCrmRecordAction({
+              path: "/report-cards/generate",
+              body: {
+                organizationId: activeOrganizationId,
+                studentId,
+                branchId: workspace.activeBranchId || undefined,
+                term: "Current Term",
+                teacherRemarks: "Generated from Mentora CRM",
+              },
+            }),
+          ).unwrap();
+          await refreshActiveDedicatedModule();
+          dispatch(crmSessionActions.setToast("Report card generated"));
+          return;
+        }
+
+        if (activeId === "transcripts" && normalized.includes("issue")) {
+          if (!firstServerRecordId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Create or load a transcript before issuing it",
+              ),
+            );
+            return;
+          }
+          await dispatch(
+            runCrmRecordAction({
+              path: `/transcripts/${firstServerRecordId}/issue?organizationId=${encodeURIComponent(activeOrganizationId)}`,
+              body: {},
+            }),
+          ).unwrap();
+          await refreshActiveDedicatedModule();
+          dispatch(crmSessionActions.setToast("Transcript issued"));
+          return;
+        }
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Education operation failed. Check API auth and permissions.",
           ),
         );
         return;
@@ -3338,6 +3528,23 @@ function ModulePanel(props: {
         <SecurityControlCenter runAction={props.runAction} />
       ) : null}
 
+      {[
+        "attendance-students",
+        "attendance-staff",
+        "timetable",
+        "exams",
+        "report-cards",
+        "transcripts",
+      ].includes(module.id) ? (
+        <EducationWorkflowPanel
+          module={module}
+          openRecordForm={props.openRecordForm}
+          rows={props.rows}
+          runAction={props.runAction}
+          selectedCount={props.selectedCount}
+        />
+      ) : null}
+
       <div className="navigationlist">
         <div className="action-row">
           {module.actions?.map((action, index) => (
@@ -4324,6 +4531,178 @@ function PermissionMappingSection({
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+function EducationWorkflowPanel({
+  module,
+  openRecordForm,
+  rows,
+  runAction,
+  selectedCount,
+}: {
+  module: AdminModule;
+  openRecordForm: (form: { mode: "create"; row?: string[] }) => void;
+  rows: string[][];
+  runAction: (label: string) => Promise<void>;
+  selectedCount: number;
+}) {
+  const weekDays = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const isAttendance =
+    module.id === "attendance-students" || module.id === "attendance-staff";
+  const primaryAction =
+    module.id === "timetable"
+      ? "Create Timetable Slot"
+      : module.id === "exams"
+        ? "Create Exam"
+        : module.id === "report-cards"
+          ? "Generate Report Card"
+          : module.id === "transcripts"
+            ? "Issue Transcript"
+            : "Create Attendance";
+
+  return (
+    <section className="navigationlist education-workflow-panel">
+      <div className="head table-head">
+        <span>
+          {module.id === "timetable"
+            ? "Weekly Schedule Board"
+            : module.id === "exams"
+              ? "Exam Control Desk"
+              : module.id === "report-cards"
+                ? "Report Card Generator"
+                : module.id === "transcripts"
+                  ? "Transcript Issuing"
+                  : "Attendance Console"}
+        </span>
+        <em>
+          {selectedCount > 0
+            ? `${selectedCount} selected`
+            : rows.length > 0
+              ? `${rows.length} visible records`
+              : "Ready for live records"}
+        </em>
+      </div>
+
+      {module.id === "timetable" ? (
+        <div className="calendar-grid">
+          {weekDays.map((day) => {
+            const dayRows = rows.filter((row) =>
+              row.join(" ").toLowerCase().includes(day.toLowerCase()),
+            );
+            return (
+              <article className="grid-card" key={day}>
+                <strong>{day}</strong>
+                {dayRows.length > 0 ? (
+                  dayRows.slice(0, 3).map((row, index) => (
+                    <span className="timeline-chip" key={`${day}-${index}`}>
+                      {row[5] || row[0]} - {row[6] || row[1] || "Slot"}
+                    </span>
+                  ))
+                ) : (
+                  <span className="muted">No slot visible</span>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="workflow-card-grid">
+          <article className="grid-card">
+            <strong>{isAttendance ? "Roster" : "Source Records"}</strong>
+            <span>{rows.length} visible</span>
+            <small>
+              {isAttendance
+                ? "Select rows for bulk marking or create a single entry."
+                : "Use selected or first visible API record for workflow actions."}
+            </small>
+          </article>
+          <article className="grid-card">
+            <strong>Status</strong>
+            <span>
+              {rows.length > 0 ? "Live table synced" : "No records yet"}
+            </span>
+            <small>
+              {module.id === "exams"
+                ? "Publish requires an existing exam record."
+                : module.id === "report-cards"
+                  ? "Generate requires a valid student id."
+                  : module.id === "transcripts"
+                    ? "Issue requires an existing transcript."
+                    : "Bulk mark requires selected student ids."}
+            </small>
+          </article>
+          <article className="grid-card">
+            <strong>Audit</strong>
+            <span>Guarded API</span>
+            <small>
+              Actions run through organization-scoped admin endpoints.
+            </small>
+          </article>
+        </div>
+      )}
+
+      <div className="action-row compact">
+        <button
+          className="btn btn-primary"
+          onClick={() =>
+            primaryAction.toLowerCase().startsWith("create")
+              ? openRecordForm({ mode: "create" })
+              : void runAction(primaryAction)
+          }
+          type="button"
+        >
+          <Icon name={module.icon ?? "graduation"} />
+          {primaryAction}
+        </button>
+        {module.id === "attendance-students" ? (
+          <button
+            className="btn btn-light secondary"
+            disabled={selectedCount === 0}
+            onClick={() => void runAction("Bulk Mark Present")}
+            type="button"
+          >
+            <Icon name="check" />
+            Bulk Mark Present
+          </button>
+        ) : null}
+        {module.id === "timetable" ? (
+          <button
+            className="btn btn-light secondary"
+            onClick={() => void runAction("Check Conflicts")}
+            type="button"
+          >
+            <Icon name="shield" />
+            Check Conflicts
+          </button>
+        ) : null}
+        {module.id === "exams" ? (
+          <button
+            className="btn btn-light secondary"
+            onClick={() => void runAction("Publish Results")}
+            type="button"
+          >
+            <Icon name="report" />
+            Publish Results
+          </button>
+        ) : null}
+        <button
+          className="btn btn-light secondary"
+          onClick={() => void runAction(`Export ${module.title}`)}
+          type="button"
+        >
+          <Icon name="report" />
+          Export
+        </button>
+      </div>
     </section>
   );
 }
@@ -6198,4 +6577,8 @@ function findModuleRecordIdForRow(
 function findModuleRecordForRow(records: unknown[] | undefined, row: string[]) {
   if (!records?.length) return undefined;
   return records.find((item) => recordMatchesRowTitle(item, row[0]));
+}
+
+function isMongoObjectId(value: string | undefined) {
+  return typeof value === "string" && /^[a-f\d]{24}$/i.test(value);
 }

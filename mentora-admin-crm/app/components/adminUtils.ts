@@ -702,15 +702,48 @@ function resolveRecordObject(value: unknown, records?: unknown[]) {
 }
 
 export function stringifyCell(value: unknown) {
+  return stringifyCellValue(value, new WeakSet(), 0);
+}
+
+function stringifyCellValue(
+  value: unknown,
+  seen: WeakSet<object>,
+  depth: number,
+): string {
   if (value === null || value === undefined || value === "") return "-";
   if (value instanceof Date) return formatDateTime(value);
-  if (Array.isArray(value)) return value.join(", ");
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return "-";
+    if (depth > 2)
+      return `${value.length} item${value.length === 1 ? "" : "s"}`;
+    seen.add(value);
+    const rendered = value
+      .slice(0, 3)
+      .map((item) => stringifyCellValue(item, seen, depth + 1))
+      .filter((item) => item !== "-")
+      .join(", ");
+    return rendered || `${value.length} item${value.length === 1 ? "" : "s"}`;
+  }
   if (typeof value === "string" && looksLikeIsoDate(value)) {
     return formatDateTime(new Date(value));
   }
   if (typeof value === "object") {
+    if (seen.has(value)) return "-";
+    if (depth > 2) return "-";
+    seen.add(value);
     const object = value as Record<string, unknown>;
-    return stringifyCell(object.name ?? object.title ?? object.code ?? "-");
+    return stringifyCellValue(
+      object.name ??
+        object.title ??
+        object.code ??
+        object.label ??
+        object.email ??
+        object._id ??
+        object.id ??
+        "-",
+      seen,
+      depth + 1,
+    );
   }
   return String(value).replaceAll("_", " ");
 }

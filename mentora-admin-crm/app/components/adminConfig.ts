@@ -10,12 +10,17 @@ export const dedicatedAdminModuleIds = new Set([
   "academic-sessions",
   "applications",
   "assignments",
+  "attendance-staff",
+  "attendance-students",
   "automation",
   "billing",
   "call-center",
   "campaigns",
+  "channel-partners",
+  "cms",
   "communications",
   "contacts",
+  "countries",
   "courses",
   "custom-fields",
   "documents",
@@ -25,6 +30,7 @@ export const dedicatedAdminModuleIds = new Set([
   "finance",
   "follow-ups",
   "enrollment",
+  "exams",
   "fees",
   "imports-exports",
   "interview",
@@ -33,16 +39,23 @@ export const dedicatedAdminModuleIds = new Set([
   "lead-stages",
   "learning",
   "meetings",
+  "mentors",
   "notes",
   "programs",
+  "report-cards",
   "reports",
   "scholarship",
+  "service-catalog",
   "specializations",
+  "study-materials",
   "support",
   "sms",
   "students",
   "tags",
   "tasks",
+  "timetable",
+  "transcripts",
+  "university-partners",
   "whatsapp",
 ]);
 
@@ -410,11 +423,191 @@ export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "academic-sessions") {
     return ["Session", "Program", "Batch", "Start", "End", "Owner"];
   }
+  if (module.id === "attendance-students") {
+    return [
+      "Student Id",
+      "Branch Id",
+      "Subject Id",
+      "Timetable Id",
+      "Date",
+      "Status",
+      "Method",
+      "Check In Time",
+      "Check Out Time",
+      "Remarks",
+    ];
+  }
+  if (module.id === "attendance-staff") {
+    return [
+      "User Id",
+      "Branch Id",
+      "Department Id",
+      "Date",
+      "Status",
+      "Method",
+      "Check In Time",
+      "Check Out Time",
+      "Remarks",
+    ];
+  }
+  if (module.id === "timetable") {
+    return [
+      "Subject Id",
+      "Grade Id",
+      "Branch Id",
+      "Staff User Id",
+      "Day Of Week",
+      "Start Time",
+      "End Time",
+      "Room Label",
+      "Section Label",
+      "Academic Session Id",
+      "Status",
+    ];
+  }
+  if (module.id === "exams") {
+    return [
+      "Exam Type",
+      "Subject Id",
+      "Grade Id",
+      "Academic Session Id",
+      "Exam Date",
+      "Start Time",
+      "Duration Minutes",
+      "Max Marks",
+      "Passing Marks",
+      "Venue",
+      "Invigilator User Id",
+      "Instructions",
+      "Status",
+    ];
+  }
+  if (module.id === "report-cards") {
+    return [
+      "Student Id",
+      "Branch Id",
+      "Academic Session Id",
+      "Grade Id",
+      "Term",
+      "Subject Id",
+      "Subject Name",
+      "Marks Obtained",
+      "Max Marks",
+      "Attendance Percentage",
+      "Overall Grade",
+      "Teacher Remarks",
+      "Principal Remarks",
+      "Status",
+    ];
+  }
+  if (module.id === "transcripts") {
+    return [
+      "Student Id",
+      "Transcript Type",
+      "Report Card Ids",
+      "Purpose",
+      "Status",
+    ];
+  }
   if (module.id === "courses") {
     return ["Course", "Program", "Subjects", "Level", "Fee", "Duration"];
   }
   if (module.id === "specializations") {
     return ["Specialization", "Program", "Stream", "Seats", "Eligibility"];
+  }
+  if (module.id === "service-catalog") {
+    return [
+      "Service Type",
+      "Category",
+      "Pricing India",
+      "Pricing International",
+      "Timeline",
+      "Workflow Stages",
+      "Required Documents",
+      "Faqs",
+      "Media Url",
+      "Status",
+    ];
+  }
+  if (module.id === "mentors") {
+    return [
+      "Qualification",
+      "Experience",
+      "Specialization",
+      "Research Expertise",
+      "Languages",
+      "Availability",
+      "Capacity",
+      "Workload",
+      "Rating",
+      "Payout Terms",
+      "Status",
+    ];
+  }
+  if (module.id === "university-partners") {
+    return [
+      "Country",
+      "Ranking",
+      "Accreditation",
+      "Courses",
+      "Scholarships",
+      "Agreement Url",
+      "Mou Url",
+      "Enrollment Count",
+      "Partner Owner",
+      "Status",
+    ];
+  }
+  if (module.id === "countries") {
+    return [
+      "Country",
+      "Study Requirements",
+      "Visa Information",
+      "Scholarships",
+      "Living Cost",
+      "Admission Process",
+      "Popular Universities",
+      "Status",
+    ];
+  }
+  if (module.id === "channel-partners") {
+    return [
+      "Partner Type",
+      "Contact Person",
+      "Email",
+      "Phone",
+      "Commission Slab",
+      "Approval Status",
+      "Referral Count",
+      "Payout Terms",
+      "Status",
+    ];
+  }
+  if (module.id === "study-materials") {
+    return [
+      "Material Type",
+      "Program",
+      "Course",
+      "Subject",
+      "Resource Url",
+      "File Type",
+      "Access Level",
+      "Publish Date",
+      "Status",
+    ];
+  }
+  if (module.id === "cms") {
+    return [
+      "Page",
+      "Section",
+      "Content Type",
+      "Slug",
+      "Seo Title",
+      "Seo Description",
+      "Publish Date",
+      "Owner",
+      "Status",
+    ];
   }
   if (module.id === "enrollment") {
     return ["Enrollment", "Student", "Program", "Batch", "Access", "Plan"];
@@ -671,6 +864,8 @@ export const moduleIcons: Record<string, IconName> = {
   analytics: "analytics",
   applications: "document",
   assignments: "task",
+  "attendance-staff": "check",
+  "attendance-students": "check",
   "audit-logs": "shield",
   authentication: "lock",
   automation: "automation",
@@ -680,14 +875,18 @@ export const moduleIcons: Record<string, IconName> = {
   calendar: "calendar",
   "call-center": "headset",
   campaigns: "campaign",
+  "channel-partners": "organization",
+  cms: "document",
   communications: "chat",
   courses: "graduation",
+  countries: "building",
   dashboard: "dashboard",
   departments: "organization",
   documents: "document",
   emails: "mail",
   enrollment: "check",
   fees: "finance",
+  exams: "document",
   "follow-ups": "calendar",
   "global-settings": "settings",
   "imports-exports": "report",
@@ -705,24 +904,31 @@ export const moduleIcons: Record<string, IconName> = {
   learning: "graduation",
   "marketing-attribution": "analytics",
   meetings: "calendar",
+  mentors: "user",
   "mobile-app": "mobile",
   notes: "document",
   organizations: "building",
   payments: "payment",
   "platform-foundation": "organization",
   programs: "graduation",
+  "report-cards": "report",
   reports: "report",
   roles: "user",
   scholarship: "graduation",
   security: "shield",
+  "service-catalog": "graduation",
   settings: "settings",
   sms: "chat",
   specializations: "graduation",
   support: "chat",
   students: "user",
+  "study-materials": "document",
   tasks: "task",
   teams: "user",
   telephony: "headset",
+  timetable: "calendar",
+  transcripts: "document",
+  "university-partners": "building",
   users: "user",
   whatsapp: "chat",
 };
@@ -1004,8 +1210,41 @@ export const moduleActions: Record<string, string[]> = {
   "imports-exports": ["Create Import/Export Job", "Export Jobs"],
   students: ["Create Student", "Export Students"],
   "academic-sessions": ["Create Academic Session", "Export Sessions"],
+  "attendance-students": [
+    "Create Attendance",
+    "Bulk Mark Present",
+    "Export Attendance",
+  ],
+  "attendance-staff": ["Create Attendance", "Export Attendance"],
   courses: ["Create Course", "Export Courses"],
+  timetable: ["Create Timetable Slot", "Check Conflicts", "Export Timetable"],
+  exams: ["Create Exam", "Publish Results", "Export Exams"],
+  "report-cards": [
+    "Create Report Card",
+    "Generate Report Card",
+    "Export Report Cards",
+  ],
+  transcripts: ["Create Transcript", "Issue Transcript", "Export Transcripts"],
   specializations: ["Create Specialization", "Export Specializations"],
+  "service-catalog": ["Create Service", "Approve Service", "Export Services"],
+  mentors: ["Create Mentor", "Review Mentor", "Export Mentors"],
+  "university-partners": [
+    "Create University Partner",
+    "Review Agreement",
+    "Export Partners",
+  ],
+  countries: ["Create Country Guide", "Publish Guide", "Export Countries"],
+  "channel-partners": [
+    "Create Channel Partner",
+    "Approve Partner",
+    "Export Partners",
+  ],
+  "study-materials": [
+    "Create Study Material",
+    "Publish Material",
+    "Export Materials",
+  ],
+  cms: ["Create CMS Entry", "Publish Entry", "Export CMS"],
   enrollment: ["Create Enrollment", "Provision Access", "Export Enrollment"],
   fees: ["Create Fee Record", "Export Fees"],
   payments: [
@@ -1175,6 +1414,19 @@ export const navGroups = [
       "academic-sessions",
       "programs",
       "courses",
+      "service-catalog",
+      "mentors",
+      "university-partners",
+      "countries",
+      "channel-partners",
+      "study-materials",
+      "cms",
+      "timetable",
+      "attendance-students",
+      "attendance-staff",
+      "exams",
+      "report-cards",
+      "transcripts",
       "applications",
       "admissions",
       "interview",
@@ -1856,6 +2108,121 @@ export const extraModules: AdminModule[] = [
     ],
   },
   {
+    id: "attendance-students",
+    title: "Student Attendance",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Mark, update, filter, summarize, and export organization-scoped student attendance by branch, subject, timetable slot, date range, and status.",
+    filters: ["Branch", "Subject", "Date", "Status"],
+    columns: [
+      "Student Id",
+      "Date",
+      "Status",
+      "Method",
+      "Subject Id",
+      "Timetable Id",
+      "Remarks",
+    ],
+    rows: [],
+  },
+  {
+    id: "attendance-staff",
+    title: "Staff Attendance",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Track faculty and staff attendance with branch, department, date, check-in, check-out, method, remarks, and export support.",
+    filters: ["Branch", "Department", "Date", "Status"],
+    columns: [
+      "User Id",
+      "Date",
+      "Status",
+      "Method",
+      "Branch Id",
+      "Department Id",
+      "Remarks",
+    ],
+    rows: [],
+  },
+  {
+    id: "timetable",
+    title: "Timetable",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Create and manage recurring academic timetable slots with subject, teacher, branch, grade, section, room, weekday, and active/cancelled lifecycle.",
+    filters: ["Branch", "Subject", "Teacher", "Day"],
+    columns: [
+      "Subject Id",
+      "Grade Id",
+      "Branch Id",
+      "Staff User Id",
+      "Day Of Week",
+      "Start Time",
+      "End Time",
+      "Room Label",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
+    id: "exams",
+    title: "Exams",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Schedule exams, update exam metadata, export exam plans, record results, and publish marks under organization and branch context.",
+    filters: ["Branch", "Subject", "Grade", "Status"],
+    columns: [
+      "Title",
+      "Exam Type",
+      "Subject Id",
+      "Grade Id",
+      "Exam Date",
+      "Start Time",
+      "Max Marks",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
+    id: "report-cards",
+    title: "Report Cards",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Create and update report cards from academic performance, attendance, teacher remarks, principal remarks, and publication status.",
+    filters: ["Student", "Grade", "Term", "Status"],
+    columns: [
+      "Student Id",
+      "Grade Id",
+      "Academic Session Id",
+      "Term",
+      "Overall Grade",
+      "Attendance Percentage",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
+    id: "transcripts",
+    title: "Transcripts",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Create, issue, revoke, and audit student academic transcripts using report-card collections and verification references.",
+    filters: ["Student", "Type", "Status"],
+    columns: [
+      "Student Id",
+      "Transcript Type",
+      "Report Card Ids",
+      "Purpose",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
     id: "programs",
     title: "Programs",
     group: "Education",
@@ -1872,6 +2239,89 @@ export const extraModules: AdminModule[] = [
       "Seats Available",
       "Status",
     ],
+    rows: [],
+  },
+  {
+    id: "service-catalog",
+    title: "Service Catalog",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Configure consultancy services, pricing, timelines, workflow stages, document checklists, FAQs, and media for public and CRM flows.",
+    filters: ["Category", "Service Type", "Status"],
+    columns: ["Service", "Category", "Pricing India", "Timeline", "Status"],
+    rows: [],
+  },
+  {
+    id: "mentors",
+    title: "Mentors",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Manage mentor profiles, expertise, languages, availability, capacity, workload, ratings, assignments, and payout metadata.",
+    filters: ["Specialization", "Availability", "Status"],
+    columns: ["Mentor", "Specialization", "Languages", "Capacity", "Status"],
+    rows: [],
+  },
+  {
+    id: "university-partners",
+    title: "University Partners",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Manage university details, rankings, accreditation, courses, scholarships, agreements, MOUs, enrollments, and partner status.",
+    filters: ["Country", "Accreditation", "Status"],
+    columns: ["University", "Country", "Ranking", "Courses", "Status"],
+    rows: [],
+  },
+  {
+    id: "countries",
+    title: "Countries",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Maintain study requirements, visa information, scholarships, living costs, admission process, and popular universities by country.",
+    filters: ["Country", "Status"],
+    columns: ["Country", "Study Requirements", "Visa Information", "Status"],
+    rows: [],
+  },
+  {
+    id: "channel-partners",
+    title: "Channel Partners",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Manage partner onboarding, approval, referrals, commission slabs, payouts, performance, and downloadable statement metadata.",
+    filters: ["Partner Type", "Approval", "Status"],
+    columns: [
+      "Partner",
+      "Contact Person",
+      "Commission Slab",
+      "Referrals",
+      "Status",
+    ],
+    rows: [],
+  },
+  {
+    id: "study-materials",
+    title: "Study Materials",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Manage PDFs, videos, templates, samples, resource libraries, access levels, publishing, and course/program material metadata.",
+    filters: ["Material Type", "Program", "Status"],
+    columns: ["Material", "Type", "Course", "Access Level", "Status"],
+    rows: [],
+  },
+  {
+    id: "cms",
+    title: "CMS",
+    group: "Education",
+    metric: "API backed",
+    description:
+      "Manage public website content, pages, sections, blogs, FAQs, testimonials, success stories, SEO metadata, and publishing status.",
+    filters: ["Page", "Content Type", "Status"],
+    columns: ["Entry", "Page", "Section", "Content Type", "Status"],
     rows: [],
   },
   {
@@ -2412,6 +2862,19 @@ export const productionModuleIds = new Set([
   "integrations",
   "settings",
   "documents",
+  "service-catalog",
+  "mentors",
+  "university-partners",
+  "countries",
+  "channel-partners",
+  "study-materials",
+  "cms",
+  "attendance-students",
+  "attendance-staff",
+  "timetable",
+  "exams",
+  "report-cards",
+  "transcripts",
   "organizations",
   "branches",
   "departments",

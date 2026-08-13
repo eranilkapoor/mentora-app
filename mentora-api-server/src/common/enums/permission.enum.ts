@@ -151,4 +151,12 @@ export enum Permission {
   WORKFLOW_MANAGE = 'workflow:manage',
   PROGRAM_VIEW = 'program:view',
   PROGRAM_MANAGE = 'program:manage',
+
+  // =========================
+  //  ATTENDANCE / EXAMS
+  // =========================
+  ATTENDANCE_VIEW = 'attendance:view',
+  ATTENDANCE_MANAGE = 'attendance:manage',
+  EXAM_VIEW = 'exam:view',
+  EXAM_MANAGE = 'exam:manage',
 }

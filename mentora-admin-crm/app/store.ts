@@ -374,11 +374,16 @@ const dedicatedCrmRoutes: Record<string, string> = {
   "academic-sessions": adminPath("/academic-sessions"),
   applications: adminPath("/applications"),
   assignments: adminPath("/leads/operations/assignments"),
+  "attendance-staff": adminPath("/attendance/staff"),
+  "attendance-students": adminPath("/attendance/students"),
   branches: adminPath("/branches"),
   "call-center": adminPath("/call-center"),
   campaigns: adminPath("/campaigns"),
+  "channel-partners": adminPath("/channel-partners"),
+  cms: adminPath("/cms"),
   communications: adminPath("/communications"),
   contacts: adminPath("/contacts"),
+  countries: adminPath("/countries"),
   courses: adminPath("/courses"),
   "custom-fields": adminPath("/custom-fields"),
   departments: adminPath("/departments"),
@@ -389,6 +394,7 @@ const dedicatedCrmRoutes: Record<string, string> = {
   finance: adminPath("/finance-ledgers"),
   "follow-ups": adminPath("/follow-ups"),
   enrollment: adminPath("/enrollment"),
+  exams: adminPath("/exams"),
   fees: adminPath("/fees"),
   "imports-exports": adminPath("/imports-exports"),
   interview: adminPath("/interviews"),
@@ -396,21 +402,28 @@ const dedicatedCrmRoutes: Record<string, string> = {
   learning: adminPath("/learning"),
   organizations: adminPath("/organizations"),
   programs: adminPath("/programs"),
+  "report-cards": adminPath("/report-cards"),
   "lead-sources": adminPath("/lead-sources"),
   "lead-stages": adminPath("/lead-stages"),
   meetings: adminPath("/meetings"),
+  mentors: adminPath("/mentors"),
   notes: adminPath("/notes"),
   automation: adminPath("/workflows/rules"),
   billing: adminPath("/plans/organization/billing"),
   reports: adminPath("/reports/definitions"),
   scholarship: adminPath("/scholarships"),
+  "service-catalog": adminPath("/service-catalog"),
   specializations: adminPath("/specializations"),
+  "study-materials": adminPath("/study-materials"),
   support: "/admin/support/tickets",
   sms: adminPath("/communications"),
   students: adminPath("/students"),
   tags: adminPath("/tags"),
   tasks: adminPath("/tasks"),
   teams: adminPath("/teams"),
+  timetable: adminPath("/timetable"),
+  transcripts: adminPath("/transcripts"),
+  "university-partners": adminPath("/university-partners"),
   whatsapp: adminPath("/whatsapp"),
 };
 
@@ -443,11 +456,24 @@ const allAdminModuleIds = [
   "imports-exports",
   "students",
   "academic-sessions",
+  "attendance-students",
+  "attendance-staff",
   "programs",
   "courses",
   "specializations",
+  "service-catalog",
+  "mentors",
+  "university-partners",
+  "countries",
+  "channel-partners",
+  "study-materials",
+  "cms",
   "applications",
   "admissions",
+  "timetable",
+  "exams",
+  "report-cards",
+  "transcripts",
   "enrollment",
   "fees",
   "scholarship",
@@ -483,8 +509,12 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   admissions: "POST",
   "academic-sessions": "POST",
   applications: "PUT",
+  "attendance-staff": "PUT",
+  "attendance-students": "PUT",
   "call-center": "POST",
   campaigns: "PUT",
+  "channel-partners": "POST",
+  cms: "POST",
   communications: "PUT",
   courses: "POST",
   documents: "PUT",
@@ -493,19 +523,28 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   finance: "POST",
   "follow-ups": "PUT",
   enrollment: "POST",
+  exams: "PUT",
   fees: "POST",
   "imports-exports": "POST",
   interview: "POST",
+  countries: "POST",
   "lead-sources": "POST",
   "lead-stages": "POST",
   learning: "POST",
   meetings: "POST",
+  mentors: "POST",
+  "report-cards": "PUT",
   scholarship: "POST",
+  "service-catalog": "POST",
   specializations: "POST",
+  "study-materials": "POST",
   support: "PATCH",
   students: "POST",
   tags: "POST",
   tasks: "PUT",
+  timetable: "PUT",
+  transcripts: "PUT",
+  "university-partners": "POST",
   whatsapp: "POST",
 };
 const upsertOnlyDedicatedModules = new Set(["lead-sources", "lead-stages"]);
@@ -787,9 +826,19 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
   }
 
   if (
-    ["admissions", "scholarship", "interview", "learning"].includes(
-      draft.moduleKey,
-    )
+    [
+      "admissions",
+      "channel-partners",
+      "cms",
+      "countries",
+      "interview",
+      "learning",
+      "mentors",
+      "scholarship",
+      "service-catalog",
+      "study-materials",
+      "university-partners",
+    ].includes(draft.moduleKey)
   ) {
     const payload = draft.payload ?? {};
     const tags = payload.tags
@@ -910,6 +959,157 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
               ? "in_progress"
               : "open",
       title: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "attendance-students") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      branchId: payload.branchId || undefined,
+      checkInTime: payload.checkInTime || undefined,
+      checkOutTime: payload.checkOutTime || undefined,
+      date: payload.date || draft.dueAt || new Date().toISOString(),
+      method: payload.method || "manual",
+      remarks: payload.remarks || draft.description || undefined,
+      status:
+        draft.status === "archived"
+          ? "absent"
+          : payload.status || draft.status || "present",
+      studentId: payload.studentId || payload.student || undefined,
+      subjectId: payload.subjectId || undefined,
+      timetableId: payload.timetableId || undefined,
+    };
+  }
+
+  if (draft.moduleKey === "attendance-staff") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      branchId: payload.branchId || undefined,
+      checkInTime: payload.checkInTime || undefined,
+      checkOutTime: payload.checkOutTime || undefined,
+      date: payload.date || draft.dueAt || new Date().toISOString(),
+      departmentId: payload.departmentId || undefined,
+      method: payload.method || "manual",
+      remarks: payload.remarks || draft.description || undefined,
+      status:
+        draft.status === "archived"
+          ? "absent"
+          : payload.status || draft.status || "present",
+      userId: payload.userId || payload.user || undefined,
+    };
+  }
+
+  if (draft.moduleKey === "timetable") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      academicSessionId: payload.academicSessionId || undefined,
+      branchId: payload.branchId || undefined,
+      dayOfWeek: payload.dayOfWeek || "monday",
+      effectiveFrom: payload.effectiveFrom || undefined,
+      effectiveTo: payload.effectiveTo || undefined,
+      endTime: payload.endTime || "10:00",
+      gradeId: payload.gradeId || undefined,
+      roomLabel: payload.roomLabel || undefined,
+      sectionLabel: payload.sectionLabel || undefined,
+      staffUserId: payload.staffUserId || payload.staff || undefined,
+      startTime: payload.startTime || "09:00",
+      status:
+        draft.status === "archived" ? "cancelled" : payload.status || "active",
+      subjectId: payload.subjectId || undefined,
+    };
+  }
+
+  if (draft.moduleKey === "exams") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      academicSessionId: payload.academicSessionId || undefined,
+      branchId: payload.branchId || undefined,
+      durationMinutes: payload.durationMinutes
+        ? Number(payload.durationMinutes)
+        : undefined,
+      examDate: payload.examDate || draft.dueAt || new Date().toISOString(),
+      examType: payload.examType || "unit_test",
+      gradeId: payload.gradeId || undefined,
+      instructions: payload.instructions || draft.description || undefined,
+      invigilatorUserId: payload.invigilatorUserId || undefined,
+      maxMarks: payload.maxMarks ? Number(payload.maxMarks) : undefined,
+      passingMarks: payload.passingMarks
+        ? Number(payload.passingMarks)
+        : undefined,
+      startTime: payload.startTime || undefined,
+      status:
+        draft.status === "archived"
+          ? "cancelled"
+          : payload.status || "scheduled",
+      subjectId: payload.subjectId || undefined,
+      title: draft.title,
+      venue: payload.venue || undefined,
+    };
+  }
+
+  if (draft.moduleKey === "report-cards") {
+    const payload = draft.payload ?? {};
+    const subjects = payload.subjects
+      ? payload.subjects
+          .split(",")
+          .map((subjectName) => subjectName.trim())
+          .filter(Boolean)
+          .map((subjectName) => ({
+            subjectId: payload.subjectId || "000000000000000000000000",
+            subjectName,
+            maxMarks: payload.maxMarks ? Number(payload.maxMarks) : undefined,
+            marksObtained: payload.marksObtained
+              ? Number(payload.marksObtained)
+              : undefined,
+          }))
+      : [
+          {
+            subjectId: payload.subjectId || "000000000000000000000000",
+            subjectName: payload.subjectName || draft.title || "Subject",
+            maxMarks: payload.maxMarks ? Number(payload.maxMarks) : undefined,
+            marksObtained: payload.marksObtained
+              ? Number(payload.marksObtained)
+              : undefined,
+          },
+        ];
+    return {
+      organizationId: draft.organizationId,
+      academicSessionId: payload.academicSessionId || undefined,
+      attendancePercentage: payload.attendancePercentage
+        ? Number(payload.attendancePercentage)
+        : undefined,
+      branchId: payload.branchId || undefined,
+      gradeId: payload.gradeId || undefined,
+      overallGrade: payload.overallGrade || undefined,
+      principalRemarks: payload.principalRemarks || undefined,
+      status:
+        draft.status === "archived" ? "revised" : payload.status || "draft",
+      studentId: payload.studentId || undefined,
+      subjects,
+      teacherRemarks: payload.teacherRemarks || draft.description || undefined,
+      term: payload.term || draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "transcripts") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      purpose: payload.purpose || draft.description || undefined,
+      reportCardIds: payload.reportCardIds
+        ? payload.reportCardIds
+            .split(",")
+            .map((id) => id.trim())
+            .filter(Boolean)
+        : ["000000000000000000000000"],
+      status:
+        draft.status === "archived" ? "revoked" : payload.status || "draft",
+      studentId: payload.studentId || undefined,
+      transcriptType: payload.transcriptType || "full_academic_history",
     };
   }
 

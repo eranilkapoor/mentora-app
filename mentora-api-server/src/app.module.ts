@@ -23,6 +23,8 @@ import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ActivitiesModule } from './modules/activities/activities.module';
 import { AdmissionsModule } from './modules/admissions/admissions.module';
+import { AcademicRecordsModule } from './modules/academic-records/academic-records.module';
+import { AttendanceModule } from './modules/attendance/attendance.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { CallCenterModule } from './modules/call-center/call-center.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -38,9 +40,12 @@ import { FollowUpsModule } from './modules/follow-ups/follow-ups.module';
 import { LearningModule } from './modules/learning/learning.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { ChannelPartnersModule } from './modules/channel-partners/channel-partners.module';
+import { CmsModule } from './modules/cms/cms.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { ContextsModule } from './modules/contexts/contexts.module';
+import { CountriesModule } from './modules/countries/countries.module';
 import { CustomFieldsModule } from './modules/custom-fields/custom-fields.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DocumentsModule } from './modules/documents/documents.module';
@@ -50,6 +55,7 @@ import { InterviewsModule } from './modules/interviews/interviews.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ImportsExportsModule } from './modules/imports-exports/imports-exports.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
+import { MentorsModule } from './modules/mentors/mentors.module';
 import { NotesModule } from './modules/notes/notes.module';
 import { ProgramsModule } from './modules/programs/programs.module';
 import { LeadsModule } from './modules/leads/leads.module';
@@ -57,9 +63,14 @@ import { ModuleRecordsModule } from './modules/module-records/module-records.mod
 import { ReportsModule } from './modules/reports/reports.module';
 import { ScholarshipsModule } from './modules/scholarships/scholarships.module';
 import { SecurityPoliciesModule } from './modules/security-policies/security-policies.module';
+import { ServiceCatalogModule } from './modules/service-catalog/service-catalog.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TagsModule } from './modules/tags/tags.module';
+import { TimetableModule } from './modules/timetable/timetable.module';
+import { StudyMaterialsModule } from './modules/study-materials/study-materials.module';
+import { ExamsModule } from './modules/exams/exams.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { UniversityPartnersModule } from './modules/university-partners/university-partners.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 
@@ -114,6 +125,7 @@ const envFilePath =
     AnalyticsModule,
     ActivitiesModule,
     AdmissionsModule,
+    AttendanceModule,
     ChatModule,
     CallCenterModule,
     NotificationsModule,
@@ -129,23 +141,33 @@ const envFilePath =
     ApplicationsModule,
     TasksModule,
     CampaignsModule,
+    ChannelPartnersModule,
+    CmsModule,
     CommunicationsModule,
     ContactsModule,
     CustomFieldsModule,
+    CountriesModule,
     DocumentsModule,
     EducationRecordsModule,
+    AcademicRecordsModule,
     EventsModule,
+    ExamsModule,
     InterviewsModule,
     IntegrationsModule,
     ImportsExportsModule,
     MeetingsModule,
+    MentorsModule,
     NotesModule,
     ProgramsModule,
     ModuleRecordsModule,
     ScholarshipsModule,
     SecurityPoliciesModule,
+    ServiceCatalogModule,
     WhatsappModule,
     TagsModule,
+    StudyMaterialsModule,
+    TimetableModule,
+    UniversityPartnersModule,
     DashboardModule,
     WorkflowsModule,
     ReportsModule,

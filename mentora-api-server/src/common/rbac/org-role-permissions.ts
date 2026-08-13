@@ -28,6 +28,10 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
     'plan:view',
     'subscription:view',
     'payment:view',
+    'schedule:',
+    'academic_record:',
+    'attendance:',
+    'exam:',
   ],
   branch_admin: [
     'lead:',
@@ -43,6 +47,10 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
     'workflow:',
     'program:',
     'dashboard:view',
+    'schedule:',
+    'academic_record:',
+    'attendance:',
+    'exam:',
   ],
   admission_manager: [
     'application:',
@@ -98,7 +106,14 @@ const ORG_ROLE_PERMISSION_PREFIXES: Readonly<
     'task:view',
     'communication:view',
   ],
-  mentor: ['student:view', 'schedule:view', 'task:view', 'communication:view'],
+  mentor: [
+    'student:view',
+    'schedule:view',
+    'task:view',
+    'communication:view',
+    'attendance:',
+    'exam:',
+  ],
 };
 
 export function resolveOrgRolePermissions(role: string): Permission[] {

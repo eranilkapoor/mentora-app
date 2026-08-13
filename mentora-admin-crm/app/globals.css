@@ -2475,6 +2475,68 @@ tbody tr:nth-child(even) {
   z-index: 4;
 }
 
+.education-workflow-panel {
+  margin-top: 14px;
+}
+
+.workflow-card-grid,
+.calendar-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.calendar-grid {
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+}
+
+.grid-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 108px;
+  padding: 12px;
+}
+
+.grid-card strong {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.grid-card span {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.grid-card small,
+.grid-card .muted {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.timeline-chip {
+  background: var(--brand-soft);
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  border-radius: 6px;
+  color: var(--ink) !important;
+  font-size: 11px !important;
+  padding: 6px 8px;
+}
+
+.action-row.compact {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
 @media (max-width: 1180px) and (min-width: 761px) {
   .board-grid {
     grid-template-columns: 1fr;
@@ -2487,6 +2549,10 @@ tbody tr:nth-child(even) {
 
   .security-control-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .formblock {

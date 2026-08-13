@@ -110,6 +110,8 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'ai_tutor:use',
       'learning_entitlement:view',
       'parental_control:view',
+      'attendance:view',
+      'exam:view',
     ],
   },
   {
@@ -126,6 +128,8 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'parental_control:',
       'payment:',
       'subscription:',
+      'attendance:view',
+      'exam:view',
     ],
   },
   {
@@ -137,6 +141,8 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'subject:view',
       'schedule:view',
       'ai_tutor:view',
+      'attendance:view',
+      'exam:view',
     ],
   },
   {
@@ -149,6 +155,10 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'subject:view',
       'schedule:view',
       'ai_tutor:view',
+      'attendance:view',
+      'attendance:manage',
+      'exam:view',
+      'exam:manage',
     ],
   },
   {
