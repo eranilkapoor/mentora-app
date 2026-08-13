@@ -161,7 +161,7 @@ const readinessByModule: Partial<
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
-      'organizations,branches,departments,teams,organization_branding,channel_settings,lead_sources,lead_stages',
+      'organizations,branches,departments,teams,organization_branding,channel_settings',
     apiSurface: [
       'admin/organizations',
       'admin/branches',
@@ -169,8 +169,6 @@ const readinessByModule: Partial<
       'admin/teams',
       'admin/organization-branding',
       'admin/channel-settings',
-      'admin/lead-sources',
-      'admin/lead-stages',
     ],
     productionBlockers: [],
   },
@@ -234,12 +232,15 @@ const readinessByModule: Partial<
     layer: 'generic_crm',
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
-    storage: 'leads,lead_activities,lead_assignments,lead_imports',
+    storage:
+      'leads,lead_activities,lead_assignments,lead_sources,lead_stages,lead_imports',
     apiSurface: [
       'leads',
       'leads/operations/duplicates',
       'leads/operations/import',
       'leads/operations/export',
+      'leads/sources',
+      'leads/stages',
       'leads/:id/score',
       'leads/:id/tags',
       'leads/:id/attachments',
@@ -262,7 +263,7 @@ const readinessByModule: Partial<
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'lead_sources',
-    apiSurface: ['lead-sources'],
+    apiSurface: ['leads/sources', 'leads/sources/operations/export'],
     productionBlockers: [],
   },
   'lead-stages': {
@@ -270,7 +271,7 @@ const readinessByModule: Partial<
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'lead_stages',
-    apiSurface: ['lead-stages'],
+    apiSurface: ['leads/stages', 'leads/stages/operations/export'],
     productionBlockers: [],
   },
   activities: {

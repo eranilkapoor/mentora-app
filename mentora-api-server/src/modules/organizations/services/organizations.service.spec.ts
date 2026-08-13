@@ -36,8 +36,6 @@ const createFixture = () => {
   const teams = { findOneAndUpdate: jest.fn() };
   const branding = { findOneAndUpdate: jest.fn() };
   const channelSettings = { findOneAndUpdate: jest.fn() };
-  const sources = { findOneAndUpdate: jest.fn() };
-  const stages = { findOneAndUpdate: jest.fn() };
   const users = {
     findOne: jest.fn(),
     create: jest.fn(),
@@ -62,8 +60,6 @@ const createFixture = () => {
     teams as never,
     branding as never,
     channelSettings as never,
-    sources as never,
-    stages as never,
     users as never,
     leads as never,
     memberships as never,

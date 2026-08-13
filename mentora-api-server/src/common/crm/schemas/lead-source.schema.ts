@@ -57,10 +57,36 @@ export class LeadSource {
   @Prop({ default: 0 })
   cost!: number;
 
-  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  @Prop({ default: 0 })
+  budget!: number;
+
+  @Prop({ trim: true })
+  ownerTeam?: string;
+
+  @Prop({ type: [String], default: [] })
+  tags!: string[];
+
+  @Prop({ type: Object, default: {} })
+  attributionDefaults!: Record<string, unknown>;
+
+  @Prop({
+    enum: ['active', 'inactive', 'archived'],
+    default: 'active',
+    index: true,
+  })
   status!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  archivedAt?: Date;
 }
 
 export const LeadSourceSchema = SchemaFactory.createForClass(LeadSource);
 LeadSourceSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 LeadSourceSchema.index({ organizationId: 1, status: 1, name: 1 });
+LeadSourceSchema.index({ organizationId: 1, category: 1, status: 1 });

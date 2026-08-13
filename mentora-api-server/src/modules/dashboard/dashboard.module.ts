@@ -12,7 +12,7 @@ import {
   Communication,
   CommunicationSchema,
 } from '../communications/schemas/communications.schema';
-import { Lead, LeadSchema } from '../leads/schemas/leads.schema';
+import { Lead, LeadSchema } from '../leads/schemas/lead.schema';
 import { ContextsModule } from '../contexts/contexts.module';
 import { ModuleRecordsModule } from '../module-records/module-records.module';
 import { Task, TaskSchema } from '../tasks/schemas/tasks.schema';

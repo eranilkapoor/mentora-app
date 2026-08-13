@@ -25,8 +25,6 @@ import { OrganizationContextGuard } from '@/modules/contexts/guards/organization
 import {
   CreateBranchDto,
   CreateDepartmentDto,
-  CreateLeadSourceDto,
-  CreateLeadStageDto,
   CreateTeamDto,
   CreateOrganizationUserDto,
   CreateOrganizationDto,
@@ -193,72 +191,6 @@ export class OrganizationsController {
       await this.service.updateBranchStatus(id, organizationId, 'active'),
       'EDUCATION_PLATFORM_BRANCH_RESTORED',
       'Branch restored',
-    );
-  }
-
-  @Post('lead-sources')
-  @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.ORGANIZATION_MANAGE)
-  async createLeadSource(@Body() dto: CreateLeadSourceDto) {
-    return successResponse(
-      await this.service.createLeadSource(dto),
-      'EDUCATION_PLATFORM_LEAD_SOURCE_CREATED',
-      'Lead source created',
-    );
-  }
-
-  @Get('lead-sources')
-  @Permissions(Permission.ORGANIZATION_VIEW)
-  async listLeadSources(
-    @Query('organizationId') organizationId: string,
-  ): Promise<unknown> {
-    return successResponse(
-      await this.service.listLeadSources(organizationId),
-      'EDUCATION_PLATFORM_LEAD_SOURCES_FETCHED',
-      'Lead sources fetched',
-    );
-  }
-
-  @Get('lead-sources/operations/export')
-  @Permissions(Permission.ORGANIZATION_VIEW)
-  async exportLeadSources(@Query('organizationId') organizationId: string) {
-    return successResponse(
-      await this.service.exportLeadSources(organizationId),
-      'EDUCATION_PLATFORM_LEAD_SOURCES_EXPORTED',
-      'Lead sources exported',
-    );
-  }
-
-  @Post('lead-stages')
-  @HttpCode(HttpStatus.CREATED)
-  @Permissions(Permission.ORGANIZATION_MANAGE)
-  async createLeadStage(@Body() dto: CreateLeadStageDto) {
-    return successResponse(
-      await this.service.createLeadStage(dto),
-      'EDUCATION_PLATFORM_LEAD_STAGE_CREATED',
-      'Lead stage created',
-    );
-  }
-
-  @Get('lead-stages')
-  @Permissions(Permission.ORGANIZATION_VIEW)
-  async listLeadStages(
-    @Query('organizationId') organizationId: string,
-  ): Promise<unknown> {
-    return successResponse(
-      await this.service.listLeadStages(organizationId),
-      'EDUCATION_PLATFORM_LEAD_STAGES_FETCHED',
-      'Lead stages fetched',
-    );
-  }
-
-  @Get('lead-stages/operations/export')
-  @Permissions(Permission.ORGANIZATION_VIEW)
-  async exportLeadStages(@Query('organizationId') organizationId: string) {
-    return successResponse(
-      await this.service.exportLeadStages(organizationId),
-      'EDUCATION_PLATFORM_LEAD_STAGES_EXPORTED',
-      'Lead stages exported',
     );
   }
 

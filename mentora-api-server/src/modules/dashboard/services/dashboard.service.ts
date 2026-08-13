@@ -18,7 +18,7 @@ import {
   Communication,
   CommunicationDocument,
 } from '../../communications/schemas/communications.schema';
-import { Lead, LeadDocument } from '../../leads/schemas/leads.schema';
+import { Lead, LeadDocument } from '../../leads/schemas/lead.schema';
 import { Task, TaskDocument } from '../../tasks/schemas/tasks.schema';
 
 @Injectable()

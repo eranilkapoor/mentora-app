@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContextsModule } from '../contexts/contexts.module';
 import { User, UserSchema } from '../auth/schemas/user.schema';
-import { Lead, LeadSchema } from '../leads/schemas/leads.schema';
+import { Lead, LeadSchema } from '../leads/schemas/lead.schema';
 import {
   UserMembership,
   UserMembershipSchema,
@@ -23,12 +23,6 @@ import {
   Organization,
   OrganizationSchema,
 } from './schemas/organization.schema';
-import {
-  LeadSource,
-  LeadSourceSchema,
-  LeadStage,
-  LeadStageSchema,
-} from '@/common/crm/schemas/crm-taxonomy.schema';
 import { OrganizationFieldPolicyService } from './services/organization-field-policy.service';
 import { OrganizationsService } from './services/organizations.service';
 
@@ -42,8 +36,6 @@ import { OrganizationsService } from './services/organizations.service';
       { name: Team.name, schema: TeamSchema },
       { name: OrganizationBranding.name, schema: OrganizationBrandingSchema },
       { name: ChannelSetting.name, schema: ChannelSettingSchema },
-      { name: LeadSource.name, schema: LeadSourceSchema },
-      { name: LeadStage.name, schema: LeadStageSchema },
       { name: Lead.name, schema: LeadSchema },
       { name: User.name, schema: UserSchema },
       { name: UserMembership.name, schema: UserMembershipSchema },

@@ -14,6 +14,10 @@ import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { ActorScopeService } from '@/common/rbac/actor-scope.service';
 import { buildScopeFilter, ScopeFieldMap } from '@/common/rbac/data-scope.util';
 import {
+  LeadSource,
+  LeadSourceDocument,
+} from '@/common/crm/schemas/lead-source.schema';
+import {
   LeadStage,
   LeadStageDocument,
 } from '@/common/crm/schemas/lead-stage.schema';
@@ -21,27 +25,33 @@ import { AdminAuditService } from '@/modules/admin/services/admin-audit.service'
 import {
   AddLeadActivityDto,
   AddLeadAttachmentDto,
+  CreateLeadSourceDto,
+  CreateLeadStageDto,
   AssignLeadDto,
   ChangeLeadStageDto,
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  LeadTaxonomyListDto,
   ListLeadAssignmentsDto,
   ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
   TransferLeadDto,
+  UpdateLeadSourceDto,
+  UpdateLeadStageDto,
   UpdateLeadDto,
   UpdateLeadTagsDto,
 } from '../dto/leads.dto';
+import { Lead, LeadDocument } from '../schemas/lead.schema';
 import {
-  Lead,
   LeadActivity,
   LeadActivityDocument,
+} from '../schemas/lead-activity.schema';
+import {
   LeadAssignment,
   LeadAssignmentDocument,
-  LeadDocument,
-} from '../schemas/leads.schema';
+} from '../schemas/lead-assignment.schema';
 
 // A SELF-scoped counselor only reaches their own leads; a BRANCH-scoped
 // branch admin reaches every lead assigned within their branch; and so on
@@ -63,11 +73,268 @@ export class LeadsService {
     private readonly activities: Model<LeadActivityDocument>,
     @InjectModel(LeadAssignment.name)
     private readonly assignments: Model<LeadAssignmentDocument>,
+    @InjectModel(LeadSource.name)
+    private readonly sources: Model<LeadSourceDocument>,
     @InjectModel(LeadStage.name)
     private readonly stages: Model<LeadStageDocument>,
     private readonly auditService: AdminAuditService,
     private readonly actorScope: ActorScopeService,
   ) {}
+
+  async createLeadSource(userId: string, dto: CreateLeadSourceDto) {
+    const organizationId = toOrganizationObjectId(dto.organizationId);
+    return this.sources.findOneAndUpdate(
+      { organizationId, code: dto.code.toUpperCase() },
+      {
+        ...dto,
+        code: dto.code.toUpperCase(),
+        createdBy: toOptionalObjectId(userId),
+        organizationId,
+        parentSourceId: toOptionalObjectId(dto.parentSourceId),
+        updatedBy: toOptionalObjectId(userId),
+      },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+  }
+
+  async listLeadSources(query: LeadTaxonomyListDto): Promise<{
+    items: Array<Record<string, unknown>>;
+    pagination: Record<string, number>;
+    sort: Record<string, string>;
+  }> {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveTaxonomySortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const organizationId = toOrganizationObjectId(query.organizationId);
+    const filter: FilterQuery<LeadSourceDocument> = {
+      organizationId,
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.sources
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.sources.countDocuments(filter),
+    ]);
+    const sourceIds = items.map((item) => item._id);
+    const counts = await this.leads.aggregate<{
+      _id: unknown;
+      active: number;
+      converted: number;
+      total: number;
+    }>([
+      { $match: { organizationId, sourceId: { $in: sourceIds } } },
+      {
+        $group: {
+          _id: '$sourceId',
+          active: {
+            $sum: { $cond: [{ $in: ['$status', ['new', 'open']] }, 1, 0] },
+          },
+          converted: { $sum: { $cond: [{ $eq: ['$status', 'won'] }, 1, 0] } },
+          total: { $sum: 1 },
+        },
+      },
+    ]);
+    const countMap = new Map(counts.map((item) => [String(item._id), item]));
+    return this.toPaginatedResult(
+      items.map((item) => {
+        const count = countMap.get(String(item._id));
+        const totalLeads = count?.total ?? 0;
+        return {
+          ...item,
+          activeLeads: count?.active ?? 0,
+          conversionRate:
+            totalLeads > 0
+              ? Math.round(((count?.converted ?? 0) / totalLeads) * 100)
+              : 0,
+        };
+      }),
+      total,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  async updateLeadSource(
+    userId: string,
+    sourceId: string,
+    dto: UpdateLeadSourceDto,
+  ) {
+    const update: Record<string, unknown> = { ...dto };
+    delete update.organizationId;
+    if (dto.code) update.code = dto.code.toUpperCase();
+    if (dto.parentSourceId !== undefined) {
+      update.parentSourceId = toOptionalObjectId(dto.parentSourceId);
+    }
+    if (dto.status === 'archived') update.archivedAt = new Date();
+    update.updatedBy = toOptionalObjectId(userId);
+    const source = await this.sources.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(sourceId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!source) throw new NotFoundException('Lead source not found');
+    return source;
+  }
+
+  async exportLeadSources(organizationId: string) {
+    const { items } = await this.listLeadSources({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'code', 'category', 'status', 'activeLeads'];
+    return buildCsvExportFile(
+      'lead-sources',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
+  }
+
+  async createLeadStage(userId: string, dto: CreateLeadStageDto) {
+    const organizationId = toOrganizationObjectId(dto.organizationId);
+    return this.stages.findOneAndUpdate(
+      { organizationId, code: dto.code.toUpperCase() },
+      {
+        ...dto,
+        allowedNextStageIds:
+          dto.allowedNextStageIds?.map((id) => toRequiredObjectId(id)) ?? [],
+        code: dto.code.toUpperCase(),
+        createdBy: toOptionalObjectId(userId),
+        organizationId,
+        updatedBy: toOptionalObjectId(userId),
+      },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+  }
+
+  async listLeadStages(query: LeadTaxonomyListDto): Promise<{
+    items: Array<Record<string, unknown>>;
+    pagination: Record<string, number>;
+    sort: Record<string, string>;
+  }> {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveTaxonomySortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const organizationId = toOrganizationObjectId(query.organizationId);
+    const filter: FilterQuery<LeadStageDocument> = {
+      organizationId,
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.stages
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.stages.countDocuments(filter),
+    ]);
+    const stageIds = items.map((item) => item._id);
+    const counts = await this.leads.aggregate<{ _id: unknown; count: number }>([
+      {
+        $match: {
+          organizationId,
+          stageId: { $in: stageIds },
+          status: { $in: ['new', 'open'] },
+        },
+      },
+      { $group: { _id: '$stageId', count: { $sum: 1 } } },
+    ]);
+    const countMap = new Map(
+      counts.map((item) => [String(item._id), item.count]),
+    );
+    return this.toPaginatedResult(
+      items.map((item) => ({
+        ...item,
+        activeLeadCount: countMap.get(String(item._id)) ?? 0,
+        conversionStage: item.isConverted,
+        lostStage: item.isLost,
+        sla: `${item.slaDurationHours ?? 24}h`,
+      })),
+      total,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+    );
+  }
+
+  async updateLeadStage(
+    userId: string,
+    stageId: string,
+    dto: UpdateLeadStageDto,
+  ) {
+    const update: Record<string, unknown> = { ...dto };
+    delete update.organizationId;
+    delete update.overrideReason;
+    if (dto.code) update.code = dto.code.toUpperCase();
+    if (dto.allowedNextStageIds) {
+      update.allowedNextStageIds = dto.allowedNextStageIds.map((id) =>
+        toRequiredObjectId(id),
+      );
+    }
+    if (dto.status === 'archived') update.archivedAt = new Date();
+    update.updatedBy = toOptionalObjectId(userId);
+    const stage = await this.stages.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(stageId),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!stage) throw new NotFoundException('Lead stage not found');
+    return stage;
+  }
+
+  async exportLeadStages(organizationId: string) {
+    const { items } = await this.listLeadStages({
+      organizationId,
+      limit: '1000',
+    });
+    const headers = ['id', 'name', 'code', 'order', 'category', 'status'];
+    return buildCsvExportFile(
+      'lead-stages',
+      headers,
+      items.map((item) => withStringId(item)),
+    );
+  }
 
   async createLead(userId: string | undefined, dto: CreateLeadDto) {
     const createdBy =
@@ -211,6 +478,20 @@ export class LeadsService {
     const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
     const filter = {
       organizationId: toOrganizationObjectId(query.organizationId),
+      ...(query.assignedTo
+        ? { assignedTo: toRequiredObjectId(query.assignedTo) }
+        : {}),
+      ...(query.branchId
+        ? { branchId: toRequiredObjectId(query.branchId) }
+        : {}),
+      ...(query.departmentId
+        ? { departmentId: toRequiredObjectId(query.departmentId) }
+        : {}),
+      ...(query.teamId ? { teamId: toRequiredObjectId(query.teamId) } : {}),
+      ...(query.assignmentMethod
+        ? { assignmentMethod: query.assignmentMethod }
+        : {}),
+      ...(query.status ? { status: query.status } : {}),
     };
     const [items, total] = await Promise.all([
       this.assignments
@@ -221,6 +502,8 @@ export class LeadsService {
         )
         .populate('previousOwner', 'firstName lastName email')
         .populate('assignedTo', 'firstName lastName email')
+        .populate('branchId', 'name code')
+        .populate('departmentId', 'name code')
         .populate('teamId', 'name code')
         .populate('assignedBy', 'firstName lastName email')
         .sort({ assignedAt: -1, _id: -1 })
@@ -503,6 +786,8 @@ export class LeadsService {
       {
         assignedTo: toRequiredObjectId(dto.assignedTo),
         branchId: toOptionalObjectId(dto.branchId),
+        departmentId: toOptionalObjectId(dto.departmentId),
+        teamId: toOptionalObjectId(dto.teamId),
         status: 'open',
       },
       { new: true },
@@ -513,16 +798,24 @@ export class LeadsService {
       leadId: lead._id,
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
+      branchId: toOptionalObjectId(dto.branchId),
+      departmentId: toOptionalObjectId(dto.departmentId),
       previousOwner: previousLead?.assignedTo,
       assignmentMethod: 'manual',
       assignmentReason: dto.reason,
+      teamId: toOptionalObjectId(dto.teamId),
     });
     await this.addLeadActivity(userId, leadId, {
       organizationId: dto.organizationId,
       type: 'assignment_changed',
       subject: 'Lead transferred',
       description: dto.reason,
-      metadata: { assignedTo: dto.assignedTo, branchId: dto.branchId },
+      metadata: {
+        assignedTo: dto.assignedTo,
+        branchId: dto.branchId,
+        departmentId: dto.departmentId,
+        teamId: dto.teamId,
+      },
     });
     await this.writeAudit(
       userId,
@@ -567,6 +860,8 @@ export class LeadsService {
       filter,
       {
         assignedTo: toRequiredObjectId(dto.assignedTo),
+        branchId: toOptionalObjectId(dto.branchId),
+        departmentId: toOptionalObjectId(dto.departmentId),
         status: 'open',
         teamId: toOptionalObjectId(dto.teamId),
       },
@@ -580,6 +875,8 @@ export class LeadsService {
       assignedBy: toRequiredObjectId(userId),
       assignmentReason: dto.assignmentReason,
       assignmentMethod: dto.assignmentMethod ?? 'manual',
+      branchId: toOptionalObjectId(dto.branchId),
+      departmentId: toOptionalObjectId(dto.departmentId),
       previousOwner: previousLead?.assignedTo,
       teamId: toOptionalObjectId(dto.teamId),
     });
@@ -587,7 +884,12 @@ export class LeadsService {
       organizationId: dto.organizationId,
       type: 'assignment_changed',
       subject: 'Lead assigned',
-      metadata: { assignedTo: dto.assignedTo },
+      metadata: {
+        assignedTo: dto.assignedTo,
+        branchId: dto.branchId,
+        departmentId: dto.departmentId,
+        teamId: dto.teamId,
+      },
     });
     await this.writeAudit(
       userId,
@@ -1090,6 +1392,39 @@ export class LeadsService {
       'updatedAt',
     ]);
     return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private resolveTaxonomySortBy(value?: string) {
+    const allowed = new Set([
+      'category',
+      'code',
+      'createdAt',
+      'name',
+      'order',
+      'status',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'name';
+  }
+
+  private toPaginatedResult<T>(
+    items: T[],
+    total: number,
+    page: number,
+    limit: number,
+    sortBy: string,
+    sortOrder: 1 | -1,
+  ) {
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   private toPositiveInt(value: string | undefined, fallback: number) {

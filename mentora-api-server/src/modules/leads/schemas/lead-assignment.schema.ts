@@ -34,6 +34,12 @@ export class LeadAssignment {
   @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
   teamId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
+  departmentId?: Types.ObjectId;
+
   @Prop({
     enum: [
       'manual',
@@ -60,6 +66,12 @@ export class LeadAssignment {
 
   @Prop({ trim: true })
   assignmentReason?: string;
+
+  @Prop({ enum: ['active', 'reassigned', 'released'], default: 'active' })
+  status!: string;
+
+  @Prop({ type: Object, default: {} })
+  capacitySnapshot!: Record<string, unknown>;
 }
 
 export const LeadAssignmentSchema =
@@ -70,3 +82,5 @@ LeadAssignmentSchema.index({
   assignedTo: 1,
   assignedAt: -1,
 });
+LeadAssignmentSchema.index({ organizationId: 1, teamId: 1, assignedAt: -1 });
+LeadAssignmentSchema.index({ organizationId: 1, status: 1, assignedAt: -1 });

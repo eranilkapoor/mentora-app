@@ -35,6 +35,10 @@ export class LeadActivity {
       'task_created',
       'application_started',
       'payment_received',
+      'follow_up_scheduled',
+      'document_added',
+      'duplicate_merged',
+      'lead_lost',
     ],
     required: true,
   })
@@ -49,6 +53,21 @@ export class LeadActivity {
   @Prop()
   description?: string;
 
+  @Prop({ trim: true })
+  channel?: string;
+
+  @Prop({ trim: true })
+  outcome?: string;
+
+  @Prop()
+  dueAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'Task', index: true })
+  taskId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Communication', index: true })
+  communicationId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   performedBy?: Types.ObjectId;
 
@@ -61,3 +80,5 @@ export class LeadActivity {
 
 export const LeadActivitySchema = SchemaFactory.createForClass(LeadActivity);
 LeadActivitySchema.index({ organizationId: 1, leadId: 1, occurredAt: -1 });
+LeadActivitySchema.index({ organizationId: 1, type: 1, occurredAt: -1 });
+LeadActivitySchema.index({ organizationId: 1, performedBy: 1, occurredAt: -1 });

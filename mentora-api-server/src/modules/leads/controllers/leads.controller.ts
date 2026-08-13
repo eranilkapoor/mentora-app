@@ -24,14 +24,19 @@ import {
   AddLeadAttachmentDto,
   AssignLeadDto,
   ChangeLeadStageDto,
+  CreateLeadSourceDto,
+  CreateLeadStageDto,
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  LeadTaxonomyListDto,
   ListLeadAssignmentsDto,
   ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
   TransferLeadDto,
+  UpdateLeadSourceDto,
+  UpdateLeadStageDto,
   UpdateLeadDto,
   UpdateLeadTagsDto,
 } from '../dto/leads.dto';
@@ -127,6 +132,102 @@ export class LeadsController {
       await this.service.exportAssignments(organizationId),
       'EDUCATION_PLATFORM_LEAD_ASSIGNMENTS_EXPORTED',
       'Lead assignments exported',
+    );
+  }
+
+  @Post('sources')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.LEAD_UPDATE)
+  async createLeadSource(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateLeadSourceDto,
+  ) {
+    return successResponse(
+      await this.service.createLeadSource(req.user.sub, dto),
+      'EDUCATION_PLATFORM_LEAD_SOURCE_CREATED',
+      'Lead source created',
+    );
+  }
+
+  @Get('sources')
+  @Permissions(Permission.LEAD_VIEW)
+  async listLeadSources(@Query() query: LeadTaxonomyListDto): Promise<unknown> {
+    return successResponse(
+      await this.service.listLeadSources(query),
+      'EDUCATION_PLATFORM_LEAD_SOURCES_FETCHED',
+      'Lead sources fetched',
+    );
+  }
+
+  @Get('sources/operations/export')
+  @Permissions(Permission.LEAD_EXPORT)
+  async exportLeadSources(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportLeadSources(organizationId),
+      'EDUCATION_PLATFORM_LEAD_SOURCES_EXPORTED',
+      'Lead sources exported',
+    );
+  }
+
+  @Put('sources/:sourceId')
+  @Permissions(Permission.LEAD_UPDATE)
+  async updateLeadSource(
+    @Req() req: AuthenticatedRequest,
+    @Param('sourceId') sourceId: string,
+    @Body() dto: UpdateLeadSourceDto,
+  ) {
+    return successResponse(
+      await this.service.updateLeadSource(req.user.sub, sourceId, dto),
+      'EDUCATION_PLATFORM_LEAD_SOURCE_UPDATED',
+      'Lead source updated',
+    );
+  }
+
+  @Post('stages')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.LEAD_UPDATE)
+  async createLeadStage(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateLeadStageDto,
+  ) {
+    return successResponse(
+      await this.service.createLeadStage(req.user.sub, dto),
+      'EDUCATION_PLATFORM_LEAD_STAGE_CREATED',
+      'Lead stage created',
+    );
+  }
+
+  @Get('stages')
+  @Permissions(Permission.LEAD_VIEW)
+  async listLeadStages(@Query() query: LeadTaxonomyListDto): Promise<unknown> {
+    return successResponse(
+      await this.service.listLeadStages(query),
+      'EDUCATION_PLATFORM_LEAD_STAGES_FETCHED',
+      'Lead stages fetched',
+    );
+  }
+
+  @Get('stages/operations/export')
+  @Permissions(Permission.LEAD_EXPORT)
+  async exportLeadStages(@Query('organizationId') organizationId: string) {
+    return successResponse(
+      await this.service.exportLeadStages(organizationId),
+      'EDUCATION_PLATFORM_LEAD_STAGES_EXPORTED',
+      'Lead stages exported',
+    );
+  }
+
+  @Put('stages/:stageId')
+  @Permissions(Permission.LEAD_UPDATE)
+  async updateLeadStage(
+    @Req() req: AuthenticatedRequest,
+    @Param('stageId') stageId: string,
+    @Body() dto: UpdateLeadStageDto,
+  ) {
+    return successResponse(
+      await this.service.updateLeadStage(req.user.sub, stageId, dto),
+      'EDUCATION_PLATFORM_LEAD_STAGE_UPDATED',
+      'Lead stage updated',
     );
   }
 

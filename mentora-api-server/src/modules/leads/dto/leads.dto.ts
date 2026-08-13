@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsIn,
@@ -65,6 +66,206 @@ export const LEAD_STATUSES = [
   'duplicate',
   'archived',
 ] as const;
+
+export const LEAD_SOURCE_CATEGORIES = [
+  'website',
+  'paid_advertisement',
+  'organic',
+  'referral',
+  'partner',
+  'walk_in',
+  'call_center',
+  'education_fair',
+  'import',
+  'social_media',
+  'api',
+  'other',
+] as const;
+
+export const LEAD_STAGE_CATEGORIES = [
+  'new',
+  'contacted',
+  'qualified',
+  'application',
+  'converted',
+  'lost',
+] as const;
+
+export class LeadTaxonomyListDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: string;
+}
+
+export class CreateLeadSourceDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsString()
+  name!: string;
+
+  @IsString()
+  code!: string;
+
+  @IsOptional()
+  @IsIn(LEAD_SOURCE_CATEGORIES)
+  category?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  parentSourceId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsObject()
+  defaultAssignmentRule?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  defaultCampaign?: string;
+
+  @IsOptional()
+  @IsNumber()
+  cost?: number;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class UpdateLeadSourceDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_SOURCE_CATEGORIES)
+  category?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  parentSourceId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsObject()
+  defaultAssignmentRule?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  defaultCampaign?: string;
+
+  @IsOptional()
+  @IsNumber()
+  cost?: number;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class CreateLeadStageDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsString()
+  name!: string;
+
+  @IsString()
+  code!: string;
+
+  @IsOptional()
+  @IsNumber()
+  order?: number;
+
+  @IsOptional()
+  @IsString()
+  color?: string;
+
+  @IsOptional()
+  @IsIn(LEAD_STAGE_CATEGORIES)
+  category?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isInitial?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isConverted?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isLost?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  requiresRemarks?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  mandatoryFieldsBeforeEntry?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  allowedNextStageIds?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  slaDurationHours?: number;
+
+  @IsOptional()
+  @IsObject()
+  escalationRule?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class UpdateLeadStageDto extends CreateLeadStageDto {
+  @IsOptional()
+  @IsString()
+  overrideReason?: string;
+}
 
 export class CreateLeadDto {
   @IsMongoId()
@@ -406,6 +607,45 @@ export class ListLeadAssignmentsDto {
   @IsOptional()
   @IsString()
   limit?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsIn([
+    'manual',
+    'round_robin',
+    'course_based',
+    'branch_based',
+    'location_based',
+    'branch_preference_based',
+    'source_based',
+    'campaign_based',
+    'language_based',
+    'capacity_based',
+    'working_hours',
+    'lead_score_based',
+    'existing_relationship',
+    'workflow',
+  ])
+  assignmentMethod?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'reassigned', 'released'])
+  status?: string;
 }
 
 export class UpdateLeadDto {
@@ -707,6 +947,14 @@ export class TransferLeadDto {
   branchId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
   @IsString()
   reason?: string;
 }
@@ -740,6 +988,14 @@ export class AssignLeadDto {
   @IsOptional()
   @IsMongoId()
   teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
 
   @IsOptional()
   @IsString()

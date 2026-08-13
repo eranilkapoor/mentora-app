@@ -23,7 +23,7 @@ import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { JwtUser } from '@/modules/auth/interfaces/jwt-user.interface';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
-import { Lead, LeadDocument } from '@/modules/leads/schemas/leads.schema';
+import { Lead, LeadDocument } from '@/modules/leads/schemas/lead.schema';
 import {
   UserMembership,
   UserMembershipDocument,
@@ -31,8 +31,6 @@ import {
 import {
   CreateBranchDto,
   CreateDepartmentDto,
-  CreateLeadSourceDto,
-  CreateLeadStageDto,
   CreateTeamDto,
   CreateOrganizationUserDto,
   CreateOrganizationDto,
@@ -62,12 +60,6 @@ import {
   Organization,
   OrganizationDocument,
 } from '../schemas/organization.schema';
-import {
-  LeadSource,
-  LeadSourceDocument,
-  LeadStage,
-  LeadStageDocument,
-} from '@/common/crm/schemas/crm-taxonomy.schema';
 import { OrganizationFieldPolicyService } from './organization-field-policy.service';
 
 @Injectable()
@@ -85,10 +77,6 @@ export class OrganizationsService {
     private readonly branding: Model<OrganizationBrandingDocument>,
     @InjectModel(ChannelSetting.name)
     private readonly channelSettings: Model<ChannelSettingDocument>,
-    @InjectModel(LeadSource.name)
-    private readonly sources: Model<LeadSourceDocument>,
-    @InjectModel(LeadStage.name)
-    private readonly stages: Model<LeadStageDocument>,
     @InjectModel(User.name)
     private readonly users: Model<UserDocument>,
     @InjectModel(Lead.name)
@@ -318,137 +306,6 @@ export class OrganizationsService {
       )
       .lean();
   }
-  async createLeadSource(dto: CreateLeadSourceDto) {
-    const organizationId = toOrganizationObjectId(dto.organizationId);
-    return this.sources.findOneAndUpdate(
-      { organizationId, code: dto.code.toUpperCase() },
-      {
-        ...dto,
-        organizationId,
-        code: dto.code.toUpperCase(),
-        parentSourceId: toOptionalObjectId(dto.parentSourceId),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-  }
-
-  async listLeadSources(organizationId: string): Promise<unknown> {
-    const sources = await this.sources
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-      })
-      .sort({ name: 1 })
-      .lean();
-    const sourceIds = sources.map((source) => source._id);
-    const counts = await this.leads.aggregate<{
-      _id: unknown;
-      active: number;
-      converted: number;
-      total: number;
-    }>([
-      {
-        $match: {
-          organizationId: toOrganizationObjectId(organizationId),
-          sourceId: { $in: sourceIds },
-        },
-      },
-      {
-        $group: {
-          _id: '$sourceId',
-          active: {
-            $sum: {
-              $cond: [{ $in: ['$status', ['new', 'open']] }, 1, 0],
-            },
-          },
-          converted: {
-            $sum: { $cond: [{ $eq: ['$status', 'won'] }, 1, 0] },
-          },
-          total: { $sum: 1 },
-        },
-      },
-    ]);
-    const countMap = new Map(counts.map((item) => [String(item._id), item]));
-    return sources.map((source) => {
-      const count = countMap.get(String(source._id));
-      const total = count?.total ?? 0;
-      return {
-        ...source,
-        activeLeads: count?.active ?? 0,
-        conversionRate:
-          total > 0 ? Math.round(((count?.converted ?? 0) / total) * 100) : 0,
-      };
-    });
-  }
-
-  async exportLeadSources(organizationId: string) {
-    const sources = (await this.listLeadSources(organizationId)) as Array<
-      Record<string, unknown>
-    >;
-    const headers = ['id', 'name', 'code', 'category', 'activeLeads'];
-    return buildCsvExportFile(
-      'lead-sources',
-      headers,
-      sources.map((item) => withStringId(item)),
-    );
-  }
-
-  async createLeadStage(dto: CreateLeadStageDto) {
-    const organizationId = toOrganizationObjectId(dto.organizationId);
-    return this.stages.findOneAndUpdate(
-      { organizationId, code: dto.code.toUpperCase() },
-      {
-        ...dto,
-        organizationId,
-        allowedNextStageIds:
-          dto.allowedNextStageIds?.map((id) => toRequiredObjectId(id)) ?? [],
-        code: dto.code.toUpperCase(),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true },
-    );
-  }
-
-  async listLeadStages(organizationId: string): Promise<unknown> {
-    const stages = await this.stages
-      .find({
-        organizationId: toOrganizationObjectId(organizationId),
-      })
-      .sort({ order: 1, name: 1 })
-      .lean();
-    const stageIds = stages.map((stage) => stage._id);
-    const counts = await this.leads.aggregate<{ _id: unknown; count: number }>([
-      {
-        $match: {
-          organizationId: toOrganizationObjectId(organizationId),
-          stageId: { $in: stageIds },
-          status: { $in: ['new', 'open'] },
-        },
-      },
-      { $group: { _id: '$stageId', count: { $sum: 1 } } },
-    ]);
-    const countMap = new Map(
-      counts.map((item) => [String(item._id), item.count]),
-    );
-    return stages.map((stage) => ({
-      ...stage,
-      activeLeadCount: countMap.get(String(stage._id)) ?? 0,
-      conversionStage: stage.isConverted,
-      lostStage: stage.isLost,
-      sla: `${stage.slaDurationHours ?? 24}h`,
-    }));
-  }
-
-  async exportLeadStages(organizationId: string) {
-    const stages = (await this.listLeadStages(organizationId)) as Array<
-      Record<string, unknown>
-    >;
-    const headers = ['id', 'name', 'code', 'order', 'activeLeadCount'];
-    return buildCsvExportFile(
-      'lead-stages',
-      headers,
-      stages.map((item) => withStringId(item)),
-    );
-  }
-
   async createDepartment(dto: CreateDepartmentDto) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.departments.findOneAndUpdate(

@@ -425,8 +425,8 @@ const dedicatedCrmRoutes: Record<string, string> = {
   organizations: adminPath("/organizations"),
   programs: adminPath("/programs"),
   "report-cards": adminPath("/report-cards"),
-  "lead-sources": adminPath("/lead-sources"),
-  "lead-stages": adminPath("/lead-stages"),
+  "lead-sources": adminPath("/leads/sources"),
+  "lead-stages": adminPath("/leads/stages"),
   meetings: adminPath("/meetings"),
   mentors: adminPath("/mentors"),
   notes: adminPath("/notes"),
@@ -550,8 +550,8 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   "imports-exports": "POST",
   interview: "POST",
   countries: "POST",
-  "lead-sources": "POST",
-  "lead-stages": "POST",
+  "lead-sources": "PUT",
+  "lead-stages": "PUT",
   learning: "POST",
   meetings: "POST",
   mentors: "POST",
@@ -569,7 +569,7 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   "university-partners": "POST",
   whatsapp: "POST",
 };
-const upsertOnlyDedicatedModules = new Set(["lead-sources", "lead-stages"]);
+const upsertOnlyDedicatedModules = new Set<string>();
 
 function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
   const body = {
@@ -774,9 +774,11 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       name: draft.payload.name || draft.title,
       parentSourceId: draft.payload.parentSource || undefined,
       status:
-        draft.status === "archived" || draft.payload.activeStatus === "inactive"
-          ? "inactive"
-          : "active",
+        draft.status === "archived"
+          ? "archived"
+          : draft.payload.activeStatus === "inactive"
+            ? "inactive"
+            : "active",
     };
   }
 
@@ -814,9 +816,11 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
         ? Number(draft.payload.slaDuration)
         : undefined,
       status:
-        draft.status === "archived" || draft.payload.status === "inactive"
-          ? "inactive"
-          : "active",
+        draft.status === "archived"
+          ? "archived"
+          : draft.payload.status === "inactive"
+            ? "inactive"
+            : "active",
     };
   }
 
