@@ -28,6 +28,18 @@ export class Department {
   @Prop({ type: Types.ObjectId, ref: Branch.name, index: true })
   branchId?: Types.ObjectId;
 
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  headId?: Types.ObjectId;
+
+  @Prop({ trim: true })
+  email?: string;
+
+  @Prop({ trim: true })
+  phone?: string;
+
   @Prop({
     enum: [
       'admissions',
@@ -41,8 +53,27 @@ export class Department {
   })
   function!: string;
 
-  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  @Prop({ type: Object, default: {} })
+  settings!: Record<string, unknown>;
+
+  @Prop({
+    enum: ['active', 'inactive', 'archived'],
+    default: 'active',
+    index: true,
+  })
   status!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ type: Date })
+  archivedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  archivedBy?: Types.ObjectId;
 }
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);

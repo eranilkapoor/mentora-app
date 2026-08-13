@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { Organization } from '@/modules/organizations/schemas/organizations.schema';
+import { Organization } from '@/modules/organizations/schemas/organization.schema';
 
 @Schema({ timestamps: true })
 export class EducationRecord {

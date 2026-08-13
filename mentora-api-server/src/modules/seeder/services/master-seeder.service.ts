@@ -113,11 +113,15 @@ import {
 import {
   Branch,
   BranchDocument,
+} from '@/modules/organizations/schemas/branch.schema';
+import {
   Department,
   DepartmentDocument,
+} from '@/modules/organizations/schemas/department.schema';
+import {
   Team,
   TeamDocument,
-} from '@/modules/organizations/schemas/organization-structure.schema';
+} from '@/modules/organizations/schemas/team.schema';
 import {
   Organization,
   OrganizationDocument,

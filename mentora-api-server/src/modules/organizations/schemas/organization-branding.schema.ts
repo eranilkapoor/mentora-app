@@ -26,13 +26,29 @@ export class OrganizationBranding {
   @Prop({ trim: true })
   senderName?: string;
 
+  @Prop({ trim: true })
+  faviconUrl?: string;
+
+  @Prop({ trim: true })
+  appName?: string;
+
+  @Prop({ trim: true })
+  supportEmail?: string;
+
   @Prop({ type: [String], default: [] })
   domains!: string[];
 
   @Prop({ type: Object, default: {} })
   theme!: Record<string, unknown>;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
 }
 
 export const OrganizationBrandingSchema =
   SchemaFactory.createForClass(OrganizationBranding);
 OrganizationBrandingSchema.index({ organizationId: 1 }, { unique: true });
+OrganizationBrandingSchema.index({ status: 1, organizationId: 1 });

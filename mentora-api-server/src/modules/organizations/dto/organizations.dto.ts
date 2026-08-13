@@ -333,6 +333,107 @@ export class CreateBranchDto {
   @IsOptional()
   @IsString()
   state?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  postalCode?: string;
+
+  @IsOptional()
+  @IsString()
+  addressLine1?: string;
+
+  @IsOptional()
+  @IsString()
+  addressLine2?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  managerId?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class UpdateBranchDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  postalCode?: string;
+
+  @IsOptional()
+  @IsString()
+  addressLine1?: string;
+
+  @IsOptional()
+  @IsString()
+  addressLine2?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  managerId?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
 }
 
 export class ListOrganizationStructureDto {
@@ -360,7 +461,7 @@ export class ListOrganizationStructureDto {
   departmentId?: string;
 
   @IsOptional()
-  @IsIn(['active', 'inactive'])
+  @IsIn(['active', 'inactive', 'archived'])
   status?: string;
 
   @IsOptional()
@@ -500,6 +601,22 @@ export class CreateDepartmentDto {
   branchId?: string;
 
   @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  headId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
   @IsIn([
     'admissions',
     'sales',
@@ -509,6 +626,66 @@ export class CreateDepartmentDto {
     'operations',
   ])
   function?: string;
+
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class UpdateDepartmentDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  headId?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsIn([
+    'admissions',
+    'sales',
+    'marketing',
+    'finance',
+    'academics',
+    'operations',
+  ])
+  function?: string;
+
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
 }
 
 export class CreateTeamDto {
@@ -527,6 +704,14 @@ export class CreateTeamDto {
 
   @IsOptional()
   @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
   managerId?: string;
 
   @IsOptional()
@@ -537,6 +722,68 @@ export class CreateTeamDto {
   @IsOptional()
   @IsObject()
   capacityRules?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  assignmentRules?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  workingHours?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
+}
+
+export class UpdateTeamDto {
+  @IsMongoId()
+  organizationId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  managerId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  memberIds?: string[];
+
+  @IsOptional()
+  @IsObject()
+  capacityRules?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  assignmentRules?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  workingHours?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'archived'])
+  status?: string;
 }
 
 export class UpsertOrganizationBrandingDto {
@@ -560,6 +807,18 @@ export class UpsertOrganizationBrandingDto {
   senderName?: string;
 
   @IsOptional()
+  @IsString()
+  faviconUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  appName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  supportEmail?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   domains?: string[];
@@ -567,14 +826,31 @@ export class UpsertOrganizationBrandingDto {
   @IsOptional()
   @IsObject()
   theme?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive'])
+  status?: string;
 }
 
 export class UpsertChannelSettingDto {
   @IsMongoId()
   organizationId!: string;
 
-  @IsIn(['whatsapp', 'sms', 'email', 'call_center', 'payment', 'calendar'])
+  @IsIn([
+    'whatsapp',
+    'sms',
+    'email',
+    'call_center',
+    'payment',
+    'calendar',
+    'video',
+    'analytics',
+  ])
   channel!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
 
   @IsOptional()
   @IsIn(['disabled', 'sandbox', 'active'])
@@ -583,6 +859,26 @@ export class UpsertChannelSettingDto {
   @IsOptional()
   @IsObject()
   provider?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  providerKey?: string;
+
+  @IsOptional()
+  @IsString()
+  senderId?: string;
+
+  @IsOptional()
+  @IsString()
+  webhookUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  credentialsRef?: string;
+
+  @IsOptional()
+  @IsObject()
+  compliance?: Record<string, unknown>;
 
   @IsOptional()
   @IsObject()

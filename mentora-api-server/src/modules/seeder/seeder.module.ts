@@ -83,14 +83,12 @@ import {
   Topic,
   TopicSchema,
 } from '../learning/schemas/learning.schemas';
+import { Branch, BranchSchema } from '../organizations/schemas/branch.schema';
 import {
-  Branch,
-  BranchSchema,
   Department,
   DepartmentSchema,
-  Team,
-  TeamSchema,
-} from '../organizations/schemas/organization-structure.schema';
+} from '../organizations/schemas/department.schema';
+import { Team, TeamSchema } from '../organizations/schemas/team.schema';
 import {
   Organization,
   OrganizationSchema,

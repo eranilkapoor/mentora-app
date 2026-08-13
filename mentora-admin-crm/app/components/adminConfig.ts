@@ -106,9 +106,35 @@ export const readonlyFormColumns = new Set([
 export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "roles") return ["Description", "Permissions"];
   if (module.id === "permissions") return ["Module", "Description"];
-  if (module.id === "branches") return ["Code", "City", "State"];
-  if (module.id === "departments") return ["Code", "Branch", "Function"];
-  if (module.id === "teams") return ["Code", "Department"];
+  if (module.id === "branches") {
+    return [
+      "Code",
+      "City",
+      "State",
+      "Country",
+      "Postal Code",
+      "Address Line 1",
+      "Address Line 2",
+      "Email",
+      "Phone",
+      "Manager Id",
+      "Timezone",
+    ];
+  }
+  if (module.id === "departments") {
+    return [
+      "Code",
+      "Branch",
+      "Function",
+      "Description",
+      "Head Id",
+      "Email",
+      "Phone",
+    ];
+  }
+  if (module.id === "teams") {
+    return ["Code", "Branch", "Department", "Description", "Manager Id"];
+  }
   if (module.id === "leads") {
     return [
       "First Name",

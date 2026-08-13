@@ -17,6 +17,7 @@ import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Permission, Role } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
@@ -32,7 +33,10 @@ import {
   ListOrganizationStructureDto,
   ListOrganizationsDto,
   ListOrganizationUsersDto,
+  UpdateBranchDto,
+  UpdateDepartmentDto,
   UpdateOrganizationDto,
+  UpdateTeamDto,
   UpsertChannelSettingDto,
   UpsertOrganizationBrandingDto,
   UpsertOrganizationUserDto,
@@ -64,9 +68,10 @@ export class OrganizationsController {
   async updateOrganization(
     @Param('id') id: string,
     @Body() dto: UpdateOrganizationDto,
+    @Req() req: AuthenticatedRequest,
   ) {
     return successResponse(
-      await this.service.updateOrganization(id, dto),
+      await this.service.updateOrganization(id, dto, req.user),
       'EDUCATION_PLATFORM_ORGANIZATION_UPDATED',
       'Organization updated',
     );
@@ -118,6 +123,20 @@ export class OrganizationsController {
       await this.service.createBranch(dto),
       'EDUCATION_PLATFORM_BRANCH_CREATED',
       'Branch created',
+    );
+  }
+
+  @Put('branches/:id')
+  @Permissions(Permission.ORGANIZATION_MANAGE)
+  async updateBranch(
+    @Param('id') id: string,
+    @Body() dto: UpdateBranchDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return successResponse(
+      await this.service.updateBranch(id, dto, req.user),
+      'EDUCATION_PLATFORM_BRANCH_UPDATED',
+      'Branch updated',
     );
   }
 
@@ -254,6 +273,20 @@ export class OrganizationsController {
     );
   }
 
+  @Put('departments/:id')
+  @Permissions(Permission.ORGANIZATION_MANAGE)
+  async updateDepartment(
+    @Param('id') id: string,
+    @Body() dto: UpdateDepartmentDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return successResponse(
+      await this.service.updateDepartment(id, dto, req.user),
+      'EDUCATION_PLATFORM_DEPARTMENT_UPDATED',
+      'Department updated',
+    );
+  }
+
   @Get('departments')
   @Permissions(Permission.ORGANIZATION_VIEW)
   async listDepartments(@Query() query: ListOrganizationStructureDto) {
@@ -311,6 +344,20 @@ export class OrganizationsController {
     );
   }
 
+  @Put('teams/:id')
+  @Permissions(Permission.ORGANIZATION_MANAGE)
+  async updateTeam(
+    @Param('id') id: string,
+    @Body() dto: UpdateTeamDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return successResponse(
+      await this.service.updateTeam(id, dto, req.user),
+      'EDUCATION_PLATFORM_TEAM_UPDATED',
+      'Team updated',
+    );
+  }
+
   @Get('teams')
   @Permissions(Permission.ORGANIZATION_VIEW)
   async listTeams(@Query() query: ListOrganizationStructureDto) {
@@ -359,9 +406,12 @@ export class OrganizationsController {
 
   @Post('organization-branding')
   @Permissions(Permission.ORGANIZATION_MANAGE)
-  async upsertBranding(@Body() dto: UpsertOrganizationBrandingDto) {
+  async upsertBranding(
+    @Body() dto: UpsertOrganizationBrandingDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return successResponse(
-      await this.service.upsertBranding(dto),
+      await this.service.upsertBranding(dto, req.user),
       'EDUCATION_PLATFORM_ORGANIZATION_BRANDING_UPDATED',
       'Organization branding updated',
     );
@@ -379,9 +429,12 @@ export class OrganizationsController {
 
   @Post('channel-settings')
   @Permissions(Permission.ORGANIZATION_MANAGE)
-  async upsertChannelSetting(@Body() dto: UpsertChannelSettingDto) {
+  async upsertChannelSetting(
+    @Body() dto: UpsertChannelSettingDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return successResponse(
-      await this.service.upsertChannelSetting(dto),
+      await this.service.upsertChannelSetting(dto, req.user),
       'EDUCATION_PLATFORM_CHANNEL_SETTING_UPDATED',
       'Channel setting updated',
     );

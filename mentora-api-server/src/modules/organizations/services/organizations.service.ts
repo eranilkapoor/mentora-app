@@ -21,6 +21,7 @@ import {
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
+import { JwtUser } from '@/modules/auth/interfaces/jwt-user.interface';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import { Lead, LeadDocument } from '@/modules/leads/schemas/leads.schema';
 import {
@@ -38,25 +39,25 @@ import {
   ListOrganizationStructureDto,
   ListOrganizationsDto,
   ListOrganizationUsersDto,
+  UpdateBranchDto,
+  UpdateDepartmentDto,
   UpdateOrganizationDto,
+  UpdateTeamDto,
   UpsertChannelSettingDto,
   UpsertOrganizationBrandingDto,
   UpsertOrganizationUserDto,
 } from '../dto/organizations.dto';
-import {
-  Branch,
-  BranchDocument,
-  Department,
-  DepartmentDocument,
-  Team,
-  TeamDocument,
-} from '../schemas/organization-structure.schema';
+import { Branch, BranchDocument } from '../schemas/branch.schema';
 import {
   ChannelSetting,
   ChannelSettingDocument,
+} from '../schemas/channel-setting.schema';
+import { Department, DepartmentDocument } from '../schemas/department.schema';
+import {
   OrganizationBranding,
   OrganizationBrandingDocument,
-} from '../schemas/organization-settings.schema';
+} from '../schemas/organization-branding.schema';
+import { Team, TeamDocument } from '../schemas/team.schema';
 import {
   Organization,
   OrganizationDocument,
@@ -67,6 +68,7 @@ import {
   LeadStage,
   LeadStageDocument,
 } from '@/common/crm/schemas/crm-taxonomy.schema';
+import { OrganizationFieldPolicyService } from './organization-field-policy.service';
 
 @Injectable()
 export class OrganizationsService {
@@ -93,6 +95,7 @@ export class OrganizationsService {
     private readonly leads: Model<LeadDocument>,
     @InjectModel(UserMembership.name)
     private readonly memberships: Model<UserMembershipDocument>,
+    private readonly fieldPolicy: OrganizationFieldPolicyService,
   ) {}
 
   async createOrganization(dto: CreateOrganizationDto) {
@@ -116,9 +119,15 @@ export class OrganizationsService {
     return { branch, organization };
   }
 
-  async updateOrganization(id: string, dto: UpdateOrganizationDto) {
+  async updateOrganization(
+    id: string,
+    dto: UpdateOrganizationDto,
+    actor?: JwtUser,
+  ) {
+    this.fieldPolicy.assertCanUpdateOrganization(actor, { ...dto });
     const update = this.toOrganizationUpdate(dto);
     if (dto.code) update.code = dto.code.toUpperCase();
+    if (actor?.sub) update.updatedBy = toRequiredObjectId(actor.sub);
     const organization = await this.organizations.findByIdAndUpdate(
       toRequiredObjectId(id),
       { $set: update },
@@ -231,9 +240,27 @@ export class OrganizationsService {
         ...dto,
         organizationId,
         code: dto.code.toUpperCase(),
+        managerId: toOptionalObjectId(dto.managerId),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
+  }
+
+  async updateBranch(id: string, dto: UpdateBranchDto, actor?: JwtUser) {
+    const update = this.toBranchUpdate(dto);
+    if (actor?.sub) update.updatedBy = toRequiredObjectId(actor.sub);
+    const branch = await this.branches.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(id),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!branch) {
+      throwNotFound(ErrorCode.INVALID_REQUEST, { branchId: id });
+    }
+    return branch;
   }
 
   async listBranches(query: ListOrganizationStructureDto) {
@@ -430,10 +457,32 @@ export class OrganizationsService {
         ...dto,
         organizationId,
         branchId: toOptionalObjectId(dto.branchId),
+        headId: toOptionalObjectId(dto.headId),
         code: dto.code.toUpperCase(),
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
+  }
+
+  async updateDepartment(
+    id: string,
+    dto: UpdateDepartmentDto,
+    actor?: JwtUser,
+  ) {
+    const update = this.toDepartmentUpdate(dto);
+    if (actor?.sub) update.updatedBy = toRequiredObjectId(actor.sub);
+    const department = await this.departments.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(id),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!department) {
+      throwNotFound(ErrorCode.INVALID_REQUEST, { departmentId: id });
+    }
+    return department;
   }
 
   async listDepartments(query: ListOrganizationStructureDto) {
@@ -506,12 +555,30 @@ export class OrganizationsService {
         ...dto,
         organizationId,
         code: dto.code.toUpperCase(),
+        branchId: toOptionalObjectId(dto.branchId),
         departmentId: toOptionalObjectId(dto.departmentId),
         managerId: toOptionalObjectId(dto.managerId),
         memberIds: dto.memberIds?.map((id) => toRequiredObjectId(id)) ?? [],
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
+  }
+
+  async updateTeam(id: string, dto: UpdateTeamDto, actor?: JwtUser) {
+    const update = this.toTeamUpdate(dto);
+    if (actor?.sub) update.updatedBy = toRequiredObjectId(actor.sub);
+    const team = await this.teams.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(id),
+        organizationId: toOrganizationObjectId(dto.organizationId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!team) {
+      throwNotFound(ErrorCode.INVALID_REQUEST, { teamId: id });
+    }
+    return team;
   }
 
   async listTeams(query: ListOrganizationStructureDto) {
@@ -571,11 +638,15 @@ export class OrganizationsService {
       .lean();
   }
 
-  async upsertBranding(dto: UpsertOrganizationBrandingDto) {
+  async upsertBranding(dto: UpsertOrganizationBrandingDto, actor?: JwtUser) {
     const organizationId = toOrganizationObjectId(dto.organizationId);
     return this.branding.findOneAndUpdate(
       { organizationId },
-      { ...dto, organizationId },
+      {
+        ...dto,
+        organizationId,
+        updatedBy: actor?.sub ? toRequiredObjectId(actor.sub) : undefined,
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   }
@@ -590,11 +661,18 @@ export class OrganizationsService {
       .lean();
   }
 
-  async upsertChannelSetting(dto: UpsertChannelSettingDto) {
+  async upsertChannelSetting(dto: UpsertChannelSettingDto, actor?: JwtUser) {
+    this.fieldPolicy.assertCanUpdateChannelSetting(actor, { ...dto });
     const organizationId = toOrganizationObjectId(dto.organizationId);
+    const branchId = toOptionalObjectId(dto.branchId);
     return this.channelSettings.findOneAndUpdate(
-      { organizationId, channel: dto.channel },
-      { ...dto, organizationId },
+      { organizationId, branchId, channel: dto.channel },
+      {
+        ...dto,
+        branchId,
+        organizationId,
+        updatedBy: actor?.sub ? toRequiredObjectId(actor.sub) : undefined,
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   }
@@ -876,6 +954,89 @@ export class OrganizationsService {
     });
     if (dto.address) update.address = dto.address;
     if (dto.subscription) update.subscription = dto.subscription;
+    return update;
+  }
+
+  private toBranchUpdate(dto: UpdateBranchDto): Record<string, unknown> {
+    const update: Record<string, unknown> = {};
+    const directFields: Array<keyof UpdateBranchDto> = [
+      'addressLine1',
+      'addressLine2',
+      'city',
+      'country',
+      'email',
+      'name',
+      'phone',
+      'postalCode',
+      'settings',
+      'state',
+      'status',
+      'timezone',
+    ];
+    directFields.forEach((field) => {
+      if (dto[field] !== undefined) update[field] = dto[field];
+    });
+    if (dto.code) update.code = dto.code.toUpperCase();
+    if (dto.managerId !== undefined) {
+      update.managerId = toOptionalObjectId(dto.managerId);
+    }
+    if (dto.status === 'archived') update.archivedAt = new Date();
+    return update;
+  }
+
+  private toDepartmentUpdate(
+    dto: UpdateDepartmentDto,
+  ): Record<string, unknown> {
+    const update: Record<string, unknown> = {};
+    const directFields: Array<keyof UpdateDepartmentDto> = [
+      'description',
+      'email',
+      'function',
+      'name',
+      'phone',
+      'settings',
+      'status',
+    ];
+    directFields.forEach((field) => {
+      if (dto[field] !== undefined) update[field] = dto[field];
+    });
+    if (dto.code) update.code = dto.code.toUpperCase();
+    if (dto.branchId !== undefined) {
+      update.branchId = toOptionalObjectId(dto.branchId);
+    }
+    if (dto.headId !== undefined)
+      update.headId = toOptionalObjectId(dto.headId);
+    if (dto.status === 'archived') update.archivedAt = new Date();
+    return update;
+  }
+
+  private toTeamUpdate(dto: UpdateTeamDto): Record<string, unknown> {
+    const update: Record<string, unknown> = {};
+    const directFields: Array<keyof UpdateTeamDto> = [
+      'assignmentRules',
+      'capacityRules',
+      'description',
+      'name',
+      'status',
+      'workingHours',
+    ];
+    directFields.forEach((field) => {
+      if (dto[field] !== undefined) update[field] = dto[field];
+    });
+    if (dto.code) update.code = dto.code.toUpperCase();
+    if (dto.branchId !== undefined) {
+      update.branchId = toOptionalObjectId(dto.branchId);
+    }
+    if (dto.departmentId !== undefined) {
+      update.departmentId = toOptionalObjectId(dto.departmentId);
+    }
+    if (dto.managerId !== undefined) {
+      update.managerId = toOptionalObjectId(dto.managerId);
+    }
+    if (dto.memberIds) {
+      update.memberIds = dto.memberIds.map((id) => toRequiredObjectId(id));
+    }
+    if (dto.status === 'archived') update.archivedAt = new Date();
     return update;
   }
 

@@ -82,6 +82,9 @@ import {
   updateSecurityPolicy,
   updateOrganization,
   updateAdminUser,
+  updateBranch,
+  updateDepartment,
+  updateTeam,
   revokeAdminUserSessions,
   upsertIntegrationProvider,
   testIntegrationProvider,
@@ -3018,6 +3021,7 @@ export default function AdminDashboardPage() {
                         )
                       : undefined,
                   );
+                  const existingRecordId = getUnknownRecordId(existing);
                   const existingCode =
                     typeof existing.code === "string"
                       ? existing.code
@@ -3058,34 +3062,86 @@ export default function AdminDashboardPage() {
                     ) ||
                     existingRelationId(existing.departmentId);
                   if (activeModule.id === "branches") {
-                    await dispatch(
-                      createBranch({
-                        organizationId: activeOrganizationId,
-                        name: finalDraft.title,
-                        code: submittedCode,
-                        city: finalDraft.payload.city || undefined,
-                        state: finalDraft.payload.state || undefined,
-                      }),
-                    ).unwrap();
+                    const branchDraft = {
+                      id: existingRecordId || undefined,
+                      organizationId: activeOrganizationId,
+                      name: finalDraft.title,
+                      code: submittedCode,
+                      city: finalDraft.payload.city || undefined,
+                      state: finalDraft.payload.state || undefined,
+                      country: finalDraft.payload.country || undefined,
+                      postalCode: finalDraft.payload.postalCode || undefined,
+                      addressLine1:
+                        finalDraft.payload.addressLine1 || undefined,
+                      addressLine2:
+                        finalDraft.payload.addressLine2 || undefined,
+                      email: finalDraft.payload.email || undefined,
+                      phone: finalDraft.payload.phone || undefined,
+                      managerId: finalDraft.payload.managerId || undefined,
+                      status: finalDraft.status || undefined,
+                      timezone: finalDraft.payload.timezone || undefined,
+                    };
+                    if (branchDraft.id) {
+                      await dispatch(
+                        updateBranch(
+                          branchDraft as OrganizationSetupDraft & {
+                            id: string;
+                          },
+                        ),
+                      ).unwrap();
+                    } else {
+                      await dispatch(createBranch(branchDraft)).unwrap();
+                    }
                   } else if (activeModule.id === "departments") {
-                    await dispatch(
-                      createDepartment({
-                        organizationId: activeOrganizationId,
-                        name: finalDraft.title,
-                        code: submittedCode,
-                        branchId: submittedBranchId,
-                        function: finalDraft.payload.function || undefined,
-                      }),
-                    ).unwrap();
+                    const departmentDraft = {
+                      id: existingRecordId || undefined,
+                      organizationId: activeOrganizationId,
+                      name: finalDraft.title,
+                      code: submittedCode,
+                      branchId: submittedBranchId,
+                      description: finalDraft.payload.description || undefined,
+                      email: finalDraft.payload.email || undefined,
+                      function: finalDraft.payload.function || undefined,
+                      headId: finalDraft.payload.headId || undefined,
+                      phone: finalDraft.payload.phone || undefined,
+                      status: finalDraft.status || undefined,
+                    };
+                    if (departmentDraft.id) {
+                      await dispatch(
+                        updateDepartment(
+                          departmentDraft as OrganizationSetupDraft & {
+                            id: string;
+                          },
+                        ),
+                      ).unwrap();
+                    } else {
+                      await dispatch(
+                        createDepartment(departmentDraft),
+                      ).unwrap();
+                    }
                   } else {
-                    await dispatch(
-                      createTeam({
-                        organizationId: activeOrganizationId,
-                        name: finalDraft.title,
-                        code: submittedCode,
-                        departmentId: submittedDepartmentId,
-                      }),
-                    ).unwrap();
+                    const teamDraft = {
+                      id: existingRecordId || undefined,
+                      organizationId: activeOrganizationId,
+                      name: finalDraft.title,
+                      code: submittedCode,
+                      branchId: submittedBranchId,
+                      departmentId: submittedDepartmentId,
+                      description: finalDraft.payload.description || undefined,
+                      managerId: finalDraft.payload.managerId || undefined,
+                      status: finalDraft.status || undefined,
+                    };
+                    if (teamDraft.id) {
+                      await dispatch(
+                        updateTeam(
+                          teamDraft as OrganizationSetupDraft & {
+                            id: string;
+                          },
+                        ),
+                      ).unwrap();
+                    } else {
+                      await dispatch(createTeam(teamDraft)).unwrap();
+                    }
                   }
                   await dispatch(
                     loadIdentityHierarchy({
@@ -5870,26 +5926,50 @@ function OrganizationSetupModal({
           ) : null}
 
           {kind === "team" && departmentOptions.length > 0 ? (
-            <label className="formrow">
-              <span className="label">Department</span>
-              <select
-                className="form-select form-select-sm"
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    departmentId: event.target.value || undefined,
-                  })
-                }
-                value={draft.departmentId ?? ""}
-              >
-                <option value="">None</option>
-                {departmentOptions.map((department) => (
-                  <option key={department.value} value={department.value}>
-                    {department.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <>
+              {branchOptions.length > 0 ? (
+                <label className="formrow">
+                  <span className="label">Branch</span>
+                  <select
+                    className="form-select form-select-sm"
+                    onChange={(event) =>
+                      setDraft({
+                        ...draft,
+                        branchId: event.target.value || undefined,
+                      })
+                    }
+                    value={draft.branchId ?? ""}
+                  >
+                    <option value="">None</option>
+                    {branchOptions.map((branch) => (
+                      <option key={branch.value} value={branch.value}>
+                        {branch.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <label className="formrow">
+                <span className="label">Department</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      departmentId: event.target.value || undefined,
+                    })
+                  }
+                  value={draft.departmentId ?? ""}
+                >
+                  <option value="">None</option>
+                  {departmentOptions.map((department) => (
+                    <option key={department.value} value={department.value}>
+                      {department.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </>
           ) : null}
 
           {kind === "branch" ? (
@@ -5914,28 +5994,140 @@ function OrganizationSetupModal({
                   value={draft.state ?? ""}
                 />
               </label>
+              <label className="formrow">
+                <span className="label">Country</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, country: event.target.value })
+                  }
+                  value={draft.country ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Postal Code</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, postalCode: event.target.value })
+                  }
+                  value={draft.postalCode ?? ""}
+                />
+              </label>
+              <label className="formrow wide">
+                <span className="label">Address Line 1</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, addressLine1: event.target.value })
+                  }
+                  value={draft.addressLine1 ?? ""}
+                />
+              </label>
+              <label className="formrow wide">
+                <span className="label">Address Line 2</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, addressLine2: event.target.value })
+                  }
+                  value={draft.addressLine2 ?? ""}
+                />
+              </label>
             </>
           ) : null}
 
           {kind === "department" ? (
-            <label className="formrow">
-              <span className="label">Function</span>
-              <select
-                className="form-select form-select-sm"
-                onChange={(event) =>
-                  setDraft({ ...draft, function: event.target.value })
-                }
-                value={draft.function ?? ""}
-              >
-                <option value="">Select function</option>
-                <option value="admissions">Admissions</option>
-                <option value="sales">Sales</option>
-                <option value="marketing">Marketing</option>
-                <option value="finance">Finance</option>
-                <option value="academics">Academics</option>
-                <option value="operations">Operations</option>
-              </select>
-            </label>
+            <>
+              <label className="formrow">
+                <span className="label">Function</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) =>
+                    setDraft({ ...draft, function: event.target.value })
+                  }
+                  value={draft.function ?? ""}
+                >
+                  <option value="">Select function</option>
+                  <option value="admissions">Admissions</option>
+                  <option value="sales">Sales</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="finance">Finance</option>
+                  <option value="academics">Academics</option>
+                  <option value="operations">Operations</option>
+                </select>
+              </label>
+              <label className="formrow wide">
+                <span className="label">Description</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, description: event.target.value })
+                  }
+                  value={draft.description ?? ""}
+                />
+              </label>
+            </>
+          ) : null}
+
+          {["branch", "department", "team"].includes(kind) ? (
+            <>
+              <label className="formrow">
+                <span className="label">Email</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, email: event.target.value })
+                  }
+                  type="email"
+                  value={draft.email ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Phone</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, phone: event.target.value })
+                  }
+                  value={draft.phone ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">
+                  {kind === "department" ? "Head User Id" : "Manager User Id"}
+                </span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft(
+                      kind === "department"
+                        ? { ...draft, headId: event.target.value }
+                        : { ...draft, managerId: event.target.value },
+                    )
+                  }
+                  value={
+                    kind === "department"
+                      ? (draft.headId ?? "")
+                      : (draft.managerId ?? "")
+                  }
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Status</span>
+                <select
+                  className="form-select form-select-sm"
+                  onChange={(event) =>
+                    setDraft({ ...draft, status: event.target.value })
+                  }
+                  value={draft.status ?? "active"}
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+            </>
           ) : null}
 
           {kind === "branding" ? (
@@ -5949,6 +6141,16 @@ function OrganizationSetupModal({
                   }
                   placeholder="academy.mentora.test, app.mentora.test"
                   value={draft.domains ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">App Name</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, appName: event.target.value })
+                  }
+                  value={draft.appName ?? ""}
                 />
               </label>
               <label className="formrow">
@@ -5969,6 +6171,27 @@ function OrganizationSetupModal({
                     setDraft({ ...draft, logoUrl: event.target.value })
                   }
                   value={draft.logoUrl ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Favicon URL</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, faviconUrl: event.target.value })
+                  }
+                  value={draft.faviconUrl ?? ""}
+                />
+              </label>
+              <label className="formrow">
+                <span className="label">Support Email</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, supportEmail: event.target.value })
+                  }
+                  type="email"
+                  value={draft.supportEmail ?? ""}
                 />
               </label>
               <label className="formrow">
@@ -6013,6 +6236,8 @@ function OrganizationSetupModal({
                   <option value="call_center">Call Center</option>
                   <option value="payment">Payment</option>
                   <option value="calendar">Calendar</option>
+                  <option value="video">Video</option>
+                  <option value="analytics">Analytics</option>
                 </select>
               </label>
               <label className="formrow">
@@ -6038,6 +6263,49 @@ function OrganizationSetupModal({
                   }
                   placeholder="sendgrid, twilio, whatsapp_business"
                   value={draft.providerKey ?? ""}
+                />
+              </label>
+              {branchOptions.length > 0 ? (
+                <label className="formrow">
+                  <span className="label">Branch Scope</span>
+                  <select
+                    className="form-select form-select-sm"
+                    onChange={(event) =>
+                      setDraft({
+                        ...draft,
+                        branchId: event.target.value || undefined,
+                      })
+                    }
+                    value={draft.branchId ?? ""}
+                  >
+                    <option value="">Organization-wide</option>
+                    {branchOptions.map((branch) => (
+                      <option key={branch.value} value={branch.value}>
+                        {branch.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <label className="formrow wide">
+                <span className="label">Webhook URL</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, webhookUrl: event.target.value })
+                  }
+                  value={draft.webhookUrl ?? ""}
+                />
+              </label>
+              <label className="formrow wide">
+                <span className="label">Credentials Reference</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setDraft({ ...draft, credentialsRef: event.target.value })
+                  }
+                  placeholder="vault://organization/provider"
+                  value={draft.credentialsRef ?? ""}
                 />
               </label>
             </>

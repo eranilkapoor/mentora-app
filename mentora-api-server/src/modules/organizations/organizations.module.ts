@@ -8,20 +8,17 @@ import {
   UserMembershipSchema,
 } from '../contexts/schemas/contexts.schema';
 import { OrganizationsController } from './controllers/organizations.controller';
-import {
-  Branch,
-  BranchSchema,
-  Department,
-  DepartmentSchema,
-  Team,
-  TeamSchema,
-} from './schemas/organization-structure.schema';
+import { Branch, BranchSchema } from './schemas/branch.schema';
 import {
   ChannelSetting,
   ChannelSettingSchema,
+} from './schemas/channel-setting.schema';
+import { Department, DepartmentSchema } from './schemas/department.schema';
+import {
   OrganizationBranding,
   OrganizationBrandingSchema,
-} from './schemas/organization-settings.schema';
+} from './schemas/organization-branding.schema';
+import { Team, TeamSchema } from './schemas/team.schema';
 import {
   Organization,
   OrganizationSchema,
@@ -32,6 +29,7 @@ import {
   LeadStage,
   LeadStageSchema,
 } from '@/common/crm/schemas/crm-taxonomy.schema';
+import { OrganizationFieldPolicyService } from './services/organization-field-policy.service';
 import { OrganizationsService } from './services/organizations.service';
 
 @Module({
@@ -52,7 +50,7 @@ import { OrganizationsService } from './services/organizations.service';
     ]),
   ],
   controllers: [OrganizationsController],
-  providers: [OrganizationsService],
+  providers: [OrganizationFieldPolicyService, OrganizationsService],
   exports: [OrganizationsService],
 })
 export class OrganizationsModule {}

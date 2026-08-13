@@ -50,6 +50,10 @@ const createFixture = () => {
     countDocuments: jest.fn(),
     findOneAndUpdate: jest.fn(),
   };
+  const fieldPolicy = {
+    assertCanUpdateChannelSetting: jest.fn(),
+    assertCanUpdateOrganization: jest.fn(),
+  };
 
   const service = new OrganizationsService(
     organizations as never,
@@ -63,6 +67,7 @@ const createFixture = () => {
     users as never,
     leads as never,
     memberships as never,
+    fieldPolicy as never,
   );
 
   return {

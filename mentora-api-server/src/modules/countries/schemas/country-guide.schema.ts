@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
-import { Organization } from '@/modules/organizations/schemas/organizations.schema';
+import { Organization } from '@/modules/organizations/schemas/organization.schema';
 
 export type CountryGuideDocument = HydratedDocument<CountryGuide>;
 

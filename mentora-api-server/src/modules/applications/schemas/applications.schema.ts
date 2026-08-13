@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { Lead } from '../../leads/schemas/leads.schema';
-import { Organization } from '../../organizations/schemas/organizations.schema';
+import { Organization } from '../../organizations/schemas/organization.schema';
 
 export type ApplicationDocument = HydratedDocument<Application>;
 

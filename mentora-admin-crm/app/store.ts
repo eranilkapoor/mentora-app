@@ -133,23 +133,45 @@ export type OrganizationUserDraft = {
 
 export type OrganizationSetupDraft = {
   address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  appName?: string;
+  assignmentRules?: Record<string, unknown>;
   branchId?: string;
+  capacityRules?: Record<string, unknown>;
   channel?: string;
   city?: string;
   code?: string;
+  compliance?: Record<string, unknown>;
+  country?: string;
+  credentialsRef?: string;
   departmentId?: string;
+  description?: string;
   domains?: string;
+  email?: string;
+  faviconUrl?: string;
   function?: string;
+  headId?: string;
+  id?: string;
   limits?: Record<string, unknown>;
   logoUrl?: string;
+  managerId?: string;
+  memberIds?: string[];
   name?: string;
   organizationId: string;
+  phone?: string;
+  postalCode?: string;
   primaryColor?: string;
   providerKey?: string;
   secondaryColor?: string;
   senderName?: string;
+  settings?: Record<string, unknown>;
   state?: string;
   status?: string;
+  supportEmail?: string;
+  timezone?: string;
+  webhookUrl?: string;
+  workingHours?: Record<string, unknown>;
 };
 
 const apiBaseUrl =
@@ -1935,11 +1957,44 @@ export const createBranch = createAsyncThunk(
   "crmWorkspace/createBranch",
   async (draft: OrganizationSetupDraft) => {
     return sendJson(adminPath("/branches"), "POST", {
+      addressLine1: draft.addressLine1 || undefined,
+      addressLine2: draft.addressLine2 || undefined,
       organizationId: draft.organizationId,
       city: draft.city || undefined,
       code: draft.code,
+      country: draft.country || undefined,
+      email: draft.email || undefined,
+      managerId: draft.managerId || undefined,
       name: draft.name,
+      phone: draft.phone || undefined,
+      postalCode: draft.postalCode || undefined,
+      settings: draft.settings,
       state: draft.state || undefined,
+      status: draft.status || undefined,
+      timezone: draft.timezone || undefined,
+    });
+  },
+);
+
+export const updateBranch = createAsyncThunk(
+  "crmWorkspace/updateBranch",
+  async (draft: OrganizationSetupDraft & { id: string }) => {
+    return sendJson(adminPath(`/branches/${draft.id}`), "PUT", {
+      addressLine1: draft.addressLine1 || undefined,
+      addressLine2: draft.addressLine2 || undefined,
+      organizationId: draft.organizationId,
+      city: draft.city || undefined,
+      code: draft.code,
+      country: draft.country || undefined,
+      email: draft.email || undefined,
+      managerId: draft.managerId || undefined,
+      name: draft.name,
+      phone: draft.phone || undefined,
+      postalCode: draft.postalCode || undefined,
+      settings: draft.settings,
+      state: draft.state || undefined,
+      status: draft.status || undefined,
+      timezone: draft.timezone || undefined,
     });
   },
 );
@@ -1951,8 +2006,33 @@ export const createDepartment = createAsyncThunk(
       organizationId: draft.organizationId,
       branchId: draft.branchId || undefined,
       code: draft.code,
+      description: draft.description || undefined,
+      email: draft.email || undefined,
       function: draft.function || undefined,
+      headId: draft.headId || undefined,
       name: draft.name,
+      phone: draft.phone || undefined,
+      settings: draft.settings,
+      status: draft.status || undefined,
+    });
+  },
+);
+
+export const updateDepartment = createAsyncThunk(
+  "crmWorkspace/updateDepartment",
+  async (draft: OrganizationSetupDraft & { id: string }) => {
+    return sendJson(adminPath(`/departments/${draft.id}`), "PUT", {
+      organizationId: draft.organizationId,
+      branchId: draft.branchId || undefined,
+      code: draft.code,
+      description: draft.description || undefined,
+      email: draft.email || undefined,
+      function: draft.function || undefined,
+      headId: draft.headId || undefined,
+      name: draft.name,
+      phone: draft.phone || undefined,
+      settings: draft.settings,
+      status: draft.status || undefined,
     });
   },
 );
@@ -1962,9 +2042,37 @@ export const createTeam = createAsyncThunk(
   async (draft: OrganizationSetupDraft) => {
     return sendJson(adminPath("/teams"), "POST", {
       organizationId: draft.organizationId,
+      branchId: draft.branchId || undefined,
       code: draft.code,
+      assignmentRules: draft.assignmentRules,
+      capacityRules: draft.capacityRules,
       departmentId: draft.departmentId || undefined,
+      description: draft.description || undefined,
+      managerId: draft.managerId || undefined,
+      memberIds: draft.memberIds,
       name: draft.name,
+      status: draft.status || undefined,
+      workingHours: draft.workingHours,
+    });
+  },
+);
+
+export const updateTeam = createAsyncThunk(
+  "crmWorkspace/updateTeam",
+  async (draft: OrganizationSetupDraft & { id: string }) => {
+    return sendJson(adminPath(`/teams/${draft.id}`), "PUT", {
+      organizationId: draft.organizationId,
+      branchId: draft.branchId || undefined,
+      code: draft.code,
+      assignmentRules: draft.assignmentRules,
+      capacityRules: draft.capacityRules,
+      departmentId: draft.departmentId || undefined,
+      description: draft.description || undefined,
+      managerId: draft.managerId || undefined,
+      memberIds: draft.memberIds,
+      name: draft.name,
+      status: draft.status || undefined,
+      workingHours: draft.workingHours,
     });
   },
 );
@@ -1978,10 +2086,14 @@ export const updateOrganizationBranding = createAsyncThunk(
         ?.split(",")
         .map((domain) => domain.trim())
         .filter(Boolean),
+      appName: draft.appName || undefined,
+      faviconUrl: draft.faviconUrl || undefined,
       logoUrl: draft.logoUrl || undefined,
       primaryColor: draft.primaryColor || undefined,
       secondaryColor: draft.secondaryColor || undefined,
       senderName: draft.senderName || undefined,
+      status: draft.status || "active",
+      supportEmail: draft.supportEmail || undefined,
     });
   },
 );
@@ -1992,13 +2104,19 @@ export const updateChannelSetting = createAsyncThunk(
     return sendJson(adminPath("/channel-settings"), "POST", {
       organizationId: draft.organizationId,
       channel: draft.channel,
+      branchId: draft.branchId || undefined,
+      compliance: draft.compliance,
+      credentialsRef: draft.credentialsRef || undefined,
       limits: draft.limits,
       provider: draft.providerKey
         ? {
             providerKey: draft.providerKey,
           }
         : undefined,
+      providerKey: draft.providerKey || undefined,
+      senderId: draft.senderName || undefined,
       status: draft.status || "sandbox",
+      webhookUrl: draft.webhookUrl || undefined,
     });
   },
 );

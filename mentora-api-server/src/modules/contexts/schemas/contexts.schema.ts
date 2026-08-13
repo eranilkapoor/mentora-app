@@ -3,11 +3,9 @@ import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants/collection-names.constants';
 import { EDUCATION_PLATFORM_USER_ROLES } from '@/common/constants/education-platform.constants';
 import { Organization } from '../../organizations/schemas/organization.schema';
-import {
-  Branch,
-  Department,
-  Team,
-} from '../../organizations/schemas/organization-structure.schema';
+import { Branch } from '../../organizations/schemas/branch.schema';
+import { Department } from '../../organizations/schemas/department.schema';
+import { Team } from '../../organizations/schemas/team.schema';
 
 export type UserMembershipDocument = HydratedDocument<UserMembership>;
 
