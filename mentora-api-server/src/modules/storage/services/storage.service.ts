@@ -87,7 +87,7 @@ export class StorageService implements OnModuleInit {
   //  Upload Single File
   async uploadFile(
     file: Express.Multer.File,
-    folder = 'profiles',
+    folder = 'student-media',
   ): Promise<{ filename: string; url: string }> {
     const ext = file.mimetype.split('/')[1] ?? 'jpg';
     const filename = `${uuidv4()}.${ext}`;
@@ -102,14 +102,14 @@ export class StorageService implements OnModuleInit {
   //  Upload Multiple Files
   async uploadFiles(
     files: Express.Multer.File[],
-    folder = 'profiles',
+    folder = 'student-media',
   ): Promise<{ filename: string; url: string }[]> {
     if (!files || files.length === 0) return [];
     return Promise.all(files.map((file) => this.uploadFile(file, folder)));
   }
 
   //  Delete File
-  async deleteFile(filename: string, folder = 'profiles'): Promise<void> {
+  async deleteFile(filename: string, folder = 'student-media'): Promise<void> {
     if (this.isS3) {
       await this.deleteFromS3(filename, folder);
     } else {
@@ -118,7 +118,7 @@ export class StorageService implements OnModuleInit {
   }
 
   //  Get Public URL from filename
-  getUrl(filename: string, folder = 'profiles'): string {
+  getUrl(filename: string, folder = 'student-media'): string {
     const key = this.buildKey(folder, filename);
     return `${this.publicBaseUrl}/uploads/${key}`;
   }

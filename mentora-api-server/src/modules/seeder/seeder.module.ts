@@ -26,10 +26,10 @@ import {
 } from '@/modules/notifications/schemas/notification-templates.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
-  Profile,
-  ProfileSchema,
-} from '../profiles/schemas/profile/profile.schema';
-import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '../learning/schemas/learning.schemas';
+import { Media, MediaSchema } from '../../common/schemas/user-media.schema';
 import {
   AccountSetting,
   AccountSettingSchema,
@@ -147,7 +147,7 @@ import {
         schema: NotificationTemplateSchema,
       },
       { name: User.name, schema: UserSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: Media.name, schema: MediaSchema },
       { name: AccountSetting.name, schema: AccountSettingSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },

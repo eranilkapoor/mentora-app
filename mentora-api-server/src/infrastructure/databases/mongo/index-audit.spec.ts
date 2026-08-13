@@ -10,7 +10,7 @@ describe('Mongo index audit', () => {
   it('accepts an equivalent database index', () => {
     expect(
       compareCollectionIndexes(
-        'profiles',
+        'student_profiles',
         expected({ userId: 1 }, { unique: true }),
         [{ key: { userId: 1 }, name: 'userId_1', unique: true }],
       ),
@@ -20,28 +20,31 @@ describe('Mongo index audit', () => {
   it('reports missing and mismatched indexes', () => {
     expect(
       compareCollectionIndexes(
-        'profiles',
+        'student_profiles',
         expected({ userId: 1 }, { unique: true }),
         [{ key: { userId: 1 }, name: 'userId_1' }],
       ),
     ).toEqual([
       expect.objectContaining({
-        collection: 'profiles',
+        collection: 'student_profiles',
         type: 'options-mismatch',
       }),
     ]);
 
     expect(
-      compareCollectionIndexes('profiles', expected({ status: 1 }), []),
+      compareCollectionIndexes('student_profiles', expected({ status: 1 }), []),
     ).toEqual([
-      expect.objectContaining({ collection: 'profiles', type: 'missing' }),
+      expect.objectContaining({
+        collection: 'student_profiles',
+        type: 'missing',
+      }),
     ]);
   });
 
   it('reports indexes that are no longer declared by the schema', () => {
     expect(
       compareCollectionIndexes(
-        'profiles',
+        'student_profiles',
         [],
         [
           { key: { legacy: 1 }, name: 'legacy_1' },
@@ -50,7 +53,7 @@ describe('Mongo index audit', () => {
       ),
     ).toEqual([
       {
-        collection: 'profiles',
+        collection: 'student_profiles',
         index: 'legacy_1',
         type: 'unexpected',
       },

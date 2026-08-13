@@ -48,10 +48,18 @@ export enum ActivityCategory {
   PAYMENT = 'payment',
   SAFETY = 'safety',
   ADMIN = 'admin',
+  ACCOUNT = 'account',
+  LEARNING = 'learning',
+  SECURITY = 'security',
+  SETTINGS = 'settings',
+  SUPPORT = 'support',
 }
 
 export enum ActivityPlatform {
   WEB = 'web',
   IOS = 'ios',
   ANDROID = 'android',
+  API = 'api',
+  MOBILE = 'mobile',
+  ADMIN = 'admin',
 }

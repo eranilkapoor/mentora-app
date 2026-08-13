@@ -5,7 +5,7 @@ import { ErrorCode } from '@/common/constants';
 import {
   ActivityAction,
   ActivityPlatform,
-} from '@/modules/profiles/enums/activity-log.enums';
+} from '@/common/enums/activity-log.enums';
 import { AnalyticsPlatform } from '@/modules/analytics/enums/analytics-event.enum';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { DUMMY_PASSWORD_HASH } from './auth-security.constants';

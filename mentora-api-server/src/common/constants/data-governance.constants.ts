@@ -4,7 +4,7 @@ export const DATA_SOURCE_OF_TRUTH = {
     mirrors: ['account_settings.isDeactivated'],
   },
   discoveryVisibility: {
-    source: 'profiles.status',
+    source: 'student_profiles.status',
     supportingControls: ['privacy_settings.profileVisibility'],
   },
   membershipEntitlement: {
@@ -13,7 +13,7 @@ export const DATA_SOURCE_OF_TRUTH = {
   },
   profileLifecycle: {
     loginAccess: 'users.status',
-    discoveryVisibility: 'profiles.status',
+    discoveryVisibility: 'student_profiles.status',
     accountLifecycleRequests: 'account_settings',
   },
   notificationDelivery: {
@@ -125,7 +125,6 @@ export const DATA_SCHEMA_VERSION_TARGETS = {
   ],
   addWhenTouched: [
     'users',
-    'profiles',
     'media',
     'chat_rooms',
     'chat_messages',
@@ -145,7 +144,7 @@ export const DATA_SCHEMA_VERSION_TARGETS = {
 
 export const DATA_PII_CLASSIFICATION = {
   users: ['email', 'phone', 'authAccounts', 'lastLoginIp', 'lastLoginDevice'],
-  profiles: [
+  student_profiles: [
     'personal.firstName',
     'personal.lastName',
     'personal.dateOfBirth',
@@ -173,8 +172,8 @@ export const DATA_ENCRYPTION_STRATEGY = {
   hashedOnly: ['passwordHash', 'refreshTokenHash', 'appPinHash', 'otpHash'],
   fieldEncryptionCandidates: [
     'users.phone',
-    'profiles.personal.dateOfBirth',
-    'profiles.location',
+    'student_profiles.dateOfBirth',
+    'student_profiles.address',
     'verifications.providerPayload',
     'payments.customer',
     'payment_invoices.customer',

@@ -24,12 +24,12 @@ import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
-} from '../profiles/schemas/settings/activity-logs.schema';
+} from '../../common/schemas/activity-log.schema';
 import {
   SecuritySetting,
   SecuritySettingSchema,
 } from '../settings/schemas/security-setting.schema';
-import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+import { Media, MediaSchema } from '../../common/schemas/user-media.schema';
 import {
   UserMembership,
   UserMembershipSchema,

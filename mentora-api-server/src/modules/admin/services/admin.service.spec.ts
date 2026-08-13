@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Types } from 'mongoose';
 import { Role, Status, SubscriptionStatus } from '@/common/enums';
-import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
+import { MediaModerationStatus } from '@/common/enums/user-media.enums';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { BroadcastChannel, BroadcastTarget } from '../enums/broadcast.enums';
@@ -51,13 +51,6 @@ describe('AdminService', () => {
   const notificationsService = {
     notify: jest.fn(),
   };
-  const profilesService = {
-    createProfile: jest.fn(),
-    updatePersonalInfo: jest.fn(),
-    updatePhysicalInfo: jest.fn(),
-    updateEducationInfo: jest.fn(),
-    updateFamilyInfo: jest.fn(),
-  };
   const subscriptionsService = {
     purchasePlan: jest.fn(),
     cancelSubscription: jest.fn(),
@@ -99,7 +92,6 @@ describe('AdminService', () => {
       auditService as never,
       analyticsService as never,
       notificationsService as never,
-      profilesService as never,
       subscriptionsService as never,
       settingsService as never,
       profileModel as never,

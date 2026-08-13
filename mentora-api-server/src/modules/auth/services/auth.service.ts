@@ -44,12 +44,12 @@ import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityLog,
   ActivityLogDocument,
-} from '@/modules/profiles/schemas/settings/activity-logs.schema';
+} from '@/common/schemas/activity-log.schema';
 import {
   ActivityAction,
   ActivityCategory,
   ActivityPlatform,
-} from '@/modules/profiles/enums/activity-log.enums';
+} from '@/common/enums/activity-log.enums';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
@@ -74,14 +74,11 @@ import {
   SecuritySetting,
   SecuritySettingDocument,
 } from '@/modules/settings/schemas/security-setting.schema';
-import {
-  Media,
-  MediaDocument,
-} from '@/modules/profiles/schemas/media/media.schema';
+import { Media, MediaDocument } from '@/common/schemas/user-media.schema';
 import {
   MediaModerationStatus,
   MediaStatus,
-} from '@/modules/profiles/enums/profile-media.enums';
+} from '@/common/enums/user-media.enums';
 import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
 import {
   UserMembership,

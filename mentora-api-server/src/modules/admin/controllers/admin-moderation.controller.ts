@@ -18,8 +18,8 @@ import { Permission, Role } from '@/common/enums';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
-import { MediaService } from '@/modules/profiles/services/media.service';
-import { ReviewMediaDto } from '@/modules/profiles/dto/media-review.dto';
+import { UserMediaReviewDto } from '@/common/dto/user-media-review.dto';
+import { UserMediaService } from '@/common/services/user-media.service';
 import { KycService } from '@/modules/safety/services/kyc.service';
 import { ReviewKycDto } from '@/modules/safety/dto/kyc.dto';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
@@ -43,7 +43,7 @@ const MODERATION_ROLES = [
 export class AdminModerationController {
   constructor(
     private readonly adminService: AdminService,
-    private readonly mediaService: MediaService,
+    private readonly mediaService: UserMediaService,
     private readonly kycService: KycService,
     private readonly chatService: ChatService,
     private readonly auditService: AdminAuditService,
@@ -76,7 +76,7 @@ export class AdminModerationController {
   async reviewMedia(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
-    @Body() dto: ReviewMediaDto,
+    @Body() dto: UserMediaReviewDto,
   ) {
     const data = await this.mediaService.reviewMedia(
       req.user.sub,

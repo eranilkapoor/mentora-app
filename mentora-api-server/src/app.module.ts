@@ -12,7 +12,6 @@ import { MongoModule } from '@/infrastructure/databases/mongo/mongo.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CacheModule } from './common/cache/cache.module';
-import { ProfilesModule } from './modules/profiles/profiles.module';
 import { CorrelationIdMiddleware } from '@/common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard';
@@ -120,7 +119,6 @@ const envFilePath =
     MongoModule,
     SeederModule,
     AuthModule,
-    ProfilesModule,
     AdminModule,
     AnalyticsModule,
     ActivitiesModule,

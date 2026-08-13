@@ -95,13 +95,13 @@ export default () => ({
       10,
     ),
   },
-  profiles: {
+  studentProfiles: {
     inactiveArchiveDays: parseInt(
-      process.env.PROFILE_INACTIVE_ARCHIVE_DAYS || '180',
+      process.env.STUDENT_PROFILE_INACTIVE_ARCHIVE_DAYS || '180',
       10,
     ),
     inactiveArchiveLimit: parseInt(
-      process.env.PROFILE_INACTIVE_ARCHIVE_LIMIT || '500',
+      process.env.STUDENT_PROFILE_INACTIVE_ARCHIVE_LIMIT || '500',
       10,
     ),
   },

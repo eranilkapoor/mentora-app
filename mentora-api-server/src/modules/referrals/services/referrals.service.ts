@@ -9,9 +9,9 @@ import {
 } from '@/common/exceptions/throw-app-exception';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
+  StudentProfile,
+  StudentProfileDocument,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   ReferralReward,
   ReferralRewardDocument,
@@ -37,8 +37,8 @@ export class ReferralsService {
   constructor(
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
     @InjectModel(ReferralReward.name)
     private readonly rewardModel: Model<ReferralRewardDocument>,
     private readonly walletService: WalletService,
@@ -79,10 +79,7 @@ export class ReferralsService {
       };
       const referredUserId = String(referredUser?._id ?? reward.referredUserId);
       const profile = profileByUserId.get(referredUserId);
-      const fullName = [
-        profile?.personal?.firstName,
-        profile?.personal?.lastName,
-      ]
+      const fullName = [profile?.firstName, profile?.lastName]
         .filter(Boolean)
         .join(' ');
 
@@ -149,7 +146,7 @@ export class ReferralsService {
     const userIds = leaders.map((leader) => leader._id);
     const profiles = await this.profileModel
       .find({ userId: { $in: userIds } })
-      .select('userId personal.firstName personal.lastName')
+      .select('userId firstName lastName personal.firstName personal.lastName')
       .lean()
       .exec();
     const profileByUserId = new Map(
@@ -158,13 +155,23 @@ export class ReferralsService {
 
     return leaders.map((leader, index) => {
       const profile = profileByUserId.get(String(leader._id));
+      const firstName =
+        typeof profile?.firstName === 'string'
+          ? profile.firstName
+          : typeof profile?.personal?.firstName === 'string'
+            ? profile.personal.firstName
+            : '';
+      const lastName =
+        typeof profile?.lastName === 'string'
+          ? profile.lastName
+          : typeof profile?.personal?.lastName === 'string'
+            ? profile.personal.lastName
+            : '';
       return {
         rank: index + 1,
         userId: String(leader._id),
         name:
-          [profile?.personal?.firstName, profile?.personal?.lastName]
-            .filter(Boolean)
-            .join(' ') || 'Mentora member',
+          [firstName, lastName].filter(Boolean).join(' ') || 'Mentora member',
         totalPoints: leader.totalPoints,
         referredCount: leader.referredCount,
         subscriptionPoints: leader.subscriptionPoints,

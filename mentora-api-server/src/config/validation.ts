@@ -644,13 +644,13 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .max(500)
     .default(100),
 
-  PROFILE_INACTIVE_ARCHIVE_DAYS: Joi.number()
+  STUDENT_PROFILE_INACTIVE_ARCHIVE_DAYS: Joi.number()
     .integer()
     .min(0)
     .max(3650)
     .default(180),
 
-  PROFILE_INACTIVE_ARCHIVE_LIMIT: Joi.number()
+  STUDENT_PROFILE_INACTIVE_ARCHIVE_LIMIT: Joi.number()
     .integer()
     .min(1)
     .max(5000)

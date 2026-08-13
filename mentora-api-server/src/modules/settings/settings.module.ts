@@ -43,10 +43,10 @@ import {
 } from '../auth/schemas/user-session.schema';
 import { SafetyModule } from '../safety/safety.module';
 import {
-  Profile,
-  ProfileSchema,
-} from '../profiles/schemas/profile/profile.schema';
-import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '../learning/schemas/learning.schemas';
+import { Media, MediaSchema } from '../../common/schemas/user-media.schema';
 import { ChatRealtimeModule } from '../chat/chat-realtime.module';
 import { StorageModule } from '../storage/storage.module';
 import { AccountDeletionService } from './services/account-deletion.service';
@@ -57,7 +57,7 @@ import { UserConsent, UserConsentSchema } from './schemas/user-consent.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
-} from '../profiles/schemas/settings/activity-logs.schema';
+} from '../../common/schemas/activity-log.schema';
 import { SocialAuthVerifierService } from '../auth/services/social-auth-verifier.service';
 import { Payment, PaymentSchema } from '../payments/schemas/payment.schema';
 import {
@@ -98,7 +98,7 @@ import {
       { name: AiSetting.name, schema: AiSettingSchema },
       { name: User.name, schema: UserSchema },
       { name: UserSession.name, schema: UserSessionSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: Media.name, schema: MediaSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: UserConsent.name, schema: UserConsentSchema },

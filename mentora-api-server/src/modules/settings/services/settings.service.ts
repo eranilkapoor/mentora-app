@@ -18,21 +18,18 @@ import {
   UserReportDocument,
 } from '@/modules/safety/schemas/user-report.schema';
 import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
-import {
-  Media,
-  MediaDocument,
-} from '@/modules/profiles/schemas/media/media.schema';
-import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
+  StudentProfile,
+  StudentProfileDocument,
+} from '@/modules/learning/schemas/learning.schemas';
+import { Media, MediaDocument } from '@/common/schemas/user-media.schema';
+import { MediaStatus } from '@/common/enums/user-media.enums';
 import { MediaType } from '@/common/enums';
 import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
 import {
   ActivityLog,
   ActivityLogDocument,
-} from '@/modules/profiles/schemas/settings/activity-logs.schema';
-import { ActivityCategory } from '@/modules/profiles/enums/activity-log.enums';
+} from '@/common/schemas/activity-log.schema';
+import { ActivityCategory } from '@/common/enums/activity-log.enums';
 import { SettingsRepository } from '../repositories/settings.repository';
 import type { SettingsDeletionResult } from '../interfaces/settings-operation.interface';
 import {
@@ -82,8 +79,8 @@ export class SettingsService {
     private readonly verificationModel: Model<VerificationDocument>,
     @InjectModel(UserReport.name)
     private readonly userReportModel: Model<UserReportDocument>,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
     @InjectModel(ActivityLog.name)
@@ -178,17 +175,23 @@ export class SettingsService {
         .find({
           userId: { $in: objectIds },
         })
-        .select('userId personal age')
+        .select('userId firstName lastName personal address dateOfBirth')
         .lean<
           Array<{
             userId: Types.ObjectId;
+            firstName?: string;
+            lastName?: string;
             personal?: {
               firstName?: string;
               lastName?: string;
               city?: string;
               state?: string;
             };
-            age?: number;
+            address?: {
+              city?: string;
+              state?: string;
+            };
+            dateOfBirth?: Date;
           }>
         >()
         .exec(),
@@ -240,19 +243,24 @@ export class SettingsService {
         const profile = profileByUserId.get(blockedUserId);
         const photo = mediaByUserId.get(blockedUserId);
         const name =
-          [profile?.personal?.firstName, profile?.personal?.lastName]
+          [
+            profile?.firstName ?? profile?.personal?.firstName,
+            profile?.lastName ?? profile?.personal?.lastName,
+          ]
             .filter(Boolean)
             .join(' ')
             .trim() || 'Mentora Member';
         const location =
-          [profile?.personal?.city, profile?.personal?.state]
+          [
+            profile?.address?.city ?? profile?.personal?.city,
+            profile?.address?.state ?? profile?.personal?.state,
+          ]
             .filter(Boolean)
             .join(', ') || undefined;
 
         return {
           userId: blockedUserId,
           name,
-          ...(profile?.age ? { age: profile.age } : {}),
           ...(location ? { location } : {}),
           ...(photo?.thumbnailUrl || photo?.url
             ? { avatarUrl: photo.thumbnailUrl ?? photo.url }
@@ -918,9 +926,16 @@ export class SettingsService {
         };
       }),
       timeline: activities.map((activity) => {
-        const item = activity as typeof activity & {
+        const item = activity as {
           _id: Types.ObjectId;
           createdAt?: Date;
+          category?: string;
+          action?: string;
+          ip?: string;
+          device?: string;
+          userAgent?: string;
+          platform?: string;
+          metadata?: Record<string, unknown>;
         };
 
         return {

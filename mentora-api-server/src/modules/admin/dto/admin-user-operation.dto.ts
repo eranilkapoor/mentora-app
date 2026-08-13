@@ -10,7 +10,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Role, Status } from '@/common/enums';
-import { CreateProfileDto } from '@/modules/profiles/dto/create-profile.dto';
 
 export enum AdminProfileSection {
   PERSONAL = 'personal',
@@ -69,7 +68,26 @@ export class AdminCreateUserDto {
   reason?: string;
 }
 
-export class AdminCreateUserProfileDto extends CreateProfileDto {}
+export class AdminCreateUserProfileDto {
+  @IsObject()
+  personal!: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  academic?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  parents?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  address?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  coursePreference?: Record<string, unknown>;
+}
 
 export class AdminUpdateUserProfileSectionDto {
   @IsEnum(AdminProfileSection)

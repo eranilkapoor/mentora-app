@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { Status } from '@/common/enums';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
-import { ActivityCategory } from '@/modules/profiles/enums/activity-log.enums';
+import { ActivityCategory } from '@/common/enums/activity-log.enums';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { SettingsService } from './settings.service';
 

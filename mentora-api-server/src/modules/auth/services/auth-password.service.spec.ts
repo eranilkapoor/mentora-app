@@ -2,7 +2,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { ErrorCode } from '@/common/constants';
-import { ActivityPlatform } from '@/modules/profiles/enums/activity-log.enums';
+import { ActivityPlatform } from '@/common/enums/activity-log.enums';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { AuthPasswordService } from './auth-password.service';
 

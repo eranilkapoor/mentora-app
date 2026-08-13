@@ -8,9 +8,9 @@ import {
 import { ChatRoom, ChatRoomDocument } from '../schemas/chat-room.schema';
 import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
-  Profile,
-  ProfileDocument,
-} from '../../profiles/schemas/profile/profile.schema';
+  StudentProfile,
+  StudentProfileDocument,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   UserBlock,
   UserBlockDocument,
@@ -28,12 +28,12 @@ import {
 import {
   Media,
   MediaDocument,
-} from '../../profiles/schemas/media/media.schema';
+} from '../../../common/schemas/user-media.schema';
 import { MediaType } from '@/common/enums';
 import {
   MediaModerationStatus,
   MediaStatus,
-} from '../../profiles/enums/profile-media.enums';
+} from '../../../common/enums/user-media.enums';
 import {
   Verification,
   VerificationDocument,
@@ -68,8 +68,8 @@ export class ChatRepository {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
 
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
 
     @InjectModel(CommunicationSetting.name)
     private readonly communicationModel: Model<CommunicationSettingDocument>,

@@ -19,7 +19,6 @@ import {
   MediaType,
   MimeType,
   PlanTier,
-  ProfileStatus,
   Qualification,
   Religion,
   Status,
@@ -27,15 +26,8 @@ import {
 } from '@/common/enums';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
-import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
-import {
-  Media,
-  MediaDocument,
-} from '@/modules/profiles/schemas/media/media.schema';
-import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
+import { Media, MediaDocument } from '@/common/schemas/user-media.schema';
+import { MediaStatus } from '@/common/enums/user-media.enums';
 import {
   AccountSetting,
   AccountSettingDocument,
@@ -111,6 +103,8 @@ import {
   GradeDocument,
   StudyPlan,
   StudyPlanDocument,
+  StudentProfile,
+  StudentProfileDocument,
   Subject,
   SubjectDocument,
   Topic,
@@ -192,8 +186,8 @@ export class MasterSeederService {
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
 
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
 
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
@@ -1198,30 +1192,35 @@ export class MasterSeederService {
           update: {
             $set: {
               userId,
-              personal: profile.personal,
-              physical: profile.physical,
-              education: profile.education,
-              family: profile.family,
-              age: profile.age,
-              location: profile.location,
-              profileScore: 82 + (profile.index % 16),
-              profileCompletionPercentage: 82 + (profile.index % 16),
-              visibilityScore: Math.min(
-                100,
-                78 +
-                  (profile.index % 16) +
-                  (profile.index % 3 === 0 ? 6 : 0) +
-                  (profile.index % 10 === 0 ? 5 : 0),
+              createdByUserId: userId,
+              ownershipType: 'self_managed',
+              registrationMode: 'admin_created',
+              firstName: String(profile.personal.firstName ?? 'Student'),
+              lastName:
+                typeof profile.personal.lastName === 'string'
+                  ? profile.personal.lastName
+                  : undefined,
+              dateOfBirth: new Date(
+                String(profile.personal.dateOfBirth ?? '2000-01-01'),
               ),
-              searchTags: profile.searchTags,
-              aiTags: profile.aiTags,
-              isPremium: profile.index % 10 === 0,
-              status: ProfileStatus.ACTIVE,
-              lastActiveAt: new Date(now.getTime() - profile.index * 3600000),
-              updatedBy: userId,
+              ageCategory: 'adult',
+              gender:
+                typeof profile.personal.gender === 'string'
+                  ? profile.personal.gender
+                  : undefined,
+              personal: profile.personal,
+              academic: profile.education,
+              parents: profile.family,
+              address:
+                profile.location && typeof profile.location === 'object'
+                  ? profile.location
+                  : {},
+              learningGoals: profile.aiTags,
+              profileCompletionPercentage: 82 + (profile.index % 16),
+              status: 'active',
               updatedAt: now,
             },
-            $setOnInsert: { createdBy: userId, createdAt: now },
+            $setOnInsert: { createdAt: now },
           },
           upsert: true,
         },

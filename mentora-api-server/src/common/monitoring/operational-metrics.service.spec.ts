@@ -14,7 +14,7 @@ describe('OperationalMetricsService', () => {
     service.recordNotificationDelivery('skipped');
     service.recordLearningReminder({ eligible: 3, sent: 2, errors: 1 });
     service.recordMongoSlowQuery({
-      collection: 'profiles',
+      collection: 'student_profiles',
       commandName: 'find',
       durationMs: 250,
       recordedAt: '2026-07-22T00:00:00.000Z',
@@ -43,7 +43,7 @@ describe('OperationalMetricsService', () => {
         mongoSlowQueryCount: 1,
         recentMongoSlowQueries: [
           {
-            collection: 'profiles',
+            collection: 'student_profiles',
             commandName: 'find',
             durationMs: 250,
           },

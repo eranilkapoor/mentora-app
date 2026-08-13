@@ -36,14 +36,11 @@ import {
   UserMembership,
   UserMembershipSchema,
 } from '@/modules/contexts/schemas/contexts.schema';
+import { Media, MediaSchema } from '@/common/schemas/user-media.schema';
 import {
-  Profile,
-  ProfileSchema,
-} from '@/modules/profiles/schemas/profile/profile.schema';
-import {
-  Media,
-  MediaSchema,
-} from '@/modules/profiles/schemas/media/media.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   Verification,
   VerificationSchema,
@@ -60,7 +57,6 @@ import {
   Subscription,
   SubscriptionSchema,
 } from '@/modules/subscriptions/schemas/subscription.schema';
-import { ProfilesModule } from '../profiles/profiles.module';
 import { SafetyModule } from '../safety/safety.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -68,6 +64,10 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ChatModule } from '../chat/chat.module';
 import { SettingsModule } from '../settings/settings.module';
+import { UserMediaRepository } from '@/common/repositories/user-media.repository';
+import { UserMediaModerationService } from '@/common/services/user-media-moderation.service';
+import { UserMediaService } from '@/common/services/user-media.service';
+import { VideoThumbnailService } from '@/common/services/video-thumbnail.service';
 
 @Module({
   imports: [
@@ -79,14 +79,13 @@ import { SettingsModule } from '../settings/settings.module';
       { name: Permission.name, schema: PermissionSchema },
       { name: Role.name, schema: RoleSchema },
       { name: AdminAuditLog.name, schema: AdminAuditLogSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: Media.name, schema: MediaSchema },
       { name: Verification.name, schema: VerificationSchema },
       { name: UserReport.name, schema: UserReportSchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: Subscription.name, schema: SubscriptionSchema },
     ]),
-    ProfilesModule,
     SafetyModule,
     AnalyticsModule,
     NotificationsModule,
@@ -111,6 +110,10 @@ import { SettingsModule } from '../settings/settings.module';
     AdminRepository,
     AdminAuditService,
     AdminIamService,
+    UserMediaRepository,
+    UserMediaModerationService,
+    UserMediaService,
+    VideoThumbnailService,
   ],
   exports: [
     RbacService, // export so other modules can check permissions if needed

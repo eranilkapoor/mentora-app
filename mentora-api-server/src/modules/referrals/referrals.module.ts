@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
 import {
-  Profile,
-  ProfileSchema,
-} from '@/modules/profiles/schemas/profile/profile.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   ReferralReward,
   ReferralRewardSchema,
@@ -22,7 +22,7 @@ import { WalletService } from './services/wallet.service';
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: ReferralReward.name, schema: ReferralRewardSchema },
       { name: WalletTransaction.name, schema: WalletTransactionSchema },
     ]),

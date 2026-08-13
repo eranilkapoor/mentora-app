@@ -4,20 +4,15 @@ import type { MongoMigration } from './migration.interface';
 
 const indexes = [
   {
-    collection: COLLECTION_NAMES.PROFILE,
-    keys: { status: 1, deletedAt: 1, lastActiveAt: -1, createdAt: -1 },
-    name: 'idx_status_deletedAt_lastActiveAt_createdAt',
-  },
-  {
-    collection: COLLECTION_NAMES.PROFILE,
+    collection: COLLECTION_NAMES.STUDENT_PROFILE,
     keys: {
       status: 1,
-      'personal.gender': 1,
-      'personal.city': 1,
-      profileScore: -1,
+      gender: 1,
+      'address.city': 1,
+      profileCompletionPercentage: -1,
       updatedAt: -1,
     },
-    name: 'idx_status_personalGender_personalCity_profileScore_updatedAt',
+    name: 'idx_status_gender_addressCity_completion_updatedAt',
   },
   {
     collection: COLLECTION_NAMES.CHAT_MESSAGE,

@@ -1,6 +1,6 @@
 import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class ReviewMediaDto {
+export class UserMediaReviewDto {
   @IsBoolean()
   approve!: boolean;
 

@@ -18,12 +18,12 @@ import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityLog,
   ActivityLogDocument,
-} from '@/modules/profiles/schemas/settings/activity-logs.schema';
+} from '@/common/schemas/activity-log.schema';
 import {
   ActivityAction,
   ActivityCategory,
   ActivityPlatform,
-} from '@/modules/profiles/enums/activity-log.enums';
+} from '@/common/enums/activity-log.enums';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from '@/common/cache/cache.constants';

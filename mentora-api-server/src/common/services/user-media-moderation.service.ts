@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MediaType } from '@/common/enums';
-import { MediaModerationStatus } from '../enums/profile-media.enums';
+import { MediaModerationStatus } from '@/common/enums/user-media.enums';
 import { detectFileCategory } from '@/common/utils/file-signature.util';
 
 export interface MediaModerationResult {
@@ -14,7 +14,7 @@ const DEFAULT_MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const DEFAULT_MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
 @Injectable()
-export class MediaModerationService {
+export class UserMediaModerationService {
   constructor(private readonly configService: ConfigService) {}
 
   moderate(file: Express.Multer.File, type: MediaType): MediaModerationResult {

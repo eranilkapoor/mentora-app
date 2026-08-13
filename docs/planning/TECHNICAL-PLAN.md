@@ -21,6 +21,8 @@ roles: student, parent, mentor, teacher, content_manager, support, admin, super_
 
 Student academic data lives in `student_profiles`, not in the user document.
 
+Active Mentora profile APIs must use `students`, `student_profiles`, `parent_profiles`, and parent-student relationship records. The old source-app `profiles` module and collection are removed from runtime code because they contained matrimonial fields and ambiguous ownership semantics.
+
 CRM identity and access management uses this hierarchy:
 
 ```text

@@ -4,7 +4,6 @@ export const COLLECTION_NAMES = {
   USER: 'users',
   USER_SESSION: 'user_sessions',
 
-  PROFILE: 'profiles',
   MEDIA: 'media',
   INTERACTION: 'interactions',
   VERIFICATION: 'verifications',

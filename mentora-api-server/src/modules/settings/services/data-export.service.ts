@@ -34,7 +34,6 @@ const SETTINGS_EXPORT_COLLECTIONS = [
 
 export const USER_DATA_EXPORT_COLLECTIONS = {
   user: COLLECTION_NAMES.USER,
-  profile: COLLECTION_NAMES.PROFILE,
   media: COLLECTION_NAMES.MEDIA,
   sessions: COLLECTION_NAMES.USER_SESSION,
   notifications: COLLECTION_NAMES.NOTIFICATION,
@@ -84,7 +83,6 @@ export class DataExportService {
     const settings = await this.getSettings(byUserId);
     const [
       user,
-      profile,
       media,
       sessions,
       notifications,
@@ -115,7 +113,6 @@ export class DataExportService {
       this.collection(USER_DATA_EXPORT_COLLECTIONS.user).findOne({
         _id: userObjectId,
       }),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.profile).findOne(byUserId),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.media)
         .find(byUserId)
         .toArray(),
@@ -281,7 +278,6 @@ export class DataExportService {
     return this.sanitize({
       exportedAt: new Date(),
       user,
-      profile,
       media,
       settings,
       sessions,

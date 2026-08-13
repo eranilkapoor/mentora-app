@@ -10,9 +10,9 @@ import { AuthModule } from '../auth/auth.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
-  Profile,
-  ProfileSchema,
-} from '../profiles/schemas/profile/profile.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '../learning/schemas/learning.schemas';
 import { SafetyModule } from '../safety/safety.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ChatPresenceService } from './services/chat-presence.service';
@@ -21,7 +21,7 @@ import {
   CommunicationSetting,
   CommunicationSettingSchema,
 } from '../settings/schemas/communication-setting.schema';
-import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+import { Media, MediaSchema } from '../../common/schemas/user-media.schema';
 import { ChatRealtimeModule } from './chat-realtime.module';
 import {
   Verification,
@@ -39,7 +39,7 @@ import {
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: ChatRoom.name, schema: ChatRoomSchema },
       { name: User.name, schema: UserSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: Media.name, schema: MediaSchema },
       { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
       { name: Verification.name, schema: VerificationSchema },

@@ -5,8 +5,8 @@ import { AppLogger } from '@/common/logger/logger.service';
 import {
   ActivityLog,
   ActivityLogDocument,
-} from '@/modules/profiles/schemas/settings/activity-logs.schema';
-import { ActivityAction } from '@/modules/profiles/enums/activity-log.enums';
+} from '@/common/schemas/activity-log.schema';
+import { ActivityAction } from '@/common/enums/activity-log.enums';
 import { UserReport, UserReportDocument } from '../schemas/user-report.schema';
 import {
   Payment,

@@ -18,6 +18,13 @@ ParentStudentRelationship = optional relationship and permissions
 
 Do not make a parent mandatory in `student_profiles`.
 
+Canonical profile storage:
+
+- `users` stores authentication, CRM/app identity, roles, and account status.
+- `student_profiles` stores the complete learner profile: personal, academic, parents, address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline.
+- `parent_profiles` stores guardian billing, communication, emergency-contact, and parent preference data.
+- The old source-app `profiles` collection is removed from Mentora code. Do not recreate it; use `student_profiles`, `parent_profiles`, and `users` instead.
+
 ## Implemented Collections
 
 Identity:

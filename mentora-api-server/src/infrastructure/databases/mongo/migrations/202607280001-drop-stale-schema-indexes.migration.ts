@@ -10,11 +10,6 @@ type StaleIndexDefinition = {
 
 const staleIndexes: StaleIndexDefinition[] = [
   {
-    collection: COLLECTION_NAMES.PROFILE,
-    name: 'idx_status_deletedAt_lastActiveAt_createdAt',
-    keys: { status: 1, deletedAt: 1, lastActiveAt: -1, createdAt: -1 },
-  },
-  {
     collection: COLLECTION_NAMES.PAYMENT,
     name: 'idx_userId_createdAt_initiatedAt',
     keys: { userId: 1, createdAt: -1, initiatedAt: -1 },

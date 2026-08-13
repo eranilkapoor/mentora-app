@@ -11,13 +11,13 @@ import {
   VerificationSchema,
 } from './schemas/verification.schema';
 import {
-  Profile,
-  ProfileSchema,
-} from '@/modules/profiles/schemas/profile/profile.schema';
+  StudentProfile,
+  StudentProfileSchema,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   ActivityLog,
   ActivityLogSchema,
-} from '@/modules/profiles/schemas/settings/activity-logs.schema';
+} from '@/common/schemas/activity-log.schema';
 import {
   Payment,
   PaymentSchema,
@@ -40,7 +40,7 @@ import { FraudDetectionTask } from './tasks/fraud-detection.task';
       { name: UserProfileHide.name, schema: UserProfileHideSchema },
       { name: UserReport.name, schema: UserReportSchema },
       { name: Verification.name, schema: VerificationSchema },
-      { name: Profile.name, schema: ProfileSchema },
+      { name: StudentProfile.name, schema: StudentProfileSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: UserSession.name, schema: UserSessionSchema },

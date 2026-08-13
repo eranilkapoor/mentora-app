@@ -14,21 +14,21 @@ const now = new Date();
 
 const QUERIES: ExplainQuery[] = [
   {
-    name: 'match discovery',
-    collection: 'profiles',
-    filter: { status: 'active', deletedAt: { $exists: false } },
-    sort: { lastActiveAt: -1, createdAt: -1 },
+    name: 'student profile dashboard',
+    collection: 'student_profiles',
+    filter: { status: 'active' },
+    sort: { createdAt: -1 },
     limit: 50,
   },
   {
-    name: 'profile search',
-    collection: 'profiles',
+    name: 'student search',
+    collection: 'student_profiles',
     filter: {
       status: 'active',
-      'personal.gender': 'female',
-      'personal.city': 'Mumbai',
+      gender: 'female',
+      'address.city': 'Mumbai',
     },
-    sort: { profileScore: -1, updatedAt: -1 },
+    sort: { profileCompletionPercentage: -1, updatedAt: -1 },
     limit: 50,
   },
   {

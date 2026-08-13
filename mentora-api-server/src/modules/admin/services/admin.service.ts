@@ -10,6 +10,7 @@ import {
   AdminAssignUserPlanDto,
   AdminCancelUserPlanDto,
   AdminCompleteUserSetupDto,
+  AdminCreateUserProfileDto,
   AdminCreateUserDto,
   AdminProfileSection,
   AdminSettingsCategory,
@@ -20,16 +21,12 @@ import { FilterQuery, Model, Types } from 'mongoose';
 import { buildPaginationMeta } from '@/common/utils/pagination';
 import { UserDocument } from '@/modules/auth/schemas/user.schema';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
+import { Media, MediaDocument } from '@/common/schemas/user-media.schema';
+import { MediaModerationStatus } from '@/common/enums/user-media.enums';
 import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
-import { ProfilesService } from '@/modules/profiles/services/profiles.service';
-import {
-  Media,
-  MediaDocument,
-} from '@/modules/profiles/schemas/media/media.schema';
-import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
+  StudentProfile,
+  StudentProfileDocument,
+} from '@/modules/learning/schemas/learning.schemas';
 import {
   Verification,
   VerificationDocument,
@@ -70,11 +67,10 @@ export class AdminService {
     private readonly auditService: AdminAuditService,
     private readonly analyticsService: AnalyticsService,
     private readonly notificationsService: NotificationsService,
-    private readonly profilesService: ProfilesService,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly settingsService: SettingsService,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
     @InjectModel(Verification.name)
@@ -277,12 +273,70 @@ export class AdminService {
 
   async createUserProfile(
     userId: string,
-    dto: Parameters<ProfilesService['createProfile']>[1],
+    dto: AdminCreateUserProfileDto,
     actorId?: string,
     req?: AuthenticatedRequest,
   ) {
     await this.ensureUserExists(userId);
-    const profile = await this.profilesService.createProfile(userId, dto);
+    const dtoRecord: Record<string, unknown> = { ...dto };
+    const personal = dto.personal ?? dtoRecord;
+    const academic =
+      (dtoRecord.education as Record<string, unknown> | undefined) ??
+      dto.academic ??
+      {};
+    const firstName =
+      typeof personal.firstName === 'string'
+        ? personal.firstName
+        : typeof dtoRecord.firstName === 'string'
+          ? dtoRecord.firstName
+          : 'Student';
+    const lastName =
+      typeof personal.lastName === 'string' ? personal.lastName : undefined;
+    const dateOfBirthValue =
+      personal.dateOfBirth ?? dtoRecord.dateOfBirth ?? new Date('2000-01-01');
+    const dateOfBirth =
+      dateOfBirthValue instanceof Date
+        ? dateOfBirthValue
+        : typeof dateOfBirthValue === 'string' ||
+            typeof dateOfBirthValue === 'number'
+          ? new Date(dateOfBirthValue)
+          : new Date('2000-01-01');
+    const profile = await this.profileModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        {
+          $setOnInsert: {
+            userId: new Types.ObjectId(userId),
+            createdByUserId: new Types.ObjectId(actorId ?? userId),
+            ownershipType: 'self_managed',
+            registrationMode: 'admin_created',
+          },
+          $set: {
+            firstName,
+            lastName,
+            dateOfBirth,
+            gender:
+              typeof personal.gender === 'string' ? personal.gender : undefined,
+            email:
+              typeof dtoRecord.email === 'string' ? dtoRecord.email : undefined,
+            phone:
+              typeof dtoRecord.phone === 'string' ? dtoRecord.phone : undefined,
+            personal,
+            academic,
+            parents:
+              (dtoRecord.family as Record<string, unknown> | undefined) ??
+              dto.parents ??
+              {},
+            address: dto.address ?? {},
+            coursePreference:
+              dtoRecord.preferences ?? dto.coursePreference ?? {},
+            status: 'active',
+          },
+        },
+        { new: true, runValidators: true, upsert: true },
+      )
+      .lean()
+      .exec();
     await this.writeUserOperationAudit(
       req,
       actorId,
@@ -306,43 +360,46 @@ export class AdminService {
       .findOne({ userId: new Types.ObjectId(userId) })
       .lean()
       .exec();
-    const appReq = req as Parameters<ProfilesService['updatePersonalInfo']>[0];
-    let profile;
+    const update: Record<string, unknown> = {};
 
     switch (dto.section) {
       case AdminProfileSection.PERSONAL:
-        profile = await this.profilesService.updatePersonalInfo(
-          appReq,
-          userId,
-          dto.data as never,
-        );
+        update.personal = dto.data;
+        if (typeof dto.data.firstName === 'string') {
+          update.firstName = dto.data.firstName;
+        }
+        if (typeof dto.data.lastName === 'string') {
+          update.lastName = dto.data.lastName;
+        }
+        if (typeof dto.data.gender === 'string') {
+          update.gender = dto.data.gender;
+        }
+        if (typeof dto.data.dateOfBirth === 'string') {
+          update.dateOfBirth = new Date(dto.data.dateOfBirth);
+        }
         break;
       case AdminProfileSection.PHYSICAL:
-        profile = await this.profilesService.updatePhysicalInfo(
-          appReq,
-          userId,
-          dto.data,
-        );
+        update['personal.physical'] = dto.data;
         break;
       case AdminProfileSection.EDUCATION:
-        profile = await this.profilesService.updateEducationInfo(
-          appReq,
-          userId,
-          dto.data as never,
-        );
+        update.academic = dto.data;
         break;
       case AdminProfileSection.FAMILY:
-        profile = await this.profilesService.updateFamilyInfo(
-          appReq,
-          userId,
-          dto.data,
-        );
+        update.parents = dto.data;
         break;
       default:
         return throwBadRequest(ErrorCode.INVALID_REQUEST, {
           reason: 'unsupported_profile_section',
         });
     }
+    const profile = await this.profileModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        { $set: update },
+        { new: true, runValidators: true },
+      )
+      .lean()
+      .exec();
 
     await this.writeUserOperationAudit(
       req,

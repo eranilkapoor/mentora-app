@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Status, ProfileStatus, MediaType } from '@/common/enums';
+import { Status, MediaType } from '@/common/enums';
 import { StorageService } from '@/modules/storage/services/storage.service';
 import { AppLogger } from '@/common/logger/logger.service';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
@@ -10,14 +10,11 @@ import {
   UserSessionDocument,
 } from '@/modules/auth/schemas/user-session.schema';
 import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
-import {
-  Media,
-  MediaDocument,
-} from '@/modules/profiles/schemas/media/media.schema';
-import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
+  StudentProfile,
+  StudentProfileDocument,
+} from '@/modules/learning/schemas/learning.schemas';
+import { Media, MediaDocument } from '@/common/schemas/user-media.schema';
+import { MediaStatus } from '@/common/enums/user-media.enums';
 import {
   AccountSetting,
   AccountSettingDocument,
@@ -47,9 +44,9 @@ import {
   AdminAuditLogDocument,
 } from '@/modules/admin/schemas/admin-audit-log.schema';
 
-const PROFILE_IMAGE_FOLDER = 'profiles/images';
-const PROFILE_VIDEO_FOLDER = 'profiles/videos';
-const PROFILE_VIDEO_THUMBNAIL_FOLDER = 'profiles/video-thumbnails';
+const PROFILE_IMAGE_FOLDER = 'student-media/images';
+const PROFILE_VIDEO_FOLDER = 'student-media/videos';
+const PROFILE_VIDEO_THUMBNAIL_FOLDER = 'student-media/video-thumbnails';
 const ACCOUNT_ERASURE_SOURCE = 'account-erasure-job';
 const FINANCE_RETENTION_REASON = 'finance_tax_compliance';
 const AUDIT_RETENTION_REASON = 'security_audit_compliance';
@@ -64,8 +61,8 @@ export class AccountDeletionService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(UserSession.name)
     private readonly sessionModel: Model<UserSessionDocument>,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(StudentProfile.name)
+    private readonly profileModel: Model<StudentProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
     @InjectModel(Payment.name)
@@ -155,27 +152,29 @@ export class AccountDeletionService {
           { userId: userObjectId },
           {
             $set: {
-              status: ProfileStatus.DELETED,
-              deletedAt: now,
+              status: 'archived',
               anonymizedAt: now,
               retentionReason: 'user_requested_erasure',
-              personal: {
-                firstName: 'Deleted',
-                lastName: 'Member',
-              },
-              searchTags: [],
-              aiTags: [],
-              profileScore: 0,
+              firstName: 'Deleted',
+              lastName: 'Student',
+              email: anonymizedEmail,
+              phone: undefined,
+              personal: {},
+              parents: {},
+              address: {},
+              previousEducation: [],
+              examScores: [],
+              coursePreference: {},
+              documents: [],
+              payments: [],
+              communicationHistory: [],
+              activityTimeline: [],
               profileCompletionPercentage: 0,
-              visibilityScore: 0,
             },
             $unset: {
-              physical: 1,
-              education: 1,
-              family: 1,
-              location: 1,
-              createdBy: 1,
-              updatedBy: 1,
+              academic: 1,
+              currentAcademicRecordId: 1,
+              learningGoals: 1,
             },
           },
         )

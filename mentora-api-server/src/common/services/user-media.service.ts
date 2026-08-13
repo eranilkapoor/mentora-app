@@ -1,9 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { MediaRepository } from '../repositories/media.repository';
-import { Profile, ProfileDocument } from '../schemas/profile/profile.schema';
-import { StorageService } from '../../storage/services/storage.service';
+import { UserMediaRepository } from '@/common/repositories/user-media.repository';
+import { StorageService } from '@/modules/storage/services/storage.service';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
@@ -15,32 +12,26 @@ import {
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
-import { ProfileScoringService } from './profile-scoring.service';
-import { MediaModerationService } from './media-moderation.service';
+import { UserMediaModerationService } from './user-media-moderation.service';
 import { VideoThumbnailService } from './video-thumbnail.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
-import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import {
   MediaModerationStatus,
   MediaStatus,
-} from '../enums/profile-media.enums';
+} from '@/common/enums/user-media.enums';
 
-const IMAGE_STORAGE_FOLDER = 'profiles/images';
-const VIDEO_STORAGE_FOLDER = 'profiles/videos';
-const VIDEO_THUMBNAIL_STORAGE_FOLDER = 'profiles/video-thumbnails';
+const IMAGE_STORAGE_FOLDER = 'student-media/images';
+const VIDEO_STORAGE_FOLDER = 'student-media/videos';
+const VIDEO_THUMBNAIL_STORAGE_FOLDER = 'student-media/video-thumbnails';
 
 @Injectable()
-export class MediaService {
+export class UserMediaService {
   constructor(
-    private readonly mediaRepo: MediaRepository,
+    private readonly mediaRepo: UserMediaRepository,
     private readonly storageService: StorageService,
-    private readonly profileScoringService: ProfileScoringService,
-    private readonly moderationService: MediaModerationService,
+    private readonly moderationService: UserMediaModerationService,
     private readonly videoThumbnailService: VideoThumbnailService,
     private readonly featureService: FeatureService,
-    private readonly referralsService: ReferralsService,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
@@ -95,7 +86,6 @@ export class MediaService {
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -126,7 +116,6 @@ export class MediaService {
         MediaType.IMAGE,
       );
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
       return result;
     } catch (error) {
       if (error instanceof AppException) throw error;
@@ -166,7 +155,6 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
 
       return { success: true };
     } catch (error) {
@@ -246,7 +234,6 @@ export class MediaService {
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -277,7 +264,6 @@ export class MediaService {
         MediaType.VIDEO,
       );
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -306,7 +292,6 @@ export class MediaService {
     );
     if (media?.userId) {
       await this.invalidateCache(String(media.userId));
-      await this.refreshProfileScores(String(media.userId));
     }
     return media;
   }
@@ -389,7 +374,6 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
-      await this.refreshProfileScores(userId);
 
       return { success: true };
     } catch (error) {
@@ -406,7 +390,9 @@ export class MediaService {
     userId: string,
     mediaId: string,
     expectedType: MediaType,
-  ): Promise<NonNullable<Awaited<ReturnType<MediaRepository['findById']>>>> {
+  ): Promise<
+    NonNullable<Awaited<ReturnType<UserMediaRepository['findById']>>>
+  > {
     const media = await this.mediaRepo.findById(mediaId);
 
     if (!media) {
@@ -449,38 +435,6 @@ export class MediaService {
         validationReasons: rejected.reasons,
       });
     }
-  }
-
-  private async refreshProfileScores(userId: string) {
-    const [profile, imageCount, videoCount] = await Promise.all([
-      this.profileModel
-        .findOne({ userId: new Types.ObjectId(userId) })
-        .lean()
-        .exec(),
-      this.mediaRepo.countByUser(userId, MediaType.IMAGE),
-      this.mediaRepo.countByUser(userId, MediaType.VIDEO),
-    ]);
-
-    if (!profile) return;
-
-    const { missingFields: _missingFields, ...derived } =
-      this.profileScoringService.calculate(profile, {
-        imageCount,
-        videoCount,
-      });
-    void _missingFields;
-
-    await this.profileModel
-      .updateOne(
-        { userId: new Types.ObjectId(userId) },
-        { $set: derived },
-        { runValidators: true },
-      )
-      .exec();
-    if (derived.profileCompletionPercentage >= 100) {
-      await this.referralsService.awardProfileCompletionReward(userId);
-    }
-    await this.cache.del(`profile:${userId}`);
   }
 
   private getStorageFolder(type: MediaType) {

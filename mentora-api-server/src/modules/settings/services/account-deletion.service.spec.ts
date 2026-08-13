@@ -2,12 +2,12 @@
 import type { Model } from 'mongoose';
 import { Types } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
-import { MediaType, ProfileStatus, Status } from '@/common/enums';
+import { MediaType, Status } from '@/common/enums';
 import type { UserDocument } from '@/modules/auth/schemas/user.schema';
 import type { UserSessionDocument } from '@/modules/auth/schemas/user-session.schema';
-import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
-import type { MediaDocument } from '@/modules/profiles/schemas/media/media.schema';
-import type { ProfileDocument } from '@/modules/profiles/schemas/profile/profile.schema';
+import { MediaStatus } from '@/common/enums/user-media.enums';
+import type { MediaDocument } from '@/common/schemas/user-media.schema';
+import type { StudentProfileDocument } from '@/modules/learning/schemas/learning.schemas';
 import type { StorageService } from '@/modules/storage/services/storage.service';
 import type { AccountSettingDocument } from '../schemas/account-setting.schema';
 import { AccountDeletionService } from './account-deletion.service';
@@ -48,7 +48,7 @@ describe('AccountDeletionService', () => {
   const profileUpdateOne = jest.fn(() => executable());
   const profileModel = {
     updateOne: profileUpdateOne,
-  } as unknown as Model<ProfileDocument>;
+  } as unknown as Model<StudentProfileDocument>;
 
   const mediaFindExec = jest.fn();
   const mediaFind = jest.fn(() => ({
@@ -188,15 +188,15 @@ describe('AccountDeletionService', () => {
     const objectId = new Types.ObjectId(userId);
     expect(storageService.deleteFile).toHaveBeenCalledWith(
       'photo.jpg',
-      'profiles/images',
+      'student-media/images',
     );
     expect(storageService.deleteFile).toHaveBeenCalledWith(
       'intro.mp4',
-      'profiles/videos',
+      'student-media/videos',
     );
     expect(storageService.deleteFile).toHaveBeenCalledWith(
       'thumb.jpg',
-      'profiles/video-thumbnails',
+      'student-media/video-thumbnails',
     );
     expect(logger.warn).toHaveBeenCalledWith(
       'Account media erasure file deletion failed',
@@ -221,7 +221,7 @@ describe('AccountDeletionService', () => {
     expect(profileUpdateOne).toHaveBeenCalledWith(
       { userId: objectId },
       expect.objectContaining({
-        $set: expect.objectContaining({ status: ProfileStatus.DELETED }),
+        $set: expect.objectContaining({ status: 'archived' }),
       }),
     );
     expect(mediaUpdateMany).toHaveBeenCalledWith(

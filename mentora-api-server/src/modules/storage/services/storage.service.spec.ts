@@ -197,12 +197,12 @@ describe('StorageService', () => {
   it('uploads a local file and creates its folder when missing', async () => {
     const { logger, service } = createService('local');
 
-    const result = await service.uploadFile(file(), 'profiles/images');
+    const result = await service.uploadFile(file(), 'student-media/images');
 
     const expectedDirectory = path.join(
       process.cwd(),
       'uploads',
-      'profiles/images',
+      'student-media/images',
     );
     expect(fs.mkdirSync).toHaveBeenCalledWith(expectedDirectory, {
       recursive: true,
@@ -213,7 +213,7 @@ describe('StorageService', () => {
     );
     expect(result).toEqual({
       filename: 'file-uuid.jpeg',
-      url: 'https://api.mentora.test/uploads/profiles/images/file-uuid.jpeg',
+      url: 'https://api.mentora.test/uploads/student-media/images/file-uuid.jpeg',
     });
     expect(logger.log).toHaveBeenCalledWith(
       expect.stringContaining('Saved locally:'),
@@ -312,14 +312,14 @@ describe('StorageService', () => {
     mockS3Send.mockResolvedValue({});
     const { logger, service } = createService('s3');
 
-    await service.deleteFile('photo.jpg', 'profiles//images');
+    await service.deleteFile('photo.jpg', 'student-media//images');
 
     expect(DeleteObjectCommand).toHaveBeenCalledWith({
       Bucket: 'mentora-bucket',
-      Key: 'profiles/images/photo.jpg',
+      Key: 'student-media/images/photo.jpg',
     });
     expect(logger.log).toHaveBeenCalledWith(
-      ' Deleted from S3: profiles/images/photo.jpg',
+      ' Deleted from S3: student-media/images/photo.jpg',
     );
   });
 
@@ -340,15 +340,15 @@ describe('StorageService', () => {
     expect(logger.error).toHaveBeenCalledWith(
       'S3 delete failed',
       undefined,
-      expect.objectContaining({ key: 'profiles/photo.jpg' }),
+      expect.objectContaining({ key: 'student-media/photo.jpg' }),
     );
   });
 
   it('normalizes URL keys and rejects traversal or null-byte keys', () => {
     const { service } = createService('local');
 
-    expect(service.getUrl('photo.jpg', '\\profiles///images')).toBe(
-      'https://api.mentora.test/uploads/profiles/images/photo.jpg',
+    expect(service.getUrl('photo.jpg', '\\student-media///images')).toBe(
+      'https://api.mentora.test/uploads/student-media/images/photo.jpg',
     );
     expect(() => service.getUrl('../secret.txt')).toThrow();
     expect(() => service.getUrl('bad\0name.jpg')).toThrow();
@@ -372,14 +372,14 @@ describe('StorageService', () => {
   it('converts relative and direct S3 URLs to API proxy URLs', () => {
     const { service } = createService('s3');
 
-    expect(service.getReadableUrl('/uploads/profiles/photo.jpg')).toBe(
-      'https://api.mentora.test/uploads/profiles/photo.jpg',
+    expect(service.getReadableUrl('/uploads/student-media/photo.jpg')).toBe(
+      'https://api.mentora.test/uploads/student-media/photo.jpg',
     );
     expect(
       service.getReadableUrl(
-        'https://mentora-bucket.s3.amazonaws.com/profiles//photo.jpg',
+        'https://mentora-bucket.s3.amazonaws.com/student-media//photo.jpg',
       ),
-    ).toBe('https://api.mentora.test/uploads/profiles/photo.jpg');
+    ).toBe('https://api.mentora.test/uploads/student-media/photo.jpg');
   });
 
   it.each(['not a url', 'https://cdn.example.com/photo.jpg'])(
@@ -409,7 +409,9 @@ describe('StorageService', () => {
     });
     const { service } = createService('s3');
 
-    await expect(service.getS3Object('/profiles//photo.jpg')).resolves.toEqual({
+    await expect(
+      service.getS3Object('/student-media//photo.jpg'),
+    ).resolves.toEqual({
       body,
       contentType: 'image/jpeg',
       contentLength: 123,
@@ -417,7 +419,7 @@ describe('StorageService', () => {
     });
     expect(GetObjectCommand).toHaveBeenCalledWith({
       Bucket: 'mentora-bucket',
-      Key: 'profiles/photo.jpg',
+      Key: 'student-media/photo.jpg',
     });
   });
 

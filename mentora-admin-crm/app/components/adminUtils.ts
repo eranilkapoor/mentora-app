@@ -254,402 +254,443 @@ export function recordsToRows(
     teams?: unknown[];
   },
 ) {
-  if (!records?.length) return [];
+  if (!Array.isArray(records) || !records.length) return [];
+  const columns = Array.isArray(module.columns)
+    ? module.columns.filter(
+        (column): column is string => typeof column === "string",
+      )
+    : [];
+  if (!columns.length) return [];
 
-  return records.map((record) => {
+  const rows: string[][] = [];
+  for (const record of records.slice(0, 5000)) {
     const object =
       record && typeof record === "object"
         ? (record as Record<string, unknown>)
         : {};
     const payload =
-      object.payload && typeof object.payload === "object"
-        ? (object.payload as Record<string, unknown>)
+      safeGet(object, "payload") &&
+      typeof safeGet(object, "payload") === "object"
+        ? (safeGet(object, "payload") as Record<string, unknown>)
         : {};
-    const metrics = normalizeResponseObject(object.metrics);
-    const roi = normalizeResponseObject(object.roi);
-    const customFields = normalizeResponseObject(object.customFields);
-    const applicantName = [object.firstName, object.middleName, object.lastName]
-      .filter(Boolean)
-      .join(" ");
+    const metrics = normalizeResponseObject(safeGet(object, "metrics"));
+    const roi = normalizeResponseObject(safeGet(object, "roi"));
+    const customFields = normalizeResponseObject(
+      safeGet(object, "customFields"),
+    );
+    const applicantName = joinDisplayParts(
+      safeGet(object, "firstName"),
+      safeGet(object, "middleName"),
+      safeGet(object, "lastName"),
+    );
 
-    return module.columns.map((column, index) => {
+    const row: string[] = [];
+    for (let index = 0; index < Math.min(columns.length, 50); index += 1) {
+      const column = columns[index];
       const key = toPayloadKey(column);
-      const value =
-        payload[key] ??
-        payload[column] ??
-        object[key] ??
-        object[column] ??
-        customFields[key] ??
-        metrics[key] ??
-        roi[key] ??
-        (key === "campaign" ? (object.name ?? object.title) : undefined) ??
-        (key === "journeyType" ? payload.journeyType : undefined) ??
-        (key === "audienceSegment" ? payload.audienceSegment : undefined) ??
-        (key === "entryTrigger" ? payload.entryTrigger : undefined) ??
-        (key === "exitRule" ? payload.exitRule : undefined) ??
-        (key === "conversionGoal" ? payload.conversionGoal : undefined) ??
-        (key === "suppressionList" ? payload.suppressionList : undefined) ??
-        (key === "approvalStatus" ? payload.approvalStatus : undefined) ??
-        (key === "pageType" ? payload.pageType : undefined) ??
-        (key === "slug" ? payload.slug : undefined) ??
-        (key === "formSource" ? payload.formSource : undefined) ??
-        (key === "leadSource" ? payload.leadSource : undefined) ??
-        (key === "conversionTag" ? payload.conversionTag : undefined) ??
-        (key === "publishStatus" ? payload.publishStatus : undefined) ??
-        (key === "modelType" ? payload.modelType : undefined) ??
-        (key === "signal" ? payload.signal : undefined) ??
-        (key === "weight" ? payload.weight : undefined) ??
-        (key === "threshold" ? payload.threshold : undefined) ??
-        (key === "temperatureRule" ? payload.temperatureRule : undefined) ??
-        (key === "slaRiskRule" ? payload.slaRiskRule : undefined) ??
-        (key === "nextBestAction" ? payload.nextBestAction : undefined) ??
-        (key === "accuracy" ? payload.accuracy : undefined) ??
-        (key === "medium" ? payload.medium : undefined) ??
-        (key === "revenue" ? payload.revenue : undefined) ??
-        (key === "attributionModel" ? payload.attributionModel : undefined) ??
-        (key === "program" ? (object.name ?? object.title) : undefined) ??
-        (key === "leads" ? metrics.leads : undefined) ??
-        (key === "applications" ? metrics.applications : undefined) ??
-        (key === "spend" ? metrics.spend : undefined) ??
-        (key === "roi" ? (roi.value ?? object.roi) : undefined) ??
-        (key === "message" ? (object.subject ?? object.title) : undefined) ??
-        (key === "time" ? (object.createdAt ?? object.updatedAt) : undefined) ??
-        (key === "task" ? object.title : undefined) ??
-        (key === "activity" ? object.title : undefined) ??
-        (key === "activityType"
-          ? (payload.activityType ?? object.type ?? object.kind)
-          : undefined) ??
-        (key === "entity"
-          ? (payload.entity ??
-            object.entityName ??
-            resolveRecordName(object.entityId) ??
-            object.entityType)
-          : undefined) ??
-        (key === "entityType" ? object.entityType : undefined) ??
-        (key === "channel" ? (object.channel ?? payload.channel) : undefined) ??
-        (key === "template" ? payload.template : undefined) ??
-        (key === "deliveryStatus"
-          ? (payload.deliveryStatus ?? object.status)
-          : undefined) ??
-        (key === "optInStatus" ? payload.optInStatus : undefined) ??
-        (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
-        (key === "media" ? payload.media : undefined) ??
-        (key === "buttons" ? payload.buttons : undefined) ??
-        (key === "flow" ? payload.flow : undefined) ??
-        (key === "bulkBatch" ? payload.bulkBatch : undefined) ??
-        (key === "automationRule" ? payload.automationRule : undefined) ??
-        (key === "queue" ? payload.queue : undefined) ??
-        (key === "direction"
-          ? (payload.direction ?? object.direction)
-          : undefined) ??
-        (key === "disposition" ? payload.disposition : undefined) ??
-        (key === "recordingPolicy" ? payload.recordingPolicy : undefined) ??
-        (key === "routingRule" ? payload.routingRule : undefined) ??
-        (key === "callbackNumber" ? payload.callbackNumber : undefined) ??
-        (key === "sla" ? payload.sla : undefined) ??
-        (key === "analyticsStatus" ? payload.analyticsStatus : undefined) ??
-        (key === "botName" ? (payload.botName ?? object.title) : undefined) ??
-        (key === "intentSet" ? payload.intentSet : undefined) ??
-        (key === "knowledgeSource" ? payload.knowledgeSource : undefined) ??
-        (key === "fallbackOwner" ? payload.fallbackOwner : undefined) ??
-        (key === "guardrailPolicy" ? payload.guardrailPolicy : undefined) ??
-        (key === "trainingStatus" ? payload.trainingStatus : undefined) ??
-        (key === "feature" ? (payload.feature ?? object.title) : undefined) ??
-        (key === "useCase" ? payload.useCase : undefined) ??
-        (key === "model" ? payload.model : undefined) ??
-        (key === "dataSource" ? payload.dataSource : undefined) ??
-        (key === "humanReview" ? payload.humanReview : undefined) ??
-        (key === "usageLimit" ? payload.usageLimit : undefined) ??
-        (key === "outcome" ? (payload.outcome ?? object.outcome) : undefined) ??
-        (key === "nextStep" ? payload.nextStep : undefined) ??
-        (key === "followUp"
-          ? (object.title ?? payload.followUp ?? payload.followUpType)
-          : undefined) ??
-        (key === "followUpType"
-          ? (payload.followUpType ?? object.type ?? object.kind)
-          : undefined) ??
-        (key === "due" ? (object.dueAt ?? payload.due) : undefined) ??
-        (key === "reminderChannel"
-          ? (payload.reminderChannel ?? object.reminderChannel)
-          : undefined) ??
-        (key === "escalationRule"
-          ? (payload.escalationRule ?? object.escalationRule)
-          : undefined) ??
-        (key === "meeting" ? object.title : undefined) ??
-        (key === "start" ? (object.dueAt ?? payload.start) : undefined) ??
-        (key === "attendees" ? payload.attendees : undefined) ??
-        (key === "location" ? payload.location : undefined) ??
-        (key === "provider" ? payload.provider : undefined) ??
-        (key === "tag" ? object.title : undefined) ??
-        (key === "color" ? payload.color : undefined) ??
-        (key === "module" ? payload.module : undefined) ??
-        (key === "scope" ? payload.scope : undefined) ??
-        (key === "usageRule" ? payload.usageRule : undefined) ??
-        (key === "job" ? object.title : undefined) ??
-        (key === "operation" ? payload.operation : undefined) ??
-        (key === "rows" ? payload.rows : undefined) ??
-        (key === "file" ? payload.file : undefined) ??
-        (key === "errorPolicy" ? payload.errorPolicy : undefined) ??
-        (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
-        (key === "student" ? (payload.student ?? object.title) : undefined) ??
-        (key === "grade" ? payload.grade : undefined) ??
-        (key === "parent" ? payload.parent : undefined) ??
-        (key === "access" ? payload.access : undefined) ??
-        (key === "profileCompletion" ? payload.profileCompletion : undefined) ??
-        (key === "session" ? (payload.session ?? object.title) : undefined) ??
-        (key === "batch" ? payload.batch : undefined) ??
-        (key === "end" ? payload.end : undefined) ??
-        (key === "course" ? (payload.course ?? object.title) : undefined) ??
-        (key === "subjects" ? payload.subjects : undefined) ??
-        (key === "fee" ? (payload.fee ?? object.title) : undefined) ??
-        (key === "duration" ? payload.duration : undefined) ??
-        (key === "specialization"
-          ? (payload.specialization ?? object.title)
-          : undefined) ??
-        (key === "stream" ? payload.stream : undefined) ??
-        (key === "seats" ? payload.seats : undefined) ??
-        (key === "eligibility" ? payload.eligibility : undefined) ??
-        (key === "enrollment"
-          ? (payload.enrollment ?? object.title)
-          : undefined) ??
-        (key === "plan" ? payload.plan : undefined) ??
-        (key === "amount" ? payload.amount : undefined) ??
-        (key === "ledger" ? payload.ledger : undefined) ??
-        (key === "gateway" ? payload.gateway : undefined) ??
-        (key === "document" ? (object.name ?? object.title) : undefined) ??
-        (key === "agent" ? payload.agent : undefined) ??
-        (key === "workspace" ? payload.workspace : undefined) ??
-        (key === "devicePolicy" ? payload.devicePolicy : undefined) ??
-        (key === "offlineSync" ? payload.offlineSync : undefined) ??
-        (key === "geoCheckIn" ? payload.geoCheckIn : undefined) ??
-        (key === "voiceNotes" ? payload.voiceNotes : undefined) ??
-        (key === "leadUpdates" ? payload.leadUpdates : undefined) ??
-        (key === "taskQueue" ? payload.taskQueue : undefined) ??
-        (key === "reportAccess" ? payload.reportAccess : undefined) ??
-        (key === "releaseChannel" ? payload.releaseChannel : undefined) ??
-        (key === "eventType" ? payload.eventType : undefined) ??
-        (key === "startTime"
-          ? (payload.startTime ?? object.dueAt)
-          : undefined) ??
-        (key === "endTime" ? payload.endTime : undefined) ??
-        (key === "reminderRule" ? payload.reminderRule : undefined) ??
-        (key === "recurringRule" ? payload.recurringRule : undefined) ??
-        (key === "syncStatus" ? payload.syncStatus : undefined) ??
-        (key === "venue" ? payload.venue : undefined) ??
-        (key === "registrationLimit" ? payload.registrationLimit : undefined) ??
-        (key === "registrationForm" ? payload.registrationForm : undefined) ??
-        (key === "webinarProvider" ? payload.webinarProvider : undefined) ??
-        (key === "qrCheckIn" ? payload.qrCheckIn : undefined) ??
-        (key === "attendance" ? payload.attendance : undefined) ??
-        (key === "leadCapture" ? payload.leadCapture : undefined) ??
-        (key === "visitType" ? payload.visitType : undefined) ??
-        (key === "route" ? payload.route : undefined) ??
-        (key === "checkIn" ? payload.checkIn : undefined) ??
-        (key === "checkOut" ? payload.checkOut : undefined) ??
-        (key === "mileage" ? payload.mileage : undefined) ??
-        (key === "geoStatus" ? payload.geoStatus : undefined) ??
-        (key === "nextAction" ? payload.nextAction : undefined) ??
-        (key === "subject" ? (object.subject ?? payload.subject) : undefined) ??
-        (key === "requester" ? payload.requester : undefined) ??
-        (key === "assignedAgent" ? payload.assignedAgent : undefined) ??
-        (key === "resolution" ? payload.resolution : undefined) ??
-        (key === "escalation" ? payload.escalation : undefined) ??
-        (key === "satisfaction" ? payload.satisfaction : undefined) ??
-        (key === "entryType" ? payload.entryType : undefined) ??
-        (key === "invoice" ? payload.invoice : undefined) ??
-        (key === "tax" ? payload.tax : undefined) ??
-        (key === "paymentStatus" ? payload.paymentStatus : undefined) ??
-        (key === "dueDate" ? (payload.dueDate ?? object.dueAt) : undefined) ??
-        (key === "reconciliationStatus"
-          ? payload.reconciliationStatus
-          : undefined) ??
-        (key === "accountingExport" ? payload.accountingExport : undefined) ??
-        (key === "format" ? payload.format : undefined) ??
-        (key === "recipients" ? payload.recipients : undefined) ??
-        (key === "exportStatus" ? payload.exportStatus : undefined) ??
-        (key === "providerKey"
-          ? (object.providerKey ?? payload.providerKey)
-          : undefined) ??
-        (key === "mode"
-          ? (payload.mode ?? (object.demoMode ? "Sandbox" : "Live"))
-          : undefined) ??
-        (key === "webhookUrl" ? payload.webhookUrl : undefined) ??
-        (key === "credentialStatus"
-          ? (payload.credentialStatus ??
-            (object.configuredByEnv ? "Configured" : "Missing"))
-          : undefined) ??
-        (key === "lastChecked"
-          ? (object.lastCheckedAt ?? payload.lastChecked)
-          : undefined) ??
-        (key === "settingArea" ? payload.settingArea : undefined) ??
-        (key === "scope" ? payload.scope : undefined) ??
-        (key === "policy" ? payload.policy : undefined) ??
-        (key === "value" ? payload.value : undefined) ??
-        (key === "effectiveFrom" ? payload.effectiveFrom : undefined) ??
-        (key === "auditRequired" ? payload.auditRequired : undefined) ??
-        (key === "documentName" ? object.name : undefined) ??
-        (key === "verificationStatus"
-          ? (payload.verificationStatus ?? object.status)
-          : undefined) ??
-        (key === "ocrProvider"
-          ? (payload.ocrProvider ??
-            normalizeResponseObject(object.verification).ocrProvider)
-          : undefined) ??
-        (key === "applicant"
-          ? (payload.applicant ?? payload.applicantName ?? object.title)
-          : undefined) ??
-        (key === "applicantName"
-          ? (payload.applicantName ??
-            normalizeResponseObject(object.applicantProfile).applicantName ??
-            object.title)
-          : undefined) ??
-        (key === "application"
-          ? (payload.application ??
-            resolveRecordName(object.relatedApplicationId))
-          : undefined) ??
-        (key === "reviewStage"
-          ? (payload.reviewStage ??
-            normalizeResponseObject(object.formResponses).reviewStage)
-          : undefined) ??
-        (key === "documentsStatus"
-          ? (payload.documentsStatus ??
-            normalizeResponseObject(object.formResponses).documentsStatus)
-          : undefined) ??
-        (key === "interviewStatus"
-          ? (payload.interviewStatus ??
-            normalizeResponseObject(object.formResponses).interviewStatus)
-          : undefined) ??
-        (key === "offerStatus"
-          ? (payload.offerStatus ??
-            normalizeResponseObject(object.formResponses).offerStatus)
-          : undefined) ??
-        (key === "admissionStatus"
-          ? (payload.admissionStatus ?? object.status)
-          : undefined) ??
-        (key === "feePlan" ? payload.feePlan : undefined) ??
-        (key === "paymentStatus" ? payload.paymentStatus : undefined) ??
-        (key === "learningPlan" ? payload.learningPlan : undefined) ??
-        (key === "onboardingChecklist"
-          ? payload.onboardingChecklist
-          : undefined) ??
-        (key === "erpHandoff" ? payload.erpHandoff : undefined) ??
-        (key === "lmsHandoff" ? payload.lmsHandoff : undefined) ??
-        (key === "enrollmentStatus" ? payload.enrollmentStatus : undefined) ??
-        (key === "scholarshipRule" ? payload.scholarshipRule : undefined) ??
-        (key === "eligibilityStatus" ? payload.eligibilityStatus : undefined) ??
-        (key === "approvalStage" ? payload.approvalStage : undefined) ??
-        (key === "awardAmount" ? payload.awardAmount : undefined) ??
-        (key === "paymentPlanImpact" ? payload.paymentPlanImpact : undefined) ??
-        (key === "approver" ? payload.approver : undefined) ??
-        (key === "interviewType" ? payload.interviewType : undefined) ??
-        (key === "interviewer" ? payload.interviewer : undefined) ??
-        (key === "scheduledStart"
-          ? (payload.scheduledStart ?? object.dueAt)
-          : undefined) ??
-        (key === "scheduledEnd" ? payload.scheduledEnd : undefined) ??
-        (key === "meetingLink" ? payload.meetingLink : undefined) ??
-        (key === "score" ? payload.score : undefined) ??
-        (key === "result" ? payload.result : undefined) ??
-        (key === "offerRecommendation"
-          ? payload.offerRecommendation
-          : undefined) ??
-        (key === "admissionHandoff" ? payload.admissionHandoff : undefined) ??
-        (key === "subject" ? payload.subject : undefined) ??
-        (key === "studyPlan" ? payload.studyPlan : undefined) ??
-        (key === "tutorType" ? payload.tutorType : undefined) ??
-        (key === "tutor" ? payload.tutor : undefined) ??
-        (key === "classroom" ? payload.classroom : undefined) ??
-        (key === "schedule" ? payload.schedule : undefined) ??
-        (key === "entitlement" ? payload.entitlement : undefined) ??
-        (key === "aiCredits" ? payload.aiCredits : undefined) ??
-        (key === "progressRule" ? payload.progressRule : undefined) ??
-        (key === "parentSummary" ? payload.parentSummary : undefined) ??
-        (key === "safetyStatus" ? payload.safetyStatus : undefined) ??
-        (key === "report" ? (object.name ?? object.title) : undefined) ??
-        (key === "workflow" ? (object.name ?? object.title) : undefined) ??
-        (key === "lastRun"
-          ? (object.lastRunAt ?? object.updatedAt)
-          : undefined) ??
-        (key === "leadNumber" ? object.leadNumber : undefined) ??
-        (key === "applicantName" ? applicantName || object.title : undefined) ??
-        (key === "interestedCourse"
-          ? (object.interestedCourse ?? object.interestedPrograms)
-          : undefined) ??
-        (key === "preferredBranch" ? object.preferredBranch : undefined) ??
-        (key === "leadStage" ? resolveRecordName(object.stageId) : undefined) ??
-        (key === "leadStatus" ? object.status : undefined) ??
-        (key === "source" ? resolveRecordName(object.sourceId) : undefined) ??
-        (key === "assignedCounselor"
-          ? resolvePersonName(object.assignedTo)
-          : undefined) ??
-        (key === "team" ? resolveRecordName(object.teamId) : undefined) ??
-        (key === "leadScore" ? object.score : undefined) ??
-        (key === "lastContacted" ? object.lastContactedAt : undefined) ??
-        (key === "nextFollowUp" ? object.nextFollowUpAt : undefined) ??
-        (key === "createdDate" ? object.createdAt : undefined) ??
-        (key === "ageOfLead" ? object.ageOfLead : undefined) ??
-        (key === "duplicateIndicator"
-          ? object.duplicateIndicator
-            ? "Duplicate"
-            : "Unique"
-          : undefined) ??
-        (key === "sourceName" ? object.name : undefined) ??
-        (key === "activeLeads" ? object.activeLeads : undefined) ??
-        (key === "conversionRate"
-          ? `${object.conversionRate ?? 0}%`
-          : undefined) ??
-        (key === "stageName" ? object.name : undefined) ??
-        (key === "activeLeadCount" ? object.activeLeadCount : undefined) ??
-        (key === "conversionStage"
-          ? (object.conversionStage ?? object.isConverted)
-          : undefined) ??
-        (key === "lostStage"
-          ? (object.lostStage ?? object.isLost)
-          : undefined) ??
-        (key === "sla" ? (object.sla ?? object.slaDurationHours) : undefined) ??
-        (key === "lead" ? resolveRecordName(object.leadId) : undefined) ??
-        (key === "previousOwner"
-          ? resolvePersonName(object.previousOwner)
-          : undefined) ??
-        (key === "newOwner"
-          ? resolvePersonName(object.assignedTo)
-          : undefined) ??
-        (key === "assignedBy"
-          ? resolvePersonName(object.assignedBy)
-          : undefined) ??
-        (key === "assignedDate"
-          ? (object.assignedAt ?? object.createdAt)
-          : undefined) ??
-        (key === "assignmentReason" ? object.assignmentReason : undefined) ??
-        (key === "department"
-          ? resolveRecordName(object.departmentId, workspace?.departments)
-          : undefined) ??
-        (key === "branch"
-          ? resolveRecordName(
-              object.branchId ??
-                findDepartmentBranchId(
-                  object.departmentId,
-                  workspace?.departments,
-                ),
-              workspace?.branches,
-            )
-          : undefined) ??
-        (key === "created" ? object.createdAt : undefined) ??
-        (key === "updated" ? object.updatedAt : undefined) ??
-        (index === 0 ? object.title : undefined) ??
-        (index === 0 ? object.name : undefined) ??
-        (index === module.columns.length - 1 ? object.status : undefined);
+      let value: unknown;
+      try {
+        value =
+          safeGet(payload, key) ??
+          safeGet(payload, column) ??
+          safeGet(object, key) ??
+          safeGet(object, column) ??
+          safeGet(customFields, key) ??
+          safeGet(metrics, key) ??
+          safeGet(roi, key) ??
+          (key === "campaign"
+            ? (safeGet(object, "name") ?? safeGet(object, "title"))
+            : undefined) ??
+          (key === "program"
+            ? (safeGet(object, "name") ?? safeGet(object, "title"))
+            : undefined) ??
+          (key === "leads" ? safeGet(metrics, "leads") : undefined) ??
+          (key === "applications"
+            ? safeGet(metrics, "applications")
+            : undefined) ??
+          (key === "spend" ? safeGet(metrics, "spend") : undefined) ??
+          (key === "roi"
+            ? (safeGet(roi, "value") ?? safeGet(object, "roi"))
+            : undefined) ??
+          (key === "message"
+            ? (safeGet(object, "subject") ?? safeGet(object, "title"))
+            : undefined) ??
+          (key === "time"
+            ? (safeGet(object, "createdAt") ?? safeGet(object, "updatedAt"))
+            : undefined) ??
+          (key === "task" ? safeGet(object, "title") : undefined) ??
+          (key === "activity" ? safeGet(object, "title") : undefined) ??
+          (key === "activityType"
+            ? (safeGet(payload, "activityType") ??
+              safeGet(object, "type") ??
+              safeGet(object, "kind"))
+            : undefined) ??
+          (key === "entity"
+            ? (safeGet(payload, "entity") ??
+              safeGet(object, "entityName") ??
+              resolveRecordName(safeGet(object, "entityId")) ??
+              safeGet(object, "entityType"))
+            : undefined) ??
+          (key === "entityType" ? safeGet(object, "entityType") : undefined) ??
+          (key === "channel"
+            ? (safeGet(object, "channel") ?? safeGet(payload, "channel"))
+            : undefined) ??
+          (key === "template" ? safeGet(payload, "template") : undefined) ??
+          (key === "deliveryStatus"
+            ? (payload.deliveryStatus ?? object.status)
+            : undefined) ??
+          (key === "optInStatus" ? payload.optInStatus : undefined) ??
+          (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
+          (key === "media" ? payload.media : undefined) ??
+          (key === "buttons" ? payload.buttons : undefined) ??
+          (key === "flow" ? payload.flow : undefined) ??
+          (key === "bulkBatch" ? payload.bulkBatch : undefined) ??
+          (key === "automationRule" ? payload.automationRule : undefined) ??
+          (key === "queue" ? payload.queue : undefined) ??
+          (key === "direction"
+            ? (payload.direction ?? object.direction)
+            : undefined) ??
+          (key === "disposition" ? payload.disposition : undefined) ??
+          (key === "recordingPolicy" ? payload.recordingPolicy : undefined) ??
+          (key === "routingRule" ? payload.routingRule : undefined) ??
+          (key === "callbackNumber" ? payload.callbackNumber : undefined) ??
+          (key === "sla" ? payload.sla : undefined) ??
+          (key === "analyticsStatus" ? payload.analyticsStatus : undefined) ??
+          (key === "botName" ? (payload.botName ?? object.title) : undefined) ??
+          (key === "intentSet" ? payload.intentSet : undefined) ??
+          (key === "knowledgeSource" ? payload.knowledgeSource : undefined) ??
+          (key === "fallbackOwner" ? payload.fallbackOwner : undefined) ??
+          (key === "guardrailPolicy" ? payload.guardrailPolicy : undefined) ??
+          (key === "trainingStatus" ? payload.trainingStatus : undefined) ??
+          (key === "feature" ? (payload.feature ?? object.title) : undefined) ??
+          (key === "useCase" ? payload.useCase : undefined) ??
+          (key === "model" ? payload.model : undefined) ??
+          (key === "dataSource" ? payload.dataSource : undefined) ??
+          (key === "humanReview" ? payload.humanReview : undefined) ??
+          (key === "usageLimit" ? payload.usageLimit : undefined) ??
+          (key === "outcome"
+            ? (payload.outcome ?? object.outcome)
+            : undefined) ??
+          (key === "nextStep" ? payload.nextStep : undefined) ??
+          (key === "followUp"
+            ? (object.title ?? payload.followUp ?? payload.followUpType)
+            : undefined) ??
+          (key === "followUpType"
+            ? (payload.followUpType ?? object.type ?? object.kind)
+            : undefined) ??
+          (key === "due" ? (object.dueAt ?? payload.due) : undefined) ??
+          (key === "reminderChannel"
+            ? (payload.reminderChannel ?? object.reminderChannel)
+            : undefined) ??
+          (key === "escalationRule"
+            ? (payload.escalationRule ?? object.escalationRule)
+            : undefined) ??
+          (key === "meeting" ? object.title : undefined) ??
+          (key === "start" ? (object.dueAt ?? payload.start) : undefined) ??
+          (key === "attendees" ? payload.attendees : undefined) ??
+          (key === "location" ? payload.location : undefined) ??
+          (key === "provider" ? payload.provider : undefined) ??
+          (key === "tag" ? object.title : undefined) ??
+          (key === "color" ? payload.color : undefined) ??
+          (key === "module" ? payload.module : undefined) ??
+          (key === "scope" ? payload.scope : undefined) ??
+          (key === "usageRule" ? payload.usageRule : undefined) ??
+          (key === "job" ? object.title : undefined) ??
+          (key === "operation" ? payload.operation : undefined) ??
+          (key === "rows" ? payload.rows : undefined) ??
+          (key === "file" ? payload.file : undefined) ??
+          (key === "errorPolicy" ? payload.errorPolicy : undefined) ??
+          (key === "callbackStatus" ? payload.callbackStatus : undefined) ??
+          (key === "student" ? (payload.student ?? object.title) : undefined) ??
+          (key === "grade" ? payload.grade : undefined) ??
+          (key === "parent" ? payload.parent : undefined) ??
+          (key === "access" ? payload.access : undefined) ??
+          (key === "profileCompletion"
+            ? payload.profileCompletion
+            : undefined) ??
+          (key === "session" ? (payload.session ?? object.title) : undefined) ??
+          (key === "batch" ? payload.batch : undefined) ??
+          (key === "end" ? payload.end : undefined) ??
+          (key === "course" ? (payload.course ?? object.title) : undefined) ??
+          (key === "subjects" ? payload.subjects : undefined) ??
+          (key === "fee" ? (payload.fee ?? object.title) : undefined) ??
+          (key === "duration" ? payload.duration : undefined) ??
+          (key === "specialization"
+            ? (payload.specialization ?? object.title)
+            : undefined) ??
+          (key === "stream" ? payload.stream : undefined) ??
+          (key === "seats" ? payload.seats : undefined) ??
+          (key === "eligibility" ? payload.eligibility : undefined) ??
+          (key === "enrollment"
+            ? (payload.enrollment ?? object.title)
+            : undefined) ??
+          (key === "plan" ? payload.plan : undefined) ??
+          (key === "amount" ? payload.amount : undefined) ??
+          (key === "ledger" ? payload.ledger : undefined) ??
+          (key === "gateway" ? payload.gateway : undefined) ??
+          (key === "document" ? (object.name ?? object.title) : undefined) ??
+          (key === "agent" ? payload.agent : undefined) ??
+          (key === "workspace" ? payload.workspace : undefined) ??
+          (key === "devicePolicy" ? payload.devicePolicy : undefined) ??
+          (key === "offlineSync" ? payload.offlineSync : undefined) ??
+          (key === "geoCheckIn" ? payload.geoCheckIn : undefined) ??
+          (key === "voiceNotes" ? payload.voiceNotes : undefined) ??
+          (key === "leadUpdates" ? payload.leadUpdates : undefined) ??
+          (key === "taskQueue" ? payload.taskQueue : undefined) ??
+          (key === "reportAccess" ? payload.reportAccess : undefined) ??
+          (key === "releaseChannel" ? payload.releaseChannel : undefined) ??
+          (key === "eventType" ? payload.eventType : undefined) ??
+          (key === "startTime"
+            ? (payload.startTime ?? object.dueAt)
+            : undefined) ??
+          (key === "endTime" ? payload.endTime : undefined) ??
+          (key === "reminderRule" ? payload.reminderRule : undefined) ??
+          (key === "recurringRule" ? payload.recurringRule : undefined) ??
+          (key === "syncStatus" ? payload.syncStatus : undefined) ??
+          (key === "venue" ? payload.venue : undefined) ??
+          (key === "registrationLimit"
+            ? payload.registrationLimit
+            : undefined) ??
+          (key === "registrationForm" ? payload.registrationForm : undefined) ??
+          (key === "webinarProvider" ? payload.webinarProvider : undefined) ??
+          (key === "qrCheckIn" ? payload.qrCheckIn : undefined) ??
+          (key === "attendance" ? payload.attendance : undefined) ??
+          (key === "leadCapture" ? payload.leadCapture : undefined) ??
+          (key === "visitType" ? payload.visitType : undefined) ??
+          (key === "route" ? payload.route : undefined) ??
+          (key === "checkIn" ? payload.checkIn : undefined) ??
+          (key === "checkOut" ? payload.checkOut : undefined) ??
+          (key === "mileage" ? payload.mileage : undefined) ??
+          (key === "geoStatus" ? payload.geoStatus : undefined) ??
+          (key === "nextAction" ? payload.nextAction : undefined) ??
+          (key === "subject"
+            ? (object.subject ?? payload.subject)
+            : undefined) ??
+          (key === "requester" ? payload.requester : undefined) ??
+          (key === "assignedAgent" ? payload.assignedAgent : undefined) ??
+          (key === "resolution" ? payload.resolution : undefined) ??
+          (key === "escalation" ? payload.escalation : undefined) ??
+          (key === "satisfaction" ? payload.satisfaction : undefined) ??
+          (key === "entryType" ? payload.entryType : undefined) ??
+          (key === "invoice" ? payload.invoice : undefined) ??
+          (key === "tax" ? payload.tax : undefined) ??
+          (key === "paymentStatus" ? payload.paymentStatus : undefined) ??
+          (key === "dueDate" ? (payload.dueDate ?? object.dueAt) : undefined) ??
+          (key === "reconciliationStatus"
+            ? payload.reconciliationStatus
+            : undefined) ??
+          (key === "accountingExport" ? payload.accountingExport : undefined) ??
+          (key === "format" ? payload.format : undefined) ??
+          (key === "recipients" ? payload.recipients : undefined) ??
+          (key === "exportStatus" ? payload.exportStatus : undefined) ??
+          (key === "providerKey"
+            ? (object.providerKey ?? payload.providerKey)
+            : undefined) ??
+          (key === "mode"
+            ? (payload.mode ?? (object.demoMode ? "Sandbox" : "Live"))
+            : undefined) ??
+          (key === "webhookUrl" ? payload.webhookUrl : undefined) ??
+          (key === "credentialStatus"
+            ? (payload.credentialStatus ??
+              (object.configuredByEnv ? "Configured" : "Missing"))
+            : undefined) ??
+          (key === "lastChecked"
+            ? (object.lastCheckedAt ?? payload.lastChecked)
+            : undefined) ??
+          (key === "settingArea" ? payload.settingArea : undefined) ??
+          (key === "scope" ? payload.scope : undefined) ??
+          (key === "policy" ? payload.policy : undefined) ??
+          (key === "value" ? payload.value : undefined) ??
+          (key === "effectiveFrom" ? payload.effectiveFrom : undefined) ??
+          (key === "auditRequired" ? payload.auditRequired : undefined) ??
+          (key === "documentName" ? object.name : undefined) ??
+          (key === "verificationStatus"
+            ? (payload.verificationStatus ?? object.status)
+            : undefined) ??
+          (key === "ocrProvider"
+            ? (payload.ocrProvider ??
+              normalizeResponseObject(object.verification).ocrProvider)
+            : undefined) ??
+          (key === "applicant"
+            ? (payload.applicant ?? payload.applicantName ?? object.title)
+            : undefined) ??
+          (key === "applicantName"
+            ? (payload.applicantName ??
+              normalizeResponseObject(object.applicantProfile).applicantName ??
+              object.title)
+            : undefined) ??
+          (key === "application"
+            ? (payload.application ??
+              resolveRecordName(object.relatedApplicationId))
+            : undefined) ??
+          (key === "reviewStage"
+            ? (payload.reviewStage ??
+              normalizeResponseObject(object.formResponses).reviewStage)
+            : undefined) ??
+          (key === "documentsStatus"
+            ? (payload.documentsStatus ??
+              normalizeResponseObject(object.formResponses).documentsStatus)
+            : undefined) ??
+          (key === "interviewStatus"
+            ? (payload.interviewStatus ??
+              normalizeResponseObject(object.formResponses).interviewStatus)
+            : undefined) ??
+          (key === "offerStatus"
+            ? (payload.offerStatus ??
+              normalizeResponseObject(object.formResponses).offerStatus)
+            : undefined) ??
+          (key === "admissionStatus"
+            ? (payload.admissionStatus ?? object.status)
+            : undefined) ??
+          (key === "feePlan" ? payload.feePlan : undefined) ??
+          (key === "paymentStatus" ? payload.paymentStatus : undefined) ??
+          (key === "learningPlan" ? payload.learningPlan : undefined) ??
+          (key === "onboardingChecklist"
+            ? payload.onboardingChecklist
+            : undefined) ??
+          (key === "erpHandoff" ? payload.erpHandoff : undefined) ??
+          (key === "lmsHandoff" ? payload.lmsHandoff : undefined) ??
+          (key === "enrollmentStatus" ? payload.enrollmentStatus : undefined) ??
+          (key === "scholarshipRule" ? payload.scholarshipRule : undefined) ??
+          (key === "eligibilityStatus"
+            ? payload.eligibilityStatus
+            : undefined) ??
+          (key === "approvalStage" ? payload.approvalStage : undefined) ??
+          (key === "awardAmount" ? payload.awardAmount : undefined) ??
+          (key === "paymentPlanImpact"
+            ? payload.paymentPlanImpact
+            : undefined) ??
+          (key === "approver" ? payload.approver : undefined) ??
+          (key === "interviewType" ? payload.interviewType : undefined) ??
+          (key === "interviewer" ? payload.interviewer : undefined) ??
+          (key === "scheduledStart"
+            ? (payload.scheduledStart ?? object.dueAt)
+            : undefined) ??
+          (key === "scheduledEnd" ? payload.scheduledEnd : undefined) ??
+          (key === "meetingLink" ? payload.meetingLink : undefined) ??
+          (key === "score" ? payload.score : undefined) ??
+          (key === "result" ? payload.result : undefined) ??
+          (key === "offerRecommendation"
+            ? payload.offerRecommendation
+            : undefined) ??
+          (key === "admissionHandoff" ? payload.admissionHandoff : undefined) ??
+          (key === "subject" ? payload.subject : undefined) ??
+          (key === "studyPlan" ? payload.studyPlan : undefined) ??
+          (key === "tutorType" ? payload.tutorType : undefined) ??
+          (key === "tutor" ? payload.tutor : undefined) ??
+          (key === "classroom" ? payload.classroom : undefined) ??
+          (key === "schedule" ? payload.schedule : undefined) ??
+          (key === "entitlement" ? payload.entitlement : undefined) ??
+          (key === "aiCredits" ? payload.aiCredits : undefined) ??
+          (key === "progressRule" ? payload.progressRule : undefined) ??
+          (key === "parentSummary" ? payload.parentSummary : undefined) ??
+          (key === "safetyStatus" ? payload.safetyStatus : undefined) ??
+          (key === "report" ? (object.name ?? object.title) : undefined) ??
+          (key === "workflow" ? (object.name ?? object.title) : undefined) ??
+          (key === "lastRun"
+            ? (object.lastRunAt ?? object.updatedAt)
+            : undefined) ??
+          (key === "leadNumber" ? object.leadNumber : undefined) ??
+          (key === "applicantName"
+            ? applicantName || object.title
+            : undefined) ??
+          (key === "interestedCourse"
+            ? (object.interestedCourse ?? object.interestedPrograms)
+            : undefined) ??
+          (key === "preferredBranch" ? object.preferredBranch : undefined) ??
+          (key === "leadStage"
+            ? resolveRecordName(object.stageId)
+            : undefined) ??
+          (key === "leadStatus" ? object.status : undefined) ??
+          (key === "source" ? resolveRecordName(object.sourceId) : undefined) ??
+          (key === "assignedCounselor"
+            ? resolvePersonName(object.assignedTo)
+            : undefined) ??
+          (key === "team" ? resolveRecordName(object.teamId) : undefined) ??
+          (key === "leadScore" ? object.score : undefined) ??
+          (key === "lastContacted" ? object.lastContactedAt : undefined) ??
+          (key === "nextFollowUp" ? object.nextFollowUpAt : undefined) ??
+          (key === "createdDate" ? object.createdAt : undefined) ??
+          (key === "ageOfLead" ? object.ageOfLead : undefined) ??
+          (key === "duplicateIndicator"
+            ? object.duplicateIndicator
+              ? "Duplicate"
+              : "Unique"
+            : undefined) ??
+          (key === "sourceName" ? object.name : undefined) ??
+          (key === "activeLeads" ? object.activeLeads : undefined) ??
+          (key === "conversionRate"
+            ? `${object.conversionRate ?? 0}%`
+            : undefined) ??
+          (key === "stageName" ? object.name : undefined) ??
+          (key === "activeLeadCount" ? object.activeLeadCount : undefined) ??
+          (key === "conversionStage"
+            ? (object.conversionStage ?? object.isConverted)
+            : undefined) ??
+          (key === "lostStage"
+            ? (object.lostStage ?? object.isLost)
+            : undefined) ??
+          (key === "sla"
+            ? (object.sla ?? object.slaDurationHours)
+            : undefined) ??
+          (key === "lead" ? resolveRecordName(object.leadId) : undefined) ??
+          (key === "previousOwner"
+            ? resolvePersonName(object.previousOwner)
+            : undefined) ??
+          (key === "newOwner"
+            ? resolvePersonName(object.assignedTo)
+            : undefined) ??
+          (key === "assignedBy"
+            ? resolvePersonName(object.assignedBy)
+            : undefined) ??
+          (key === "assignedDate"
+            ? (object.assignedAt ?? object.createdAt)
+            : undefined) ??
+          (key === "assignmentReason" ? object.assignmentReason : undefined) ??
+          (key === "department"
+            ? resolveRecordName(object.departmentId, workspace?.departments)
+            : undefined) ??
+          (key === "branch"
+            ? resolveRecordName(
+                object.branchId ??
+                  findDepartmentBranchId(
+                    object.departmentId,
+                    workspace?.departments,
+                  ),
+                workspace?.branches,
+              )
+            : undefined) ??
+          (key === "created" ? object.createdAt : undefined) ??
+          (key === "updated" ? object.updatedAt : undefined) ??
+          (index === 0 ? safeGet(object, "title") : undefined) ??
+          (index === 0 ? safeGet(object, "name") : undefined) ??
+          (index === columns.length - 1
+            ? safeGet(object, "status")
+            : undefined);
+      } catch {
+        value = undefined;
+      }
 
-      return stringifyCell(value);
-    });
-  });
+      row.push(stringifyCell(value));
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+function safeGet(object: Record<string, unknown>, key: string): unknown {
+  try {
+    return object[key];
+  } catch {
+    return undefined;
+  }
 }
 
 function resolvePersonName(value: unknown) {
   if (!value || typeof value !== "object") return stringifyCell(value);
   const object = value as Record<string, unknown>;
   return (
-    [object.firstName, object.lastName].filter(Boolean).join(" ") ||
+    joinDisplayParts(object.firstName, object.lastName) ||
     object.name ||
     object.email ||
     object._id ||
@@ -699,6 +740,14 @@ function resolveRecordObject(value: unknown, records?: unknown[]) {
   return match && typeof match === "object"
     ? (match as Record<string, unknown>)
     : undefined;
+}
+
+function joinDisplayParts(...parts: unknown[]) {
+  return parts
+    .map((part) => stringifyCell(part))
+    .filter((part) => part !== "-")
+    .join(" ")
+    .trim();
 }
 
 export function stringifyCell(value: unknown) {
@@ -937,9 +986,7 @@ function userRecordsToRows(
       Email: object.email,
       "Last Login": object.lastLoginAt,
       "MFA Status": object.mfaRequired ? "Required" : "Not required",
-      Name:
-        [object.firstName, object.lastName].filter(Boolean).join(" ") ||
-        object.email,
+      Name: joinDisplayParts(object.firstName, object.lastName) || object.email,
       Role: primaryMembership.role ?? membershipRoles[0] ?? "-",
       User: object.email,
       "User Type": userType,
