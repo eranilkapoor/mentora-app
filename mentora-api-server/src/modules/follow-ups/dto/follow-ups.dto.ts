@@ -39,6 +39,18 @@ export class CreateFollowUpDto {
   ownerId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
   @IsIn(['low', 'medium', 'high', 'urgent'])
   priority?: string;
 

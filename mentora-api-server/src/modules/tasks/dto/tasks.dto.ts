@@ -28,6 +28,18 @@ export class CreateTaskDto {
   assignedTo!: string;
 
   @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
   @IsIn(['low', 'medium', 'high', 'urgent'])
   priority?: string;
 
@@ -84,6 +96,18 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsMongoId()
   assignedTo?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
 
   @IsOptional()
   @IsIn(['low', 'medium', 'high', 'urgent'])

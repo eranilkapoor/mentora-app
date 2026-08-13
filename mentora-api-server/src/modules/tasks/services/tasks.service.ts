@@ -4,6 +4,7 @@ import { FilterQuery, Model } from 'mongoose';
 import {
   toRequiredObjectId,
   toOrganizationObjectId,
+  toOptionalObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import { ActorScopeService } from '@/common/rbac/actor-scope.service';
@@ -20,6 +21,9 @@ type TaskListOptions = {
   limit?: string;
   page?: string;
   priority?: string;
+  branchId?: string;
+  departmentId?: string;
+  teamId?: string;
   search?: string;
   sortBy?: string;
   sortOrder?: string;
@@ -54,9 +58,10 @@ export class TasksService {
       entityId: toRequiredObjectId(dto.entityId),
       assignedTo: toRequiredObjectId(dto.assignedTo),
       assignedBy: toRequiredObjectId(userId),
-      branchId: assigneeScope.branchIds[0],
-      departmentId: assigneeScope.departmentIds[0],
-      teamId: assigneeScope.teamIds[0],
+      branchId: toOptionalObjectId(dto.branchId) ?? assigneeScope.branchIds[0],
+      departmentId:
+        toOptionalObjectId(dto.departmentId) ?? assigneeScope.departmentIds[0],
+      teamId: toOptionalObjectId(dto.teamId) ?? assigneeScope.teamIds[0],
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       reminderAt: dto.reminderAt ? new Date(dto.reminderAt) : undefined,
     });
@@ -73,6 +78,13 @@ export class TasksService {
         ? { assignedTo: toRequiredObjectId(options.assignedTo) }
         : {}),
       ...(options.priority ? { priority: options.priority } : {}),
+      ...(options.branchId
+        ? { branchId: toRequiredObjectId(options.branchId) }
+        : {}),
+      ...(options.departmentId
+        ? { departmentId: toRequiredObjectId(options.departmentId) }
+        : {}),
+      ...(options.teamId ? { teamId: toRequiredObjectId(options.teamId) } : {}),
       ...(options.status ? { status: options.status } : {}),
     };
     const search = options.search?.trim();
@@ -178,6 +190,11 @@ export class TasksService {
       ...(dto.assignedTo
         ? { assignedTo: toRequiredObjectId(dto.assignedTo) }
         : {}),
+      ...(dto.branchId ? { branchId: toRequiredObjectId(dto.branchId) } : {}),
+      ...(dto.departmentId
+        ? { departmentId: toRequiredObjectId(dto.departmentId) }
+        : {}),
+      ...(dto.teamId ? { teamId: toRequiredObjectId(dto.teamId) } : {}),
       ...(dto.dueAt ? { dueAt: new Date(dto.dueAt) } : {}),
       ...(dto.reminderAt ? { reminderAt: new Date(dto.reminderAt) } : {}),
     };

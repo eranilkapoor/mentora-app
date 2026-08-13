@@ -51,9 +51,13 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
       ownerId: toOptionalObjectId(dto.ownerId),
+      branchId: toOptionalObjectId(dto.branchId),
+      departmentId: toOptionalObjectId(dto.departmentId),
+      teamId: toOptionalObjectId(dto.teamId),
       relatedLeadId: toOptionalObjectId(dto.relatedLeadId),
       relatedApplicationId: toOptionalObjectId(dto.relatedApplicationId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
+      ...this.toRecordSpecificFields(dto.payload),
       createdBy: toRequiredObjectId(userId),
     });
     await this.writeAudit(
@@ -129,7 +133,13 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
         ...dto,
         organizationId: toOrganizationObjectId(dto.organizationId),
         ownerId: toOptionalObjectId(dto.ownerId),
+        branchId: toOptionalObjectId(dto.branchId),
+        departmentId: toOptionalObjectId(dto.departmentId),
+        teamId: toOptionalObjectId(dto.teamId),
+        relatedLeadId: toOptionalObjectId(dto.relatedLeadId),
+        relatedApplicationId: toOptionalObjectId(dto.relatedApplicationId),
         dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
+        ...this.toRecordSpecificFields(dto.payload),
       },
       { new: true },
     );
@@ -312,6 +322,59 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   private toPositiveInt(value: string | undefined, fallback: number) {
     const parsed = Number.parseInt(value ?? '', 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  }
+
+  private toRecordSpecificFields(
+    payload: Record<string, unknown> | undefined,
+  ): Record<string, unknown> {
+    if (!payload) return {};
+    const result: Record<string, unknown> = {};
+    const stringFields = [
+      'calendarEventId',
+      'color',
+      'location',
+      'meetingType',
+      'meetingUrl',
+      'module',
+      'outcome',
+      'provider',
+      'scope',
+    ];
+    stringFields.forEach((field) => {
+      if (typeof payload[field] === 'string' && payload[field]) {
+        result[field] = payload[field];
+      }
+    });
+    const startAt = this.toOptionalDate(payload.startAt);
+    const endAt = this.toOptionalDate(payload.endAt);
+    if (startAt) result.startAt = startAt;
+    if (endAt) result.endAt = endAt;
+    if (Array.isArray(payload.attendeeIds)) {
+      result.attendeeIds = payload.attendeeIds
+        .filter((id): id is string => typeof id === 'string')
+        .map((id) => toRequiredObjectId(id));
+    }
+    if (Array.isArray(payload.externalAttendees)) {
+      result.externalAttendees = payload.externalAttendees
+        .filter((value): value is string => typeof value === 'string')
+        .map((value) => value.trim())
+        .filter(Boolean);
+    }
+    if (payload.usageRule && typeof payload.usageRule === 'object') {
+      result.usageRule = payload.usageRule;
+    }
+    if (typeof payload.usageCount === 'number') {
+      result.usageCount = payload.usageCount;
+    }
+    return result;
+  }
+
+  private toOptionalDate(value: unknown): Date | undefined {
+    if (value instanceof Date) return value;
+    if (typeof value === 'string' || typeof value === 'number') {
+      return new Date(value);
+    }
+    return undefined;
   }
 
   private async writeAudit(

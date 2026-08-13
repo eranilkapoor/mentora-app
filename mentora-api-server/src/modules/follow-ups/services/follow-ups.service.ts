@@ -5,6 +5,7 @@ import { ActorScopeService } from '@/common/rbac/actor-scope.service';
 import { buildScopeFilter, ScopeFieldMap } from '@/common/rbac/data-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
+  toOptionalObjectId,
   toOrganizationObjectId,
   toRequiredObjectId,
 } from '@/common/utils/organization-scope.util';
@@ -52,9 +53,10 @@ export class FollowUpsService {
       entityId: dto.entityId ? toRequiredObjectId(dto.entityId) : undefined,
       ownerId: toRequiredObjectId(ownerId),
       createdBy: toRequiredObjectId(userId),
-      branchId: ownerScope.branchIds[0],
-      departmentId: ownerScope.departmentIds[0],
-      teamId: ownerScope.teamIds[0],
+      branchId: toOptionalObjectId(dto.branchId) ?? ownerScope.branchIds[0],
+      departmentId:
+        toOptionalObjectId(dto.departmentId) ?? ownerScope.departmentIds[0],
+      teamId: toOptionalObjectId(dto.teamId) ?? ownerScope.teamIds[0],
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       reminderAt: dto.reminderAt ? new Date(dto.reminderAt) : undefined,
       completedAt: dto.status === 'completed' ? new Date() : undefined,
@@ -119,6 +121,11 @@ export class FollowUpsService {
       ...dto,
       ...(dto.entityId ? { entityId: toRequiredObjectId(dto.entityId) } : {}),
       ...(dto.ownerId ? { ownerId: toRequiredObjectId(dto.ownerId) } : {}),
+      ...(dto.branchId ? { branchId: toRequiredObjectId(dto.branchId) } : {}),
+      ...(dto.departmentId
+        ? { departmentId: toRequiredObjectId(dto.departmentId) }
+        : {}),
+      ...(dto.teamId ? { teamId: toRequiredObjectId(dto.teamId) } : {}),
       ...(dto.dueAt ? { dueAt: new Date(dto.dueAt) } : {}),
       ...(dto.reminderAt ? { reminderAt: new Date(dto.reminderAt) } : {}),
       ...(dto.status === 'completed' ? { completedAt: new Date() } : {}),

@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import {
   toRequiredObjectId,
   toOrganizationObjectId,
+  toOptionalObjectId,
 } from '@/common/utils/organization-scope.util';
 import { buildCsvExportFile, withStringId } from '@/common/utils/csv.util';
 import {
@@ -15,6 +16,8 @@ import { Campaign, CampaignDocument } from '../schemas/campaigns.schema';
 
 type CampaignListOptions = {
   channel?: string;
+  provider?: string;
+  approvalStatus?: string;
   limit?: string;
   page?: string;
   search?: string;
@@ -35,6 +38,11 @@ export class CampaignsService {
     return this.campaigns.create({
       ...dto,
       organizationId: toOrganizationObjectId(dto.organizationId),
+      sourceId: toOptionalObjectId(dto.sourceId),
+      leadStageId: toOptionalObjectId(dto.leadStageId),
+      ownerId: toOptionalObjectId(dto.ownerId),
+      approvedBy: toOptionalObjectId(dto.approvedBy),
+      approvedAt: dto.approvedAt ? new Date(dto.approvedAt) : undefined,
       scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
     });
   }
@@ -47,13 +55,20 @@ export class CampaignsService {
     const filter: Record<string, unknown> = {
       organizationId: toOrganizationObjectId(options.organizationId),
       ...(options.channel ? { channel: options.channel } : {}),
+      ...(options.provider ? { provider: options.provider } : {}),
+      ...(options.approvalStatus
+        ? { approvalStatus: options.approvalStatus }
+        : {}),
       ...(options.status ? { status: options.status } : {}),
     };
     const search = options.search?.trim();
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
         { channel: { $regex: search, $options: 'i' } },
+        { provider: { $regex: search, $options: 'i' } },
+        { providerCampaignId: { $regex: search, $options: 'i' } },
       ];
     }
     const [items, total] = await Promise.all([
@@ -93,6 +108,15 @@ export class CampaignsService {
   async updateCampaign(campaignId: string, dto: UpdateCampaignDto) {
     const update: Record<string, unknown> = {
       ...dto,
+      ...(dto.sourceId ? { sourceId: toRequiredObjectId(dto.sourceId) } : {}),
+      ...(dto.leadStageId
+        ? { leadStageId: toRequiredObjectId(dto.leadStageId) }
+        : {}),
+      ...(dto.ownerId ? { ownerId: toRequiredObjectId(dto.ownerId) } : {}),
+      ...(dto.approvedBy
+        ? { approvedBy: toRequiredObjectId(dto.approvedBy) }
+        : {}),
+      ...(dto.approvedAt ? { approvedAt: new Date(dto.approvedAt) } : {}),
       ...(dto.scheduledAt ? { scheduledAt: new Date(dto.scheduledAt) } : {}),
     };
     delete update.organizationId;
@@ -112,7 +136,7 @@ export class CampaignsService {
         _id: toRequiredObjectId(campaignId),
         organizationId: toOrganizationObjectId(organizationId),
       },
-      { $set: { status: 'archived' } },
+      { $set: { status: 'archived', archivedAt: new Date() } },
       { new: true },
     );
   }
@@ -138,6 +162,8 @@ export class CampaignsService {
       'name',
       'scheduledAt',
       'status',
+      'provider',
+      'approvalStatus',
       'updatedAt',
     ]);
     return value && allowed.has(value) ? value : 'createdAt';

@@ -56,6 +56,9 @@ export class TasksController {
     @Query('status') status?: string,
     @Query('priority') priority?: string,
     @Query('assignedTo') assignedTo?: string,
+    @Query('branchId') branchId?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('teamId') teamId?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: string,
   ) {
@@ -63,6 +66,8 @@ export class TasksController {
       await this.service.listTasks(
         {
           assignedTo,
+          branchId,
+          departmentId,
           limit,
           page,
           priority,
@@ -70,6 +75,7 @@ export class TasksController {
           sortBy,
           sortOrder,
           status,
+          teamId,
           organizationId,
         },
         req.user.sub,

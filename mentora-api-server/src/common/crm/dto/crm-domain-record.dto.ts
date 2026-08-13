@@ -44,6 +44,18 @@ export class CreateCrmDomainRecordDto {
 
   @IsOptional()
   @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
   relatedLeadId?: string;
 
   @IsOptional()
@@ -95,6 +107,26 @@ export class UpdateCrmDomainRecordDto {
   @IsOptional()
   @IsMongoId()
   ownerId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  relatedLeadId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  relatedApplicationId?: string;
 
   @IsOptional()
   @IsDateString()

@@ -553,7 +553,7 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   "lead-sources": "PUT",
   "lead-stages": "PUT",
   learning: "POST",
-  meetings: "POST",
+  meetings: "PUT",
   mentors: "POST",
   "report-cards": "PUT",
   scholarship: "POST",
@@ -562,7 +562,7 @@ const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
   "study-materials": "POST",
   support: "PATCH",
   students: "POST",
-  tags: "POST",
+  tags: "PUT",
   tasks: "PUT",
   timetable: "PUT",
   transcripts: "PUT",
@@ -737,6 +737,22 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
         spend: draft.payload.spend || undefined,
       },
       name: draft.title,
+      budget: draft.payload.budget ? Number(draft.payload.budget) : undefined,
+      description: draft.description || undefined,
+      landingPageUrl: draft.payload.landingPageUrl || undefined,
+      sourceId: draft.payload.sourceId || undefined,
+      leadStageId: draft.payload.leadStageId || undefined,
+      ownerId: draft.payload.ownerId || undefined,
+      spend: draft.payload.spend ? Number(draft.payload.spend) : undefined,
+      provider: draft.payload.provider || "sandbox",
+      providerCampaignId: draft.payload.providerCampaignId || undefined,
+      approvalStatus: draft.payload.approvalStatus || "draft",
+      conversionTags: draft.payload.conversionTags
+        ? draft.payload.conversionTags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : undefined,
       roi: draft.payload.roi ? { value: draft.payload.roi } : undefined,
       scheduledAt: draft.dueAt || undefined,
       status:
@@ -916,6 +932,8 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
     return {
       organizationId: draft.organizationId,
       assignedTo: draft.payload.assignedTo || "000000000000000000000000",
+      branchId: draft.payload.branchId || undefined,
+      departmentId: draft.payload.departmentId || undefined,
       description: draft.description,
       dueAt: draft.dueAt || undefined,
       entityId: draft.payload.entityId || "000000000000000000000000",
@@ -923,6 +941,7 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       priority: draft.priority,
       recurringRule: draft.payload.recurringRule || undefined,
       reminderAt: draft.payload.reminderAt || undefined,
+      teamId: draft.payload.teamId || undefined,
       status:
         draft.status === "archived"
           ? "cancelled"
@@ -944,11 +963,14 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       entityId: draft.payload.entityId || undefined,
       entityName: draft.payload.entity || undefined,
       entityType: draft.payload.entityType || "general",
+      branchId: draft.payload.branchId || undefined,
+      departmentId: draft.payload.departmentId || undefined,
       metadata: { source: "admin-crm" },
       nextStep: draft.payload.nextStep || undefined,
       occurredAt: draft.dueAt || undefined,
       outcome: draft.payload.outcome || undefined,
       ownerId: draft.payload.ownerId || undefined,
+      teamId: draft.payload.teamId || undefined,
       status:
         draft.status === "archived"
           ? "archived"
@@ -969,6 +991,8 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       entityId: draft.payload.entityId || undefined,
       entityName: draft.payload.entity || undefined,
       entityType: draft.payload.entityType || "lead",
+      branchId: draft.payload.branchId || undefined,
+      departmentId: draft.payload.departmentId || undefined,
       escalationRule: draft.payload.escalationRule || undefined,
       followUpType: draft.payload.followUpType || "call",
       metadata: { source: "admin-crm" },
@@ -976,6 +1000,7 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       priority: draft.priority,
       reminderAt: draft.payload.reminderAt || undefined,
       reminderChannel: draft.payload.reminderChannel || "in_app",
+      teamId: draft.payload.teamId || undefined,
       status:
         draft.status === "archived"
           ? "archived"
@@ -985,6 +1010,85 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
               ? "in_progress"
               : "open",
       title: draft.title,
+    };
+  }
+
+  if (draft.moduleKey === "meetings") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      branchId: payload.branchId || undefined,
+      departmentId: payload.departmentId || undefined,
+      description: draft.description,
+      dueAt: payload.start || draft.dueAt || undefined,
+      ownerId: payload.ownerId || undefined,
+      priority: draft.priority,
+      relatedApplicationId: payload.relatedApplicationId || undefined,
+      relatedLeadId: payload.relatedLeadId || undefined,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "completed"
+            ? "completed"
+            : draft.status === "in_progress"
+              ? "in_progress"
+              : "open",
+      tags: payload.tags
+        ? payload.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : undefined,
+      teamId: payload.teamId || undefined,
+      title: draft.title,
+      payload: {
+        attendeeIds: payload.attendees
+          ? payload.attendees
+              .split(",")
+              .map((id) => id.trim())
+              .filter(Boolean)
+          : undefined,
+        calendarEventId: payload.calendarEventId || undefined,
+        endAt: payload.end || undefined,
+        entityName: payload.entity || undefined,
+        entityType: payload.entityType || "lead",
+        externalAttendees: payload.externalAttendees
+          ? payload.externalAttendees
+              .split(",")
+              .map((attendee) => attendee.trim())
+              .filter(Boolean)
+          : undefined,
+        location: payload.location || undefined,
+        meetingType: payload.type || "counselling",
+        meetingUrl: payload.meetingUrl || undefined,
+        outcome: payload.outcome || undefined,
+        provider: payload.provider || "offline",
+        source: "admin-crm",
+        startAt: payload.start || draft.dueAt || undefined,
+      },
+    };
+  }
+
+  if (draft.moduleKey === "tags") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      branchId: payload.branchId || undefined,
+      departmentId: payload.departmentId || undefined,
+      description: draft.description,
+      ownerId: payload.ownerId || undefined,
+      priority: draft.priority,
+      status: draft.status === "archived" ? "archived" : draft.status,
+      teamId: payload.teamId || undefined,
+      title: draft.title,
+      payload: {
+        color: payload.color || "#2563eb",
+        module: payload.module || "global",
+        scope: payload.scope || "organization",
+        source: "admin-crm",
+        usageCount: payload.usageCount ? Number(payload.usageCount) : 0,
+        usageRule: payload.usageRule ? { rule: payload.usageRule } : undefined,
+      },
     };
   }
 

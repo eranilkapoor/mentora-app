@@ -49,14 +49,18 @@ export class CampaignsController {
     @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('channel') channel?: string,
+    @Query('provider') provider?: string,
+    @Query('approvalStatus') approvalStatus?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
       await this.service.listCampaigns({
+        approvalStatus,
         channel,
         limit,
         page,
+        provider,
         search,
         sortBy,
         sortOrder,

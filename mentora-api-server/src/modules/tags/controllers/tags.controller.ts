@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -119,7 +120,7 @@ export class TagsController {
       'Tag restored',
     );
   }
-  @Post(':recordId') @Permissions(Permission.MODULE_RECORD_MANAGE) async update(
+  @Put(':recordId') @Permissions(Permission.MODULE_RECORD_MANAGE) async update(
     @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
     @Body() dto: UpdateCrmDomainRecordDto,

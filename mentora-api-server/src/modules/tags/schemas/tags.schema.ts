@@ -34,6 +34,36 @@ export class Tag {
   priority!: string;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   ownerId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
+  departmentId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
+  @Prop({ trim: true, default: '#2563eb' }) color!: string;
+  @Prop({
+    enum: [
+      'leads',
+      'contacts',
+      'applications',
+      'students',
+      'documents',
+      'campaigns',
+      'global',
+    ],
+    default: 'global',
+    index: true,
+  })
+  module!: string;
+  @Prop({
+    enum: ['organization', 'branch', 'team', 'private'],
+    default: 'organization',
+  })
+  scope!: string;
+  @Prop({ type: Object, default: {} })
+  usageRule!: Record<string, unknown>;
+  @Prop({ default: 0 })
+  usageCount!: number;
   @Prop({ type: Types.ObjectId, ref: 'Lead', index: true })
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
@@ -49,3 +79,4 @@ export class Tag {
 export const TagSchema = SchemaFactory.createForClass(Tag);
 TagSchema.index({ organizationId: 1, title: 1 }, { unique: true });
 TagSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
+TagSchema.index({ organizationId: 1, module: 1, status: 1, title: 1 });

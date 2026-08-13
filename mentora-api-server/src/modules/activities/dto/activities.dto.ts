@@ -69,6 +69,18 @@ export class CreateActivityDto {
   ownerId?: string;
 
   @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  departmentId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  teamId?: string;
+
+  @IsOptional()
   @IsDateString()
   occurredAt?: string;
 
