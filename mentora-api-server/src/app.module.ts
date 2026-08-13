@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -63,6 +64,13 @@ import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
+const apiRootDir = __dirname.endsWith(`${path.sep}dist`)
+  ? path.dirname(__dirname)
+  : path.dirname(__dirname);
+const envFilePath =
+  nodeEnv === 'production'
+    ? [path.join(apiRootDir, '.env.production')]
+    : [path.join(apiRootDir, `.env.${nodeEnv}`), path.join(apiRootDir, '.env')];
 
 @Module({
   imports: [
@@ -72,7 +80,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     ConfigModule.forRoot({
       isGlobal: true,
       //  KEY PART
-      envFilePath: [`.env.${nodeEnv}`, '.env'],
+      envFilePath,
       load: configArray,
       validationSchema: ENV_VALIDATION_SCHEMA,
     }),
