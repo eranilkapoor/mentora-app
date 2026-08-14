@@ -69,16 +69,28 @@ export const organizationStructureModuleIds = new Set([
   "teams",
 ]);
 
-// Modules that operate platform-wide and stay usable with no organization
-// selected: the org directory itself, the dashboard, and the RBAC catalogs
-// (roles/permissions are global definitions, not scoped to one org). Every
-// other module needs an active organization to do anything useful, so it is
-// hidden from the sidebar until one is picked.
+// Personal utilities every signed-in CRM user needs regardless of organization
+// context. These do not grant access to another organization's data.
+export const commonUtilityModuleIds = new Set([
+  "dashboard",
+  "my-profile",
+  "change-password",
+  "notifications",
+  "settings",
+]);
+
+// Modules that operate outside one branch/workspace and can stay visible with
+// no organization selected when RBAC allows them. Sensitive platform modules
+// still need role/module access; this set only removes the organization-context
+// requirement.
 export const globalModuleIds = new Set([
   "dashboard",
+  "notifications",
+  "settings",
   "organizations",
   "roles",
   "permissions",
+  "reports",
 ]);
 
 export const readonlyFormColumns = new Set([

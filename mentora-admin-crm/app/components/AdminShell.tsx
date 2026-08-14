@@ -106,6 +106,7 @@ import type {
 } from "./adminTypes";
 import {
   allModules,
+  commonUtilityModuleIds,
   dedicatedAdminModuleIds,
   getEditableModuleColumns,
   getModuleHref,
@@ -577,6 +578,8 @@ export default function AdminDashboardPage() {
 
   function canAccessModule(id: string) {
     const context = activeContext ?? loggedInUser?.contexts[0];
+    if (commonUtilityModuleIds.has(id)) return true;
+
     const roleAllows =
       context?.role === "super_admin" ||
       context?.modules.includes(id) ||
