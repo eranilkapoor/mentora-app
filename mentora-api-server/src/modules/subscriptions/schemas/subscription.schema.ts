@@ -47,6 +47,18 @@ export class Subscription {
   @Prop()
   trialEndsAt?: Date;
 
+  @Prop({ default: 0, min: 0 })
+  seatCount!: number;
+
+  @Prop({ type: Object, default: {} })
+  usageSnapshot!: Record<string, unknown>;
+
+  @Prop()
+  nextBillingAt?: Date;
+
+  @Prop({ trim: true })
+  prorationPolicy?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'Payment', index: true })
   paymentId?: Types.ObjectId;
 
@@ -108,5 +120,6 @@ export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
 SubscriptionSchema.index({ userId: 1, createdAt: -1 });
 SubscriptionSchema.index({ organizationId: 1, status: 1, endDate: -1 });
 SubscriptionSchema.index({ status: 1, endDate: -1 });
+SubscriptionSchema.index({ organizationId: 1, nextBillingAt: 1, status: 1 });
 SubscriptionSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 SubscriptionSchema.index({ legalHoldUntil: 1 });

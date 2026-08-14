@@ -20,14 +20,26 @@ export class SupportTicketRepository {
 
   async create(input: {
     userId: string;
+    assignedTo?: string;
+    branchId?: string;
     subject: string;
     category: SupportTicketCategory;
+    dueAt?: Date;
+    organizationId?: string;
     priority: SupportTicketPriority;
     message: string;
   }) {
     const now = new Date();
     return this.ticketModel.create({
       userId: new Types.ObjectId(input.userId),
+      assignedTo: input.assignedTo
+        ? new Types.ObjectId(input.assignedTo)
+        : undefined,
+      branchId: input.branchId ? new Types.ObjectId(input.branchId) : undefined,
+      dueAt: input.dueAt,
+      organizationId: input.organizationId
+        ? new Types.ObjectId(input.organizationId)
+        : undefined,
       subject: input.subject,
       category: input.category,
       priority: input.priority,
@@ -83,9 +95,13 @@ export class SupportTicketRepository {
       sortBy?: string;
       sortOrder?: 'asc' | 'desc';
       status?: SupportTicketStatus;
+      organizationId?: string;
     },
   ) {
     const filter: Record<string, unknown> = {};
+    if (filters.organizationId) {
+      filter.organizationId = new Types.ObjectId(filters.organizationId);
+    }
     if (filters.status) {
       filter.status = filters.status;
     }

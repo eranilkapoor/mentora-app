@@ -51,8 +51,21 @@ export class SecuritySetting {
   @Prop() lastPasswordChangedAt?: Date;
   @Prop() lastLoginAt?: Date;
   @Prop() lastLoginIp?: string;
+
+  @Prop({ type: [String], default: [] })
+  allowedIpCidrs!: string[];
+
+  @Prop({ default: 0 })
+  maxActiveSessions!: number;
+
+  @Prop({ default: false })
+  requirePasswordChange!: boolean;
+
+  @Prop({ type: Object, default: {} })
+  riskPolicy!: Record<string, unknown>;
 }
 
 export type SecuritySettingDocument = SecuritySetting & Document;
 export const SecuritySettingSchema =
   SchemaFactory.createForClass(SecuritySetting);
+SecuritySettingSchema.index({ twoFactorEnabled: 1, lastLoginAt: -1 });

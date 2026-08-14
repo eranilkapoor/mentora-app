@@ -10,6 +10,18 @@ export class Role {
   @Prop({ trim: true })
   description?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
+  @Prop({ default: false })
+  isSystem!: boolean;
+
+  @Prop({
+    default: 'organization',
+    enum: ['platform', 'organization', 'branch'],
+  })
+  scope!: string;
+
   @Prop({
     type: [{ type: Types.ObjectId, ref: 'Permission' }],
     default: [],
@@ -25,3 +37,5 @@ export class Role {
 
 export type RoleDocument = Role & Document;
 export const RoleSchema = SchemaFactory.createForClass(Role);
+RoleSchema.index({ organizationId: 1, isActive: 1, name: 1 });
+RoleSchema.index({ scope: 1, isSystem: 1 });

@@ -80,6 +80,18 @@ export class PaymentInvoice {
   @Prop({ default: true })
   immutable!: boolean;
 
+  @Prop()
+  dueAt?: Date;
+
+  @Prop()
+  paidAt?: Date;
+
+  @Prop({
+    enum: ['draft', 'issued', 'paid', 'void', 'overdue'],
+    default: 'issued',
+  })
+  status!: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy?: Types.ObjectId;
 
@@ -109,5 +121,6 @@ export const PaymentInvoiceSchema =
 PaymentInvoiceSchema.index({ userId: 1, issuedAt: -1 });
 PaymentInvoiceSchema.index({ organizationId: 1, issuedAt: -1 });
 PaymentInvoiceSchema.index({ issuedAt: -1 });
+PaymentInvoiceSchema.index({ organizationId: 1, status: 1, dueAt: 1 });
 PaymentInvoiceSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 PaymentInvoiceSchema.index({ legalHoldUntil: 1 });

@@ -33,6 +33,12 @@ export class ChatMessage extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   receiverId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentProfileId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Classroom', index: true })
+  classroomId?: Types.ObjectId;
+
   @Prop({ type: String, enum: ChatMessageType, default: ChatMessageType.TEXT })
   type!: ChatMessageType;
 
@@ -89,6 +95,9 @@ export class ChatMessage extends Document {
 
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
+
+  @Prop({ default: false })
+  parentVisible!: boolean;
 }
 
 export type ChatMessageDocument = ChatMessage & Document;
@@ -98,6 +107,8 @@ ChatMessageSchema.index({ roomId: 1, createdAt: -1 });
 ChatMessageSchema.index({ roomId: 1, deletedAt: 1, createdAt: -1 });
 ChatMessageSchema.index({ receiverId: 1, status: 1, roomId: 1 });
 ChatMessageSchema.index({ moderationStatus: 1, createdAt: -1 });
+ChatMessageSchema.index({ studentProfileId: 1, createdAt: -1 });
+ChatMessageSchema.index({ classroomId: 1, createdAt: -1 });
 ChatMessageSchema.index(
   { clientMessageId: 1, senderId: 1 },
   {

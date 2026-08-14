@@ -1126,6 +1126,25 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
     };
   }
 
+  if (draft.moduleKey === "support") {
+    const payload = draft.payload ?? {};
+    return {
+      assignedTo: payload.assignedTo || payload.assignedAgent || undefined,
+      branchId: payload.branchId || undefined,
+      category: payload.category || "other",
+      description: draft.description || payload.resolution || undefined,
+      dueAt: payload.dueAt || draft.dueAt || undefined,
+      message: payload.message || draft.description || "Created from CRM",
+      organizationId: draft.organizationId,
+      priority:
+        draft.priority === "urgent" || draft.priority === "high"
+          ? draft.priority
+          : payload.priority || "normal",
+      subject: payload.subject || draft.title,
+      userId: payload.userId || payload.requester || undefined,
+    };
+  }
+
   if (draft.moduleKey === "attendance-students") {
     const payload = draft.payload ?? {};
     return {

@@ -14,6 +14,12 @@ export class Media {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentProfileId?: Types.ObjectId;
+
   @Prop({ type: String, enum: MediaType, required: true, index: true })
   type!: MediaType;
 
@@ -57,6 +63,12 @@ export class Media {
   @Prop({ type: Date, default: Date.now })
   uploadedAt!: Date;
 
+  @Prop({ type: String })
+  storageKey?: string;
+
+  @Prop({ type: String })
+  checksum?: string;
+
   @Prop({ type: Date })
   anonymizedAt?: Date;
 
@@ -75,3 +87,5 @@ MediaSchema.index({ moderationStatus: 1, isActive: 1, createdAt: 1 });
 MediaSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 MediaSchema.index({ legalHoldUntil: 1 });
 MediaSchema.index({ userId: 1, type: 1, status: 1, isActive: 1 });
+MediaSchema.index({ organizationId: 1, type: 1, status: 1, createdAt: -1 });
+MediaSchema.index({ studentProfileId: 1, type: 1, createdAt: -1 });

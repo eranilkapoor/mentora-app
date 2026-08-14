@@ -108,8 +108,27 @@ export const readonlyFormColumns = new Set([
 ]);
 
 export function getEditableModuleColumns(module: AdminModule) {
-  if (module.id === "roles") return ["Description", "Permissions"];
-  if (module.id === "permissions") return ["Module", "Description"];
+  if (module.id === "roles") {
+    return ["Description", "Scope", "Is System", "Permissions"];
+  }
+  if (module.id === "permissions") {
+    return ["Module", "Description", "Scope", "Is System"];
+  }
+  if (module.id === "users") {
+    return [
+      "First Name",
+      "Last Name",
+      "Email",
+      "Phone",
+      "User Type",
+      "Primary Organization Id",
+      "Primary Branch Id",
+      "Roles",
+      "Mfa Required",
+      "Ip Restrictions",
+      "Status",
+    ];
+  }
   if (module.id === "branches") {
     return [
       "Code",
@@ -892,18 +911,62 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Outcome",
     ];
   }
+  if (module.id === "payments") {
+    return [
+      "User Id",
+      "Organization Id",
+      "Order Id",
+      "Plan Id",
+      "Subscription Id",
+      "Amount",
+      "Tax Amount",
+      "Discount Amount",
+      "Net Amount",
+      "Currency",
+      "Gateway",
+      "Purpose",
+      "Status",
+      "Settlement Id",
+      "Settled At",
+      "Refunded Amount",
+      "Proration Amount",
+    ];
+  }
+  if (module.id === "billing") {
+    return [
+      "Plan",
+      "Billing Cycle",
+      "Trial Start",
+      "Trial End",
+      "Subscription Start",
+      "Subscription End",
+      "User Limit",
+      "Branch Limit",
+      "Lead Limit",
+      "Storage Limit Gb",
+      "Ai Credit Limit",
+      "Seat Overage Price",
+      "Requires Contract",
+      "Usage Limits",
+      "Payment Terms",
+      "Renewal Policy",
+      "Status",
+    ];
+  }
   if (module.id === "support") {
     return [
       "Subject",
       "Category",
-      "Requester",
-      "Assigned Agent",
+      "Organization Id",
+      "Branch Id",
+      "User Id",
+      "Assigned To",
       "Priority",
-      "Sla",
+      "Due At",
       "Message",
       "Resolution",
-      "Escalation",
-      "Satisfaction",
+      "Escalated",
+      "Satisfaction Rating",
     ];
   }
   if (module.id === "finance") {
@@ -942,6 +1005,40 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Expires At",
     ];
   }
+  if (module.id === "notifications") {
+    return [
+      "Organization Id",
+      "User Id",
+      "Title",
+      "Message",
+      "Type",
+      "Category",
+      "Priority",
+      "Template Key",
+      "Reference Id",
+      "Dedupe Key",
+      "Expires At",
+    ];
+  }
+  if (module.id === "analytics") {
+    return [
+      "Organization Id",
+      "Branch Id",
+      "User Id",
+      "Student Profile Id",
+      "Lead Id",
+      "Application Id",
+      "Learning Schedule Id",
+      "Event Type",
+      "Funnel Stage",
+      "Source",
+      "Medium",
+      "Campaign",
+      "Screen",
+      "Value",
+      "Duration Ms",
+    ];
+  }
   if (module.id === "integrations") {
     return [
       "Provider Key",
@@ -961,6 +1058,11 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Scope",
       "Policy",
       "Value",
+      "Default Landing Page",
+      "Default Context",
+      "Allowed Ip Cidrs",
+      "Max Active Sessions",
+      "Require Password Change",
       "Owner",
       "Approval Status",
       "Effective From",

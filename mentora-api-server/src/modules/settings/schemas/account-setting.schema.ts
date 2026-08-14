@@ -13,6 +13,11 @@ export class AccountSetting {
   @Prop() deletionScheduledAt?: Date;
   @Prop() deletionCompletedAt?: Date;
   @Prop() deletionReason?: string;
+  @Prop({ default: false }) exportRequested!: boolean;
+  @Prop() exportRequestedAt?: Date;
+  @Prop() exportCompletedAt?: Date;
+  @Prop({ trim: true }) defaultLandingPage?: string;
+  @Prop({ type: Object, default: {} }) defaultContext!: Record<string, unknown>;
   @Prop({ index: true }) anonymizedAt?: Date;
   @Prop() retentionReason?: string;
   @Prop() legalHoldUntil?: Date;

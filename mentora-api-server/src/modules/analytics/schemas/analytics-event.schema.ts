@@ -12,6 +12,12 @@ export class AnalyticsEvent extends Document {
   @Prop()
   userId?: string;
 
+  @Prop()
+  organizationId?: string;
+
+  @Prop()
+  branchId?: string;
+
   @Prop({ enum: AnalyticsEventType, required: true })
   eventType!: AnalyticsEventType;
 
@@ -23,6 +29,18 @@ export class AnalyticsEvent extends Document {
 
   @Prop()
   profileId?: string;
+
+  @Prop()
+  studentProfileId?: string;
+
+  @Prop()
+  leadId?: string;
+
+  @Prop()
+  applicationId?: string;
+
+  @Prop()
+  learningScheduleId?: string;
 
   @Prop()
   targetUserId?: string;
@@ -93,6 +111,8 @@ export const AnalyticsEventSchema =
 
 AnalyticsEventSchema.index({ eventType: 1, occurredAt: -1 });
 AnalyticsEventSchema.index({ userId: 1, occurredAt: -1 });
+AnalyticsEventSchema.index({ organizationId: 1, eventType: 1, occurredAt: -1 });
+AnalyticsEventSchema.index({ studentProfileId: 1, occurredAt: -1 });
 AnalyticsEventSchema.index({ platform: 1, occurredAt: -1 });
 AnalyticsEventSchema.index({ source: 1, campaign: 1, occurredAt: -1 });
 AnalyticsEventSchema.index({ funnelStage: 1, occurredAt: -1 });

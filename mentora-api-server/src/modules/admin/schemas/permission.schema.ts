@@ -13,6 +13,15 @@ export class Permission {
   @Prop({ trim: true })
   description?: string;
 
+  @Prop({
+    default: 'organization',
+    enum: ['platform', 'organization', 'branch'],
+  })
+  scope!: string;
+
+  @Prop({ default: false })
+  isSystem!: boolean;
+
   @Prop({ default: true, index: true })
   isActive!: boolean;
 
@@ -24,3 +33,4 @@ export type PermissionDocument = Permission & Document;
 export const PermissionSchema = SchemaFactory.createForClass(Permission);
 
 PermissionSchema.index({ module: 1, isActive: 1 });
+PermissionSchema.index({ scope: 1, module: 1, isActive: 1 });

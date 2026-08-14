@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsIn,
+  IsMongoId,
   IsOptional,
   IsString,
   MaxLength,
@@ -46,9 +47,33 @@ export class AdminCreateSupportTicketDto {
   @IsOptional()
   @IsString()
   priority?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  userId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsString()
+  dueAt?: string;
 }
 
 export class AdminListSupportTicketsDto extends ListSupportTicketsDto {
+  @IsOptional()
+  @IsMongoId()
+  organizationId?: string;
+
   @IsOptional()
   @IsIn(SUPPORT_TICKET_PRIORITIES)
   priority?: SupportTicketPriority;

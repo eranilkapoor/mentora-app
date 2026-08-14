@@ -43,6 +43,15 @@ export class PaymentCreditNote {
   @Prop({ type: Object, default: {} })
   metadata!: Record<string, unknown>;
 
+  @Prop({ trim: true })
+  pdfUrl?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  approvedBy?: Types.ObjectId;
+
+  @Prop()
+  approvedAt?: Date;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy?: Types.ObjectId;
 }

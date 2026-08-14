@@ -33,6 +33,18 @@ export class UserSession {
 
   @Prop()
   loggedOutAt?: Date;
+
+  @Prop({ trim: true })
+  revokedReason?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  revokedBy?: Types.ObjectId;
+
+  @Prop({ default: false })
+  suspicious!: boolean;
+
+  @Prop({ type: Object, default: {} })
+  risk!: Record<string, unknown>;
 }
 
 export type UserSessionDocument = UserSession & Document;
@@ -40,3 +52,5 @@ export const UserSessionSchema = SchemaFactory.createForClass(UserSession);
 
 UserSessionSchema.index({ refreshTokenHash: 1 }, { unique: true });
 UserSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+UserSessionSchema.index({ userId: 1, isActive: 1, updatedAt: -1 });
+UserSessionSchema.index({ tokenFamilyId: 1, isActive: 1 });

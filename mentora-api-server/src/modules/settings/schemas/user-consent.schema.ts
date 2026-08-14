@@ -35,6 +35,15 @@ export class UserConsent {
 
   @Prop({ trim: true, maxlength: 80 })
   source?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentProfileId?: Types.ObjectId;
+
+  @Prop({ trim: true, maxlength: 120 })
+  consentDocumentId?: string;
+
+  @Prop({ trim: true, maxlength: 120 })
+  guardianRelationship?: string;
 }
 
 export type UserConsentDocument = HydratedDocument<UserConsent>;
@@ -42,3 +51,4 @@ export const UserConsentSchema = SchemaFactory.createForClass(UserConsent);
 
 UserConsentSchema.index({ userId: 1, type: 1, version: 1 }, { unique: true });
 UserConsentSchema.index({ userId: 1, acceptedAt: -1 });
+UserConsentSchema.index({ studentProfileId: 1, type: 1, acceptedAt: -1 });

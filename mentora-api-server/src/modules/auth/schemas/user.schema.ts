@@ -145,6 +145,18 @@ export class User {
   @Prop()
   lastLoginDevice?: string;
 
+  @Prop({ trim: true })
+  userType?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  primaryOrganizationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  primaryBranchId?: Types.ObjectId;
+
+  @Prop({ default: false })
+  mfaEnabled!: boolean;
+
   @Prop({ default: false })
   mfaRequired!: boolean;
 
@@ -188,3 +200,5 @@ UserSchema.index(
 UserSchema.index({ referralCode: 1 }, { unique: true, sparse: true });
 UserSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 UserSchema.index({ legalHoldUntil: 1 });
+UserSchema.index({ primaryOrganizationId: 1, status: 1, createdAt: -1 });
+UserSchema.index({ roles: 1, status: 1, createdAt: -1 });

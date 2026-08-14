@@ -40,6 +40,12 @@ export class BillingContract {
   billingPhone?: string;
 
   @Prop({ trim: true })
+  paymentTerms?: string;
+
+  @Prop({ trim: true })
+  renewalPolicy?: string;
+
+  @Prop({ trim: true })
   taxNumber?: string;
 
   @Prop({ default: 'INR', uppercase: true })
@@ -59,6 +65,12 @@ export class BillingContract {
 
   @Prop({ type: Object, default: {} })
   limits!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  approvals!: Record<string, unknown>;
+
+  @Prop({ trim: true })
+  signedDocumentUrl?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy?: Types.ObjectId;

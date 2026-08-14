@@ -12,6 +12,9 @@ export class Notification {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ required: true, trim: true, maxlength: 120 })
   title!: string;
 
@@ -88,6 +91,12 @@ export class Notification {
   isSentSms!: boolean;
 
   @Prop({ default: false })
+  isSentWhatsapp!: boolean;
+
+  @Prop()
+  expiresAt?: Date;
+
+  @Prop({ default: false })
   hasDeliveryFailure!: boolean;
 
   // Compact latest delivery snapshot for the feed. Provider attempts live in notification_logs.
@@ -129,3 +138,5 @@ NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, category: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, dedupeKey: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, deletedAt: 1, createdAt: -1 });
+NotificationSchema.index({ organizationId: 1, category: 1, createdAt: -1 });
+NotificationSchema.index({ expiresAt: 1 }, { sparse: true });

@@ -47,6 +47,15 @@ export class BillingDunningEvent {
   @Prop()
   nextRetryAt?: Date;
 
+  @Prop()
+  resolvedAt?: Date;
+
+  @Prop({ trim: true })
+  channel?: string;
+
+  @Prop({ trim: true })
+  messageTemplateKey?: string;
+
   @Prop({ type: Object, default: {} })
   metadata!: Record<string, unknown>;
 }

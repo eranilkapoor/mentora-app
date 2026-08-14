@@ -101,6 +101,21 @@ export class Payment {
   @Prop({ default: false })
   signatureVerified!: boolean;
 
+  @Prop({ default: false })
+  webhookVerified!: boolean;
+
+  @Prop({ trim: true })
+  settlementId?: string;
+
+  @Prop()
+  settledAt?: Date;
+
+  @Prop({ default: 0, min: 0 })
+  refundedAmount!: number;
+
+  @Prop({ default: 0, min: 0 })
+  prorationAmount!: number;
+
   @Prop({ type: Object })
   gatewayPayload?: Record<string, unknown>;
 
@@ -169,6 +184,7 @@ PaymentSchema.index({ userId: 1, createdAt: -1 });
 PaymentSchema.index({ organizationId: 1, createdAt: -1 });
 PaymentSchema.index({ organizationId: 1, status: 1, createdAt: -1 });
 PaymentSchema.index({ status: 1, createdAt: -1 });
+PaymentSchema.index({ gateway: 1, settlementId: 1 }, { sparse: true });
 PaymentSchema.index({ anonymizedAt: 1, retentionReason: 1 });
 PaymentSchema.index({ legalHoldUntil: 1 });
 PaymentSchema.index(

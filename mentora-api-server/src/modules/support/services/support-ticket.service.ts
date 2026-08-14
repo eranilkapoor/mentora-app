@@ -130,6 +130,7 @@ export class SupportTicketService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const { items, total } = await this.repo.listAll(page, limit, {
+      organizationId: query.organizationId,
       priority: query.priority,
       search: query.search,
       sortBy: query.sortBy,
@@ -164,15 +165,34 @@ export class SupportTicketService {
   }
 
   async createAdminTicket(userId: string, dto: AdminCreateSupportTicketDto) {
-    return this.createTicket(userId, {
+    const targetUserId = dto.userId ?? userId;
+    const ticket = await this.repo.create({
+      assignedTo: dto.assignedTo,
+      branchId: dto.branchId,
       category: dto.category === 'billing' ? 'billing' : 'other',
+      dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       message: (dto.message ?? dto.description ?? 'Created from CRM').trim(),
+      organizationId: dto.organizationId,
       priority:
         dto.priority === 'urgent' || dto.priority === 'high'
           ? dto.priority
           : 'normal',
       subject: (dto.subject ?? dto.title ?? 'CRM support ticket').trim(),
+      userId: targetUserId,
     });
+
+    void this.notificationsService.notify({
+      userId: targetUserId,
+      title: 'Support ticket created',
+      message: `We received your ticket: ${ticket.subject}`,
+      type: 'system',
+      category: 'system',
+      channels: ['in_app'],
+      dedupeKey: `support-ticket-admin-created:${String(ticket._id)}`,
+      metadata: { ticketId: String(ticket._id), source: 'admin-crm' },
+    });
+
+    return ticket;
   }
 
   async replyAsAgent(

@@ -38,6 +38,18 @@ export class ChatRoom extends Document {
   @Prop({ type: [Types.ObjectId], ref: 'User', required: true })
   participants!: Types.ObjectId[];
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentProfileId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'LearningSchedule', index: true })
+  scheduleId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Classroom', index: true })
+  classroomId?: Types.ObjectId;
+
   // Per-user room state only. Canonical membership remains in participants.
   @Prop({ type: [ChatParticipantState], default: [] })
   participantStates!: ChatParticipantState[];
@@ -101,3 +113,5 @@ ChatRoomSchema.index({
   createdAt: -1,
 });
 ChatRoomSchema.index({ 'participantStates.userId': 1, lastActivityAt: -1 });
+ChatRoomSchema.index({ organizationId: 1, lastActivityAt: -1 });
+ChatRoomSchema.index({ studentProfileId: 1, status: 1, lastActivityAt: -1 });

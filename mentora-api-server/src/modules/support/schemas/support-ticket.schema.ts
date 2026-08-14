@@ -39,6 +39,12 @@ export class SupportTicket {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+
   @Prop({ required: true, trim: true, maxlength: 160 })
   subject!: string;
 
@@ -68,6 +74,18 @@ export class SupportTicket {
 
   @Prop()
   closedAt?: Date;
+
+  @Prop()
+  firstResponseAt?: Date;
+
+  @Prop()
+  dueAt?: Date;
+
+  @Prop({ default: false })
+  escalated!: boolean;
+
+  @Prop({ default: 0, min: 0, max: 5 })
+  satisfactionRating?: number;
 }
 
 export type SupportTicketDocument = SupportTicket & Document;
@@ -77,3 +95,10 @@ SupportTicketSchema.index({ userId: 1, updatedAt: -1 });
 SupportTicketSchema.index({ status: 1, priority: 1, updatedAt: -1 });
 SupportTicketSchema.index({ status: 1, updatedAt: -1 });
 SupportTicketSchema.index({ category: 1, status: 1 });
+SupportTicketSchema.index({
+  organizationId: 1,
+  status: 1,
+  priority: 1,
+  updatedAt: -1,
+});
+SupportTicketSchema.index({ organizationId: 1, assignedTo: 1, status: 1 });

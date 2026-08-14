@@ -28,6 +28,11 @@ export class PrivacySetting {
   @Prop({ default: false }) showIncome!: boolean;
   @Prop({ default: false }) showExactAge!: boolean;
 
+  @Prop({ default: true }) parentCanViewProgress!: boolean;
+  @Prop({ default: false }) parentCanViewDetailedAiChats!: boolean;
+  @Prop({ default: true }) showLearningActivityToGuardians!: boolean;
+  @Prop({ default: false }) allowTutorProfileDiscovery!: boolean;
+
   //  Media
   @Prop({
     type: String,
@@ -54,3 +59,4 @@ export const PrivacySettingSchema =
   SchemaFactory.createForClass(PrivacySetting);
 
 PrivacySettingSchema.index({ profileVisibility: 1 });
+PrivacySettingSchema.index({ parentCanViewProgress: 1 });

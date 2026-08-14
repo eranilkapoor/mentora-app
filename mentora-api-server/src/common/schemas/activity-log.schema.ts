@@ -9,6 +9,9 @@ export class ActivityLog {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ type: String, required: true, index: true })
   action!: string;
 
@@ -30,6 +33,12 @@ export class ActivityLog {
   @Prop({ type: Object, default: {} })
   metadata!: Record<string, unknown>;
 
+  @Prop({ type: String, index: true })
+  requestId?: string;
+
+  @Prop({ type: String, index: true })
+  correlationId?: string;
+
   @Prop({ type: Date, default: Date.now, index: true })
   createdAt!: Date;
 }
@@ -37,3 +46,4 @@ export class ActivityLog {
 export const ActivityLogSchema = SchemaFactory.createForClass(ActivityLog);
 ActivityLogSchema.index({ userId: 1, createdAt: -1 });
 ActivityLogSchema.index({ action: 1 });
+ActivityLogSchema.index({ organizationId: 1, category: 1, createdAt: -1 });

@@ -76,6 +76,15 @@ export class Plan {
   @Prop({ default: 0, min: 0 })
   aiCreditLimit!: number;
 
+  @Prop({ default: 0, min: 0 })
+  seatOveragePrice!: number;
+
+  @Prop({ default: false })
+  requiresContract!: boolean;
+
+  @Prop({ type: Object, default: {} })
+  usageLimits!: Record<string, unknown>;
+
   @Prop({ default: 'INR' })
   currency!: string;
 
@@ -123,5 +132,6 @@ PlanSchema.index({ audience: 1, isActive: 1, sortOrder: 1 });
 PlanSchema.index({ price: 1 });
 PlanSchema.index({ isActive: 1 });
 PlanSchema.index({ sortOrder: 1 });
+PlanSchema.index({ audience: 1, requiresContract: 1, isActive: 1 });
 PlanSchema.index({ 'storeProducts.android.productId': 1 });
 PlanSchema.index({ 'storeProducts.ios.productId': 1 });
