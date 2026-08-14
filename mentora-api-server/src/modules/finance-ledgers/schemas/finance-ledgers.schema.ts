@@ -38,6 +38,35 @@ export class FinanceLedgerEntry {
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
   relatedApplicationId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({
+    enum: ['receivable', 'payable', 'refund', 'adjustment'],
+    default: 'receivable',
+    index: true,
+  })
+  ledgerType!: string;
+  @Prop({ enum: ['debit', 'credit'], default: 'debit', index: true })
+  entryType!: string;
+  @Prop({ required: false, default: 0, min: 0 })
+  amount!: number;
+  @Prop({ trim: true, default: 'INR' })
+  currency!: string;
+  @Prop({ type: Types.ObjectId, ref: 'Invoice', index: true })
+  invoiceId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Payment', index: true })
+  paymentId?: Types.ObjectId;
+  @Prop()
+  dueDate?: Date;
+  @Prop()
+  paidAt?: Date;
+  @Prop({
+    enum: ['pending', 'settled', 'failed', 'reconciled'],
+    default: 'pending',
+  })
+  settlementStatus!: string;
+  @Prop({ enum: ['pending', 'exported', 'failed'], default: 'pending' })
+  exportStatus!: string;
   @Prop() dueAt?: Date;
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [] }) tags!: string[];
@@ -60,6 +89,17 @@ FinanceLedgerEntrySchema.index({
   ownerId: 1,
   status: 1,
   dueAt: 1,
+});
+FinanceLedgerEntrySchema.index({
+  organizationId: 1,
+  branchId: 1,
+  ledgerType: 1,
+  createdAt: -1,
+});
+FinanceLedgerEntrySchema.index({
+  organizationId: 1,
+  settlementStatus: 1,
+  dueDate: 1,
 });
 FinanceLedgerEntrySchema.index({
   organizationId: 1,

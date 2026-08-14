@@ -330,15 +330,63 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     if (!payload) return {};
     const result: Record<string, unknown> = {};
     const stringFields = [
+      'accessLevel',
+      'agreementStatus',
       'calendarEventId',
+      'category',
       'color',
+      'commissionType',
+      'contactEmail',
+      'contactName',
+      'contentType',
+      'country',
+      'countryCode',
+      'countryName',
+      'currency',
+      'deliveryStatus',
+      'direction',
+      'disposition',
+      'eligibilityStatus',
+      'entryType',
+      'eventType',
+      'exportStatus',
+      'feeStatus',
+      'ledgerType',
       'location',
       'meetingType',
       'meetingUrl',
       'module',
+      'name',
+      'onboardingStatus',
+      'optInStatus',
       'outcome',
+      'partnerCode',
+      'partnerName',
+      'partnerType',
+      'phone',
+      'phoneNumber',
+      'providerCallId',
+      'providerMessageId',
+      'publishStatus',
+      'queue',
+      'recommendation',
+      'recordingUrl',
+      'result',
+      'schemeName',
       'provider',
+      'seoDescription',
+      'seoTitle',
+      'settlementStatus',
+      'slug',
       'scope',
+      'templateName',
+      'territory',
+      'url',
+      'verificationStatus',
+      'visibility',
+      'visaRequirement',
+      'website',
+      'workRights',
     ];
     stringFields.forEach((field) => {
       if (typeof payload[field] === 'string' && payload[field]) {
@@ -349,8 +397,99 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const endAt = this.toOptionalDate(payload.endAt);
     if (startAt) result.startAt = startAt;
     if (endAt) result.endAt = endAt;
+    [
+      'approvedAt',
+      'awardDate',
+      'checkInAt',
+      'checkOutAt',
+      'dueDate',
+      'endedAt',
+      'enrolledAt',
+      'followUpAt',
+      'lastAccessedAt',
+      'lastMessageAt',
+      'offerAcceptedAt',
+      'paidAt',
+      'publishedAt',
+      'scheduledAt',
+      'startedAt',
+    ].forEach((field) => {
+      const date = this.toOptionalDate(payload[field]);
+      if (date) result[field] = date;
+    });
+    [
+      'approvedBy',
+      'branchId',
+      'departmentId',
+      'hostId',
+      'invoiceId',
+      'leadStageId',
+      'ownerId',
+      'paymentId',
+      'programId',
+      'relatedApplicationId',
+      'relatedLeadId',
+      'reportsToUserId',
+      'sourceId',
+      'studentId',
+      'subjectId',
+      'teamId',
+      'userId',
+    ].forEach((field) => {
+      const value = payload[field];
+      const objectId =
+        typeof value === 'string' ? toOptionalObjectId(value) : undefined;
+      if (objectId) result[field] = objectId;
+    });
+    [
+      'amount',
+      'approvalLevel',
+      'approvedAmount',
+      'capacity',
+      'commissionRate',
+      'discountPercent',
+      'durationSeconds',
+      'hourlyRate',
+      'price',
+      'ranking',
+      'rating',
+      'registrationCount',
+      'requestedAmount',
+      'score',
+      'unreadCount',
+      'usageCount',
+      'version',
+    ].forEach((field) => {
+      const value = payload[field];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        result[field] = value;
+      }
+      if (typeof value === 'string' && value.trim()) {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) result[field] = parsed;
+      }
+    });
+    [
+      'auditLoggingEnabled',
+      'dataExportRestricted',
+      'enabled',
+      'isAddon',
+      'rawSecretAccessBlocked',
+      'requiredForAdmission',
+    ].forEach((field) => {
+      const value = payload[field];
+      if (typeof value === 'boolean') result[field] = value;
+      if (typeof value === 'string' && value.trim()) {
+        result[field] = value.toLowerCase() === 'true';
+      }
+    });
     if (Array.isArray(payload.attendeeIds)) {
       result.attendeeIds = payload.attendeeIds
+        .filter((id): id is string => typeof id === 'string')
+        .map((id) => toRequiredObjectId(id));
+    }
+    if (Array.isArray(payload.panelistIds)) {
+      result.panelistIds = payload.panelistIds
         .filter((id): id is string => typeof id === 'string')
         .map((id) => toRequiredObjectId(id));
     }
@@ -360,6 +499,27 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
         .map((value) => value.trim())
         .filter(Boolean);
     }
+    [
+      'enabledModules',
+      'intakeMonths',
+      'languages',
+      'subjects',
+      'conversionTags',
+    ].forEach((field) => {
+      const value = payload[field];
+      if (Array.isArray(value)) {
+        result[field] = value
+          .filter((item): item is string => typeof item === 'string')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    });
+    ['availability', 'geo', 'seo', 'usageLimits'].forEach((field) => {
+      const value = payload[field];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        result[field] = value;
+      }
+    });
     if (payload.usageRule && typeof payload.usageRule === 'object') {
       result.usageRule = payload.usageRule;
     }

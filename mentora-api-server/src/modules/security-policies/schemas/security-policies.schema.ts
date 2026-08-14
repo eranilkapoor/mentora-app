@@ -35,6 +35,24 @@ export class OrganizationSecurityPolicy {
   sessionPolicy!: Record<string, unknown>;
 
   @Prop({ type: Object, default: {} })
+  passwordPolicy!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  devicePolicy!: Record<string, unknown>;
+
+  @Prop({ default: false })
+  dataExportRestricted!: boolean;
+
+  @Prop({ default: false })
+  rawSecretAccessBlocked!: boolean;
+
+  @Prop({ default: true })
+  auditLoggingEnabled!: boolean;
+
+  @Prop({ type: [String], default: [] })
+  allowedSsoDomains!: string[];
+
+  @Prop({ type: Object, default: {} })
   dataRetentionPolicy!: Record<string, unknown>;
 
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
@@ -44,3 +62,4 @@ export class OrganizationSecurityPolicy {
 export const OrganizationSecurityPolicySchema = SchemaFactory.createForClass(
   OrganizationSecurityPolicy,
 );
+OrganizationSecurityPolicySchema.index({ organizationId: 1, mfaRequired: 1 });

@@ -38,6 +38,30 @@ export class Interview {
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
   relatedApplicationId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({ enum: ['online', 'offline', 'phone'], default: 'online' })
+  mode!: string;
+  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
+  panelistIds!: Types.ObjectId[];
+  @Prop({ trim: true })
+  applicantName?: string;
+  @Prop({ default: 0, min: 0, max: 100 })
+  score!: number;
+  @Prop({
+    enum: ['pending', 'selected', 'rejected', 'waitlisted', 'reschedule'],
+    default: 'pending',
+    index: true,
+  })
+  result!: string;
+  @Prop({ trim: true })
+  recommendation?: string;
+  @Prop({ trim: true })
+  location?: string;
+  @Prop({ trim: true })
+  meetingUrl?: string;
+  @Prop({ index: true })
+  scheduledAt?: Date;
   @Prop() dueAt?: Date;
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [] }) tags!: string[];
@@ -55,6 +79,8 @@ InterviewSchema.index({
   createdAt: -1,
 });
 InterviewSchema.index({ organizationId: 1, ownerId: 1, status: 1, dueAt: 1 });
+InterviewSchema.index({ organizationId: 1, branchId: 1, scheduledAt: 1 });
+InterviewSchema.index({ organizationId: 1, result: 1, scheduledAt: -1 });
 InterviewSchema.index({ organizationId: 1, relatedLeadId: 1, createdAt: -1 });
 InterviewSchema.index({
   organizationId: 1,

@@ -43,6 +43,20 @@ export class MentorRecord {
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  userId?: Types.ObjectId;
+  @Prop({ enum: ['ai', 'human', 'hybrid'], default: 'human', index: true })
+  mentorType!: string;
+  @Prop({ type: [String], default: [], index: true })
+  subjects!: string[];
+  @Prop({ type: Object, default: {} })
+  availability!: Record<string, unknown>;
+  @Prop({ default: 0, min: 0, max: 5 })
+  rating!: number;
+  @Prop({ default: 0, min: 0 })
+  hourlyRate!: number;
+  @Prop({ enum: ['pending', 'verified', 'rejected'], default: 'pending' })
+  verificationStatus!: string;
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
 
@@ -55,3 +69,5 @@ MentorRecordSchema.index({
   dueAt: 1,
 });
 MentorRecordSchema.index({ organizationId: 1, createdAt: -1 });
+MentorRecordSchema.index({ organizationId: 1, mentorType: 1, status: 1 });
+MentorRecordSchema.index({ organizationId: 1, subjects: 1, status: 1 });

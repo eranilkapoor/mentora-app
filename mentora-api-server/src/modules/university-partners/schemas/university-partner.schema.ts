@@ -42,6 +42,28 @@ export class UniversityPartner {
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
+  @Prop({ required: false, trim: true, index: true })
+  name?: string;
+  @Prop({ trim: true, index: true })
+  country?: string;
+  @Prop({ trim: true })
+  city?: string;
+  @Prop({
+    enum: ['university', 'college', 'institute', 'school'],
+    default: 'university',
+  })
+  partnerType!: string;
+  @Prop({
+    enum: ['prospect', 'active', 'expired', 'suspended'],
+    default: 'prospect',
+  })
+  agreementStatus!: string;
+  @Prop({ default: 0, min: 0 })
+  ranking!: number;
+  @Prop({ trim: true, lowercase: true })
+  contactEmail?: string;
+  @Prop({ trim: true })
+  website?: string;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -56,3 +78,8 @@ UniversityPartnerSchema.index({
   dueAt: 1,
 });
 UniversityPartnerSchema.index({ organizationId: 1, createdAt: -1 });
+UniversityPartnerSchema.index({
+  organizationId: 1,
+  country: 1,
+  agreementStatus: 1,
+});

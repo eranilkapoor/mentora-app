@@ -2,7 +2,11 @@ import type { AdminModule, IconName, ModuleStatus } from "./adminTypes";
 
 export type ThemeMode = "light" | "dark";
 export type OrganizationSetupKind =
-  "branch" | "department" | "team" | "branding" | "channel";
+  | "branch"
+  | "department"
+  | "team"
+  | "branding"
+  | "channel";
 
 export const dedicatedAdminModuleIds = new Set([
   "activities",
@@ -582,94 +586,89 @@ export function getEditableModuleColumns(module: AdminModule) {
   }
   if (module.id === "service-catalog") {
     return [
-      "Service Type",
+      "Code",
       "Category",
-      "Pricing India",
-      "Pricing International",
-      "Timeline",
-      "Workflow Stages",
-      "Required Documents",
-      "Faqs",
-      "Media Url",
+      "Price",
+      "Currency",
+      "Billing Cycle",
+      "Is Addon",
+      "Enabled Modules",
+      "Usage Limits",
       "Status",
     ];
   }
   if (module.id === "mentors") {
     return [
-      "Qualification",
-      "Experience",
-      "Specialization",
-      "Research Expertise",
+      "User Id",
+      "Mentor Type",
+      "Subjects",
       "Languages",
       "Availability",
-      "Capacity",
-      "Workload",
       "Rating",
-      "Payout Terms",
+      "Hourly Rate",
+      "Verification Status",
       "Status",
     ];
   }
   if (module.id === "university-partners") {
     return [
+      "Name",
       "Country",
+      "City",
+      "Partner Type",
+      "Agreement Status",
       "Ranking",
-      "Accreditation",
-      "Courses",
-      "Scholarships",
-      "Agreement Url",
-      "Mou Url",
-      "Enrollment Count",
-      "Partner Owner",
+      "Contact Email",
+      "Website",
       "Status",
     ];
   }
   if (module.id === "countries") {
     return [
-      "Country",
-      "Study Requirements",
-      "Visa Information",
-      "Scholarships",
-      "Living Cost",
-      "Admission Process",
-      "Popular Universities",
+      "Country Code",
+      "Country Name",
+      "Intake Months",
+      "Visa Requirement",
+      "Currency",
+      "Languages",
+      "Work Rights",
       "Status",
     ];
   }
   if (module.id === "channel-partners") {
     return [
-      "Partner Type",
-      "Contact Person",
+      "Partner Code",
+      "Contact Name",
       "Email",
       "Phone",
-      "Commission Slab",
-      "Approval Status",
-      "Referral Count",
-      "Payout Terms",
+      "Commission Type",
+      "Commission Rate",
+      "Agreement Status",
+      "Territory",
       "Status",
     ];
   }
   if (module.id === "study-materials") {
     return [
       "Material Type",
-      "Program",
-      "Course",
-      "Subject",
-      "Resource Url",
-      "File Type",
+      "Program Id",
+      "Subject Id",
+      "Url",
+      "Version",
+      "Publish Status",
       "Access Level",
-      "Publish Date",
       "Status",
     ];
   }
   if (module.id === "cms") {
     return [
-      "Page",
-      "Section",
       "Content Type",
       "Slug",
+      "Locale",
+      "Channel",
       "Seo Title",
       "Seo Description",
-      "Publish Date",
+      "Published At",
       "Owner",
       "Status",
     ];
@@ -687,11 +686,16 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Entity Id",
       "Category",
       "Url",
+      "Document Number",
+      "Issued At",
+      "Expires At",
       "Mime Type",
       "Size",
       "Verification Status",
       "OCR Provider",
       "Verification Note",
+      "Rejection Reason",
+      "Required For Admission",
     ];
   }
   if (module.id === "applications") {
@@ -716,29 +720,32 @@ export function getEditableModuleColumns(module: AdminModule) {
     return [
       "Application",
       "Student",
-      "Program",
-      "Course",
-      "Fee Plan",
-      "Payment Status",
+      "Program Id",
+      "Branch Id",
+      "Department Id",
+      "Team Id",
+      "Admission Number",
+      "Fee Status",
       "Batch",
-      "Learning Plan",
-      "Onboarding Checklist",
-      "ERP Handoff",
-      "LMS Handoff",
+      "Learning Plan Status",
+      "Onboarding Status",
+      "Offer Accepted At",
+      "Enrolled At",
       "Enrollment Status",
     ];
   }
   if (module.id === "scholarship") {
     return [
       "Student",
-      "Program",
-      "Scholarship Rule",
+      "Branch Id",
+      "Scheme Name",
       "Eligibility Status",
       "Verification Status",
-      "Approval Stage",
-      "Award Amount",
-      "Payment Plan Impact",
-      "Approver",
+      "Approval Level",
+      "Requested Amount",
+      "Approved Amount",
+      "Discount Percent",
+      "Award Date",
       "Audit Note",
     ];
   }
@@ -746,11 +753,9 @@ export function getEditableModuleColumns(module: AdminModule) {
     return [
       "Applicant",
       "Application",
-      "Interview Type",
-      "Interviewer",
-      "Panel",
-      "Scheduled Start",
-      "Scheduled End",
+      "Branch Id",
+      "Panelist Ids",
+      "Scheduled At",
       "Mode",
       "Meeting Link",
       "Score",
@@ -808,29 +813,27 @@ export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "events") {
     return [
       "Event Type",
-      "Venue",
-      "Registration Limit",
-      "Registration Form",
-      "Webinar Provider",
-      "QR Check In",
-      "Attendance",
-      "Lead Capture",
-      "Owner",
-      "Start Time",
+      "Branch Id",
+      "Start At",
+      "End At",
+      "Location",
+      "Capacity",
+      "Registration Count",
+      "Visibility",
+      "Host Id",
     ];
   }
   if (module.id === "field-force") {
     return [
       "Visit Type",
-      "Agent",
-      "Route",
+      "Branch Id",
+      "Team Id",
+      "Partner Name",
       "Location",
-      "Check In",
-      "Check Out",
-      "Mileage",
-      "Geo Status",
+      "Geo",
+      "Check In At",
+      "Check Out At",
       "Outcome",
-      "Next Action",
     ];
   }
   if (module.id === "support") {
@@ -849,16 +852,17 @@ export function getEditableModuleColumns(module: AdminModule) {
   }
   if (module.id === "finance") {
     return [
+      "Ledger Type",
       "Entry Type",
-      "Student",
-      "Invoice",
+      "Branch Id",
+      "Invoice Id",
+      "Payment Id",
       "Amount",
-      "Tax",
-      "Payment Status",
+      "Currency",
       "Due Date",
-      "Gateway",
-      "Reconciliation Status",
-      "Accounting Export",
+      "Paid At",
+      "Settlement Status",
+      "Export Status",
     ];
   }
   if (module.id === "reports") {
@@ -877,14 +881,14 @@ export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "integrations") {
     return [
       "Provider Key",
-      "Provider",
-      "Module",
+      "Category",
+      "Auth Type",
+      "Secret Ref",
       "Status",
-      "Mode",
-      "Webhook Url",
-      "Callback Status",
-      "Credential Status",
-      "Last Checked",
+      "Enabled",
+      "Rate Limits",
+      "Webhook Config",
+      "Last Checked At",
     ];
   }
   if (module.id === "settings") {

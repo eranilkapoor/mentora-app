@@ -42,6 +42,20 @@ export class CountryGuide {
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
+  @Prop({ required: false, trim: true, uppercase: true, index: true })
+  countryCode?: string;
+  @Prop({ trim: true, index: true })
+  countryName?: string;
+  @Prop({ type: [String], default: [] })
+  intakeMonths!: string[];
+  @Prop({ trim: true })
+  visaRequirement?: string;
+  @Prop({ trim: true, default: 'USD' })
+  currency!: string;
+  @Prop({ type: [String], default: [] })
+  languages!: string[];
+  @Prop({ trim: true })
+  workRights?: string;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -55,3 +69,7 @@ CountryGuideSchema.index({
   dueAt: 1,
 });
 CountryGuideSchema.index({ organizationId: 1, createdAt: -1 });
+CountryGuideSchema.index(
+  { organizationId: 1, countryCode: 1 },
+  { unique: true, sparse: true },
+);

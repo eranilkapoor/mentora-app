@@ -38,6 +38,28 @@ export class Admission {
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
   relatedApplicationId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
+  departmentId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
+  @Prop({ trim: true, uppercase: true, index: true })
+  admissionNumber?: string;
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Program', index: true })
+  programId?: Types.ObjectId;
+  @Prop({ trim: true })
+  batchName?: string;
+  @Prop({ enum: ['pending', 'partial', 'paid', 'waived'], default: 'pending' })
+  feeStatus!: string;
+  @Prop({ enum: ['pending', 'started', 'completed'], default: 'pending' })
+  onboardingStatus!: string;
+  @Prop({ enum: ['pending', 'provisioned', 'failed'], default: 'pending' })
+  learningPlanStatus!: string;
+  @Prop() offerAcceptedAt?: Date;
+  @Prop() enrolledAt?: Date;
   @Prop() dueAt?: Date;
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [] }) tags!: string[];
@@ -55,6 +77,12 @@ AdmissionSchema.index({
   createdAt: -1,
 });
 AdmissionSchema.index({ organizationId: 1, ownerId: 1, status: 1, dueAt: 1 });
+AdmissionSchema.index({ organizationId: 1, branchId: 1, status: 1 });
+AdmissionSchema.index({ organizationId: 1, programId: 1, status: 1 });
+AdmissionSchema.index(
+  { organizationId: 1, admissionNumber: 1 },
+  { sparse: true },
+);
 AdmissionSchema.index({ organizationId: 1, relatedLeadId: 1, createdAt: -1 });
 AdmissionSchema.index({
   organizationId: 1,

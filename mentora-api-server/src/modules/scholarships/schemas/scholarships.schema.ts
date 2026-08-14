@@ -42,6 +42,29 @@ export class ScholarshipApplication {
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
   relatedApplicationId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'StudentProfile', index: true })
+  studentId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({ trim: true, index: true })
+  schemeName?: string;
+  @Prop({
+    enum: ['not_checked', 'eligible', 'ineligible', 'needs_review'],
+    default: 'not_checked',
+    index: true,
+  })
+  eligibilityStatus!: string;
+  @Prop({ enum: ['pending', 'verified', 'rejected'], default: 'pending' })
+  verificationStatus!: string;
+  @Prop({ default: 0, min: 0 })
+  requestedAmount!: number;
+  @Prop({ default: 0, min: 0 })
+  approvedAmount!: number;
+  @Prop({ default: 0, min: 0, max: 100 })
+  discountPercent!: number;
+  @Prop({ default: 1, min: 1 })
+  approvalLevel!: number;
+  @Prop() awardDate?: Date;
   @Prop() dueAt?: Date;
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [] }) tags!: string[];
@@ -69,6 +92,16 @@ ScholarshipApplicationSchema.index({
   ownerId: 1,
   status: 1,
   dueAt: 1,
+});
+ScholarshipApplicationSchema.index({
+  organizationId: 1,
+  schemeName: 1,
+  status: 1,
+});
+ScholarshipApplicationSchema.index({
+  organizationId: 1,
+  branchId: 1,
+  eligibilityStatus: 1,
 });
 ScholarshipApplicationSchema.index({
   organizationId: 1,

@@ -38,6 +38,27 @@ export class CallCenterCall {
   relatedLeadId?: Types.ObjectId;
   @Prop({ type: Types.ObjectId, ref: 'Application', index: true })
   relatedApplicationId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Team', index: true })
+  teamId?: Types.ObjectId;
+  @Prop({ enum: ['inbound', 'outbound'], default: 'outbound', index: true })
+  direction!: string;
+  @Prop({ required: false, trim: true, index: true })
+  phoneNumber?: string;
+  @Prop({ trim: true, index: true })
+  queue?: string;
+  @Prop({ trim: true, index: true })
+  disposition?: string;
+  @Prop({ trim: true })
+  recordingUrl?: string;
+  @Prop({ trim: true })
+  providerCallId?: string;
+  @Prop() startedAt?: Date;
+  @Prop() endedAt?: Date;
+  @Prop({ default: 0, min: 0 })
+  durationSeconds!: number;
+  @Prop() followUpAt?: Date;
   @Prop() dueAt?: Date;
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [] }) tags!: string[];
@@ -60,6 +81,12 @@ CallCenterCallSchema.index({
   ownerId: 1,
   status: 1,
   dueAt: 1,
+});
+CallCenterCallSchema.index({ organizationId: 1, direction: 1, startedAt: -1 });
+CallCenterCallSchema.index({
+  organizationId: 1,
+  phoneNumber: 1,
+  createdAt: -1,
 });
 CallCenterCallSchema.index({
   organizationId: 1,

@@ -24,6 +24,33 @@ export class IntegrationProviderConfig {
 
   @Prop({
     enum: [
+      'ads',
+      'analytics',
+      'communication',
+      'calendar',
+      'payment',
+      'erp',
+      'lms',
+      'sis',
+      'storage',
+      'webhook',
+    ],
+    default: 'webhook',
+    index: true,
+  })
+  category!: string;
+
+  @Prop({
+    enum: ['none', 'api_key', 'oauth2', 'webhook_secret'],
+    default: 'api_key',
+  })
+  authType!: string;
+
+  @Prop({ trim: true })
+  secretRef?: string;
+
+  @Prop({
+    enum: [
       'not_configured',
       'sandbox_configured',
       'configured',
@@ -42,6 +69,15 @@ export class IntegrationProviderConfig {
   @Prop({ type: Object, default: {} })
   health!: Record<string, unknown>;
 
+  @Prop({ type: Object, default: {} })
+  rateLimits!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  webhookConfig!: Record<string, unknown>;
+
+  @Prop({ default: false })
+  enabled!: boolean;
+
   @Prop()
   lastCheckedAt?: Date;
 
@@ -56,3 +92,8 @@ IntegrationProviderConfigSchema.index(
   { organizationId: 1, providerKey: 1 },
   { unique: true },
 );
+IntegrationProviderConfigSchema.index({
+  organizationId: 1,
+  category: 1,
+  status: 1,
+});

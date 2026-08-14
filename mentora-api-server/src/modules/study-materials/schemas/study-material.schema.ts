@@ -42,6 +42,27 @@ export class StudyMaterial {
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
+  @Prop({
+    enum: ['pdf', 'video', 'quiz', 'assignment', 'link', 'note'],
+    default: 'pdf',
+    index: true,
+  })
+  materialType!: string;
+  @Prop({ type: Types.ObjectId, ref: 'Subject', index: true })
+  subjectId?: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'Program', index: true })
+  programId?: Types.ObjectId;
+  @Prop({ trim: true })
+  url?: string;
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+  @Prop({ enum: ['draft', 'published', 'retired'], default: 'draft' })
+  publishStatus!: string;
+  @Prop({
+    enum: ['free', 'paid', 'plan_only', 'internal'],
+    default: 'plan_only',
+  })
+  accessLevel!: string;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -55,3 +76,9 @@ StudyMaterialSchema.index({
   dueAt: 1,
 });
 StudyMaterialSchema.index({ organizationId: 1, createdAt: -1 });
+StudyMaterialSchema.index({
+  organizationId: 1,
+  materialType: 1,
+  publishStatus: 1,
+});
+StudyMaterialSchema.index({ organizationId: 1, subjectId: 1, accessLevel: 1 });

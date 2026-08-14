@@ -42,6 +42,22 @@ export class ChannelPartner {
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
+  @Prop({ trim: true, uppercase: true, index: true })
+  partnerCode?: string;
+  @Prop({ trim: true })
+  contactName?: string;
+  @Prop({ trim: true, lowercase: true })
+  email?: string;
+  @Prop({ trim: true })
+  phone?: string;
+  @Prop({ enum: ['fixed', 'percentage', 'tiered'], default: 'percentage' })
+  commissionType!: string;
+  @Prop({ default: 0, min: 0 })
+  commissionRate!: number;
+  @Prop({ enum: ['draft', 'active', 'expired', 'suspended'], default: 'draft' })
+  agreementStatus!: string;
+  @Prop({ trim: true })
+  territory?: string;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -56,3 +72,12 @@ ChannelPartnerSchema.index({
   dueAt: 1,
 });
 ChannelPartnerSchema.index({ organizationId: 1, createdAt: -1 });
+ChannelPartnerSchema.index(
+  { organizationId: 1, partnerCode: 1 },
+  { unique: true, sparse: true },
+);
+ChannelPartnerSchema.index({
+  organizationId: 1,
+  agreementStatus: 1,
+  territory: 1,
+});

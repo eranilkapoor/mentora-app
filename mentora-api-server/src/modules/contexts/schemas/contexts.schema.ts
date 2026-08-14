@@ -40,8 +40,23 @@ export class UserMembership {
   @Prop({ type: [String], default: [] })
   permissions!: string[];
 
+  @Prop({ type: Types.ObjectId, ref: Branch.name, index: true })
+  defaultBranchId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  reportsToUserId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['global', 'organization', 'branch', 'team'],
+    default: 'organization',
+  })
+  accessLevel!: string;
+
   @Prop({ enum: ['active', 'inactive', 'suspended'], default: 'active' })
   status!: string;
+
+  @Prop()
+  lastAccessedAt?: Date;
 
   @Prop({ type: Object, default: {} })
   settings!: Record<string, unknown>;
@@ -64,3 +79,9 @@ UserMembershipSchema.index({
 UserMembershipSchema.index({ organizationId: 1, branchIds: 1, status: 1 });
 UserMembershipSchema.index({ organizationId: 1, departmentIds: 1, status: 1 });
 UserMembershipSchema.index({ organizationId: 1, teamIds: 1, status: 1 });
+UserMembershipSchema.index({
+  organizationId: 1,
+  reportsToUserId: 1,
+  status: 1,
+});
+UserMembershipSchema.index({ userId: 1, status: 1, lastAccessedAt: -1 });

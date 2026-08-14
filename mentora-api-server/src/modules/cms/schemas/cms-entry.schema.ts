@@ -42,6 +42,20 @@ export class CmsEntry {
   @Prop() completedAt?: Date;
   @Prop({ type: [String], default: [], index: true }) tags!: string[];
   @Prop({ type: Object, default: {} }) payload!: Record<string, unknown>;
+  @Prop({ trim: true, lowercase: true, index: true })
+  slug?: string;
+  @Prop({ enum: ['page', 'blog', 'faq', 'banner', 'legal'], default: 'page' })
+  contentType!: string;
+  @Prop({ trim: true, default: 'en-IN' })
+  locale!: string;
+  @Prop({ enum: ['website', 'app', 'crm', 'all'], default: 'website' })
+  channel!: string;
+  @Prop({ trim: true })
+  seoTitle?: string;
+  @Prop({ trim: true })
+  seoDescription?: string;
+  @Prop()
+  publishedAt?: Date;
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -50,3 +64,7 @@ export const CmsEntrySchema = SchemaFactory.createForClass(CmsEntry);
 CmsEntrySchema.index({ organizationId: 1, status: 1, dueAt: 1 });
 CmsEntrySchema.index({ organizationId: 1, ownerId: 1, status: 1, dueAt: 1 });
 CmsEntrySchema.index({ organizationId: 1, createdAt: -1 });
+CmsEntrySchema.index(
+  { organizationId: 1, slug: 1, locale: 1 },
+  { unique: true, sparse: true },
+);

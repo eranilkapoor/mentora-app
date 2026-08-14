@@ -41,6 +41,15 @@ export class DocumentRecord {
   @Prop({ trim: true })
   mimeType?: string;
 
+  @Prop({ trim: true })
+  documentNumber?: string;
+
+  @Prop()
+  issuedAt?: Date;
+
+  @Prop()
+  expiresAt?: Date;
+
   @Prop({ default: 0 })
   size!: number;
 
@@ -63,6 +72,12 @@ export class DocumentRecord {
 
   @Prop({ type: Object, default: {} })
   verification!: Record<string, unknown>;
+
+  @Prop({ trim: true })
+  rejectionReason?: string;
+
+  @Prop({ default: false })
+  requiredForAdmission!: boolean;
 
   @Prop({ default: 1, min: 1 })
   version!: number;
@@ -94,3 +109,4 @@ DocumentRecordSchema.index({
   updatedAt: -1,
 });
 DocumentRecordSchema.index({ organizationId: 1, category: 1, status: 1 });
+DocumentRecordSchema.index({ organizationId: 1, expiresAt: 1, status: 1 });

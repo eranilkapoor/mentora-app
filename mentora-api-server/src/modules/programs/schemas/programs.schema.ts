@@ -42,6 +42,18 @@ export class Program {
   @Prop({ trim: true })
   specialization?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+
+  @Prop({ enum: ['online', 'offline', 'hybrid'], default: 'hybrid' })
+  deliveryMode!: string;
+
+  @Prop({ trim: true })
+  academicYear?: string;
+
+  @Prop({ trim: true })
+  intake?: string;
+
   @Prop({ default: 0, min: 0 })
   durationMonths!: number;
 
@@ -50,6 +62,9 @@ export class Program {
 
   @Prop({ trim: true })
   eligibility?: string;
+
+  @Prop({ type: [String], default: [] })
+  entranceExams!: string[];
 
   @Prop({ default: 0, min: 0 })
   intakeCapacity!: number;
@@ -75,3 +90,4 @@ export const ProgramSchema = SchemaFactory.createForClass(Program);
 ProgramSchema.index({ organizationId: 1, createdAt: -1 });
 ProgramSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 ProgramSchema.index({ organizationId: 1, status: 1, level: 1 });
+ProgramSchema.index({ organizationId: 1, branchId: 1, status: 1 });
