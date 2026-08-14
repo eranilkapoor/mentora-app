@@ -59,6 +59,15 @@ export class Transcript {
   @Prop({ type: Types.ObjectId, ref: 'Document' })
   documentId?: Types.ObjectId;
 
+  @Prop({ trim: true })
+  recipientName?: string;
+
+  @Prop({ trim: true })
+  recipientEmail?: string;
+
+  @Prop()
+  expiresAt?: Date;
+
   // Lets a third party (university, employer) verify authenticity without
   // exposing the full record — checked via a public lookup endpoint.
   @Prop({ trim: true })

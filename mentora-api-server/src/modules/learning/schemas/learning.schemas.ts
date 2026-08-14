@@ -46,6 +46,12 @@ export type SafetyEventDocument = HydratedDocument<SafetyEvent>;
 
 @Schema({ collection: COLLECTION_NAMES.STUDENT_PROFILE, timestamps: true })
 export class StudentProfile {
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Branch', index: true })
+  branchId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   userId?: Types.ObjectId;
 
@@ -78,6 +84,15 @@ export class StudentProfile {
   @Prop({ required: true })
   dateOfBirth!: Date;
 
+  @Prop({
+    enum: ['pending', 'verified', 'rejected', 'expired'],
+    default: 'pending',
+  })
+  ageVerificationStatus!: string;
+
+  @Prop({ trim: true })
+  ageVerificationDocumentId?: string;
+
   @Prop({ enum: ['minor', 'adult', 'unknown'], default: 'unknown' })
   ageCategory!: string;
 
@@ -95,6 +110,12 @@ export class StudentProfile {
 
   @Prop({ type: [String], default: [] })
   learningGoals!: string[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'StudyPlan', default: [] })
+  studyPlanIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: 'Subject', default: [] })
+  subjectIds!: Types.ObjectId[];
 
   @Prop({ type: Object, default: {} })
   personal!: Record<string, unknown>;
@@ -132,6 +153,12 @@ export class StudentProfile {
   @Prop({ default: false })
   onboardingCompleted!: boolean;
 
+  @Prop()
+  onboardingCompletedAt?: Date;
+
+  @Prop()
+  lastLearningAt?: Date;
+
   @Prop({ default: 0, min: 0, max: 100 })
   profileCompletionPercentage!: number;
 
@@ -151,9 +178,14 @@ export const StudentProfileSchema =
 StudentProfileSchema.index({ createdByUserId: 1, status: 1 });
 StudentProfileSchema.index({ userId: 1, status: 1 });
 StudentProfileSchema.index({ status: 1, createdAt: -1 });
+StudentProfileSchema.index({ organizationId: 1, branchId: 1, status: 1 });
+StudentProfileSchema.index({ organizationId: 1, ageVerificationStatus: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.PARENT_PROFILE, timestamps: true })
 export class ParentProfile {
+  @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
+  organizationId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, unique: true })
   userId!: Types.ObjectId;
 
@@ -180,9 +212,16 @@ export class ParentProfile {
 
   @Prop({ default: true })
   emergencyContact!: boolean;
+
+  @Prop({ type: Object, default: {} })
+  billingAddress!: Record<string, unknown>;
+
+  @Prop({ enum: ['pending', 'verified', 'rejected'], default: 'pending' })
+  identityVerificationStatus!: string;
 }
 
 export const ParentProfileSchema = SchemaFactory.createForClass(ParentProfile);
+ParentProfileSchema.index({ organizationId: 1, identityVerificationStatus: 1 });
 
 @Schema({ _id: false })
 export class RelationshipPermissions {
@@ -277,6 +316,15 @@ export class ParentStudentRelationship {
 
   @Prop({ default: false })
   consentRequired!: boolean;
+
+  @Prop({ default: false })
+  consentGranted!: boolean;
+
+  @Prop()
+  consentGrantedAt?: Date;
+
+  @Prop({ trim: true })
+  consentDocumentId?: string;
 
   @Prop({
     enum: ['invited', 'active', 'rejected', 'revoked', 'expired'],
@@ -397,6 +445,21 @@ export class ParentalControl {
   @Prop()
   weeklyLearningLimitMinutes?: number;
 
+  @Prop({ default: 1, min: 1 })
+  maxConcurrentSessions!: number;
+
+  @Prop({ default: 1, min: 1 })
+  maxDevicesPerStudent!: number;
+
+  @Prop({ type: [String], default: [] })
+  allowedDeviceIds!: string[];
+
+  @Prop({ type: [String], default: [] })
+  blockedDeviceIds!: string[];
+
+  @Prop({ default: true })
+  allowAudioVideoLearning!: boolean;
+
   @Prop({ default: true })
   requireApprovalForScheduling!: boolean;
 
@@ -414,6 +477,9 @@ export class ParentalControl {
 
   @Prop({ type: [Types.ObjectId], default: [] })
   blockedSubjectIds!: Types.ObjectId[];
+
+  @Prop({ type: Object, default: {} })
+  contentFilters!: Record<string, unknown>;
 }
 
 export const ParentalControlSchema =
@@ -435,6 +501,9 @@ export class StudentAcademicRecord {
 
   @Prop({ trim: true })
   institutionName?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Institution', index: true })
+  institutionId?: Types.ObjectId;
 
   @Prop({ trim: true })
   educationBoard?: string;
@@ -459,6 +528,15 @@ export class StudentAcademicRecord {
   @Prop({ trim: true })
   gradeOrYear?: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Grade', index: true })
+  gradeId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Stream', index: true })
+  streamId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Course', index: true })
+  courseId?: Types.ObjectId;
+
   @Prop({ trim: true })
   courseName?: string;
 
@@ -473,6 +551,15 @@ export class StudentAcademicRecord {
 
   @Prop()
   resultValue?: string;
+
+  @Prop()
+  startDate?: Date;
+
+  @Prop()
+  endDate?: Date;
+
+  @Prop({ default: false })
+  isCurrent!: boolean;
 }
 
 export const StudentAcademicRecordSchema = SchemaFactory.createForClass(
@@ -480,6 +567,11 @@ export const StudentAcademicRecordSchema = SchemaFactory.createForClass(
 );
 StudentAcademicRecordSchema.index({ studentProfileId: 1, createdAt: -1 });
 StudentAcademicRecordSchema.index({ studentProfileId: 1, status: 1 });
+StudentAcademicRecordSchema.index({
+  studentProfileId: 1,
+  isCurrent: 1,
+  status: 1,
+});
 
 @Schema({ collection: COLLECTION_NAMES.ACADEMIC_BOARD, timestamps: true })
 export class AcademicBoard {
@@ -867,6 +959,21 @@ export class StudentSubjectEnrollment {
   @Prop({ trim: true })
   learningGoal?: string;
 
+  @Prop({ type: Types.ObjectId, ref: StudyPlan.name, index: true })
+  studyPlanId?: Types.ObjectId;
+
+  @Prop()
+  startsAt?: Date;
+
+  @Prop()
+  expiresAt?: Date;
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  progressPercentage!: number;
+
+  @Prop()
+  lastAccessedAt?: Date;
+
   @Prop({
     enum: ['active', 'expired', 'paused', 'completed'],
     default: 'active',
@@ -881,6 +988,11 @@ StudentSubjectEnrollmentSchema.index(
   { studentProfileId: 1, subjectId: 1 },
   { unique: true },
 );
+StudentSubjectEnrollmentSchema.index({
+  studentProfileId: 1,
+  status: 1,
+  expiresAt: 1,
+});
 
 @Schema({ collection: COLLECTION_NAMES.LEARNING_SCHEDULE, timestamps: true })
 export class LearningSchedule {
@@ -910,6 +1022,12 @@ export class LearningSchedule {
 
   @Prop({ type: Types.ObjectId, ref: Subject.name })
   subjectId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Topic.name, index: true })
+  topicId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: StudyPlan.name, index: true })
+  studyPlanId?: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   tutorUserId?: Types.ObjectId;
@@ -969,6 +1087,21 @@ export class LearningSchedule {
   @Prop({ trim: true })
   recurrenceRule?: string;
 
+  @Prop({ trim: true })
+  meetingUrl?: string;
+
+  @Prop({ trim: true })
+  provider?: string;
+
+  @Prop({ trim: true })
+  providerEventId?: string;
+
+  @Prop({ type: [String], default: [] })
+  allowedDeviceIds!: string[];
+
+  @Prop({ default: 1, min: 1 })
+  maxConcurrentJoins!: number;
+
   @Prop({ default: false })
   parentApprovalRequired!: boolean;
 
@@ -984,6 +1117,15 @@ export class LearningSchedule {
 
   @Prop({ type: Types.ObjectId })
   subscriptionEntitlementId?: Types.ObjectId;
+
+  @Prop()
+  joinedAt?: Date;
+
+  @Prop()
+  leftAt?: Date;
+
+  @Prop({ trim: true })
+  cancellationReason?: string;
 }
 
 export const LearningScheduleSchema =
@@ -994,6 +1136,7 @@ LearningScheduleSchema.index({ studentProfileId: 1, status: 1, startAt: 1 });
 LearningScheduleSchema.index({ tutorUserId: 1, startAt: 1, status: 1 });
 LearningScheduleSchema.index({ status: 1, startAt: 1, endAt: 1 });
 LearningScheduleSchema.index({ subjectId: 1, startAt: 1 });
+LearningScheduleSchema.index({ studyPlanId: 1, status: 1, startAt: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.LEARNING_ENTITLEMENT, timestamps: true })
 export class LearningEntitlement {
@@ -1023,6 +1166,12 @@ export class LearningEntitlement {
   @Prop({ type: Types.ObjectId, ref: LearningSchedule.name })
   scheduleId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'Payment', index: true })
+  paymentId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'Subscription', index: true })
+  subscriptionId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: StudyPlan.name, index: true })
   studyPlanId?: Types.ObjectId;
 
@@ -1032,6 +1181,15 @@ export class LearningEntitlement {
   @Prop({ default: 0 })
   usedQuantity!: number;
 
+  @Prop({ default: 0 })
+  reservedQuantity!: number;
+
+  @Prop({
+    enum: ['minutes', 'sessions', 'subjects', 'credits'],
+    default: 'sessions',
+  })
+  unit!: string;
+
   @Prop({ required: true })
   startsAt!: Date;
 
@@ -1039,11 +1197,14 @@ export class LearningEntitlement {
   expiresAt!: Date;
 
   @Prop({
-    enum: ['active', 'used', 'expired', 'revoked'],
+    enum: ['active', 'used', 'expired', 'revoked', 'paused'],
     default: 'active',
     index: true,
   })
   status!: string;
+
+  @Prop({ trim: true })
+  revocationReason?: string;
 }
 
 export const LearningEntitlementSchema =
@@ -1079,6 +1240,18 @@ export class AiTutorSession {
   @Prop({ type: Types.ObjectId, ref: LearningEntitlement.name, required: true })
   accessEntitlementId!: Types.ObjectId;
 
+  @Prop({ trim: true })
+  model?: string;
+
+  @Prop({ trim: true })
+  provider?: string;
+
+  @Prop({ trim: true })
+  deviceId?: string;
+
+  @Prop({ trim: true })
+  ipAddress?: string;
+
   @Prop()
   startedAt?: Date;
 
@@ -1110,10 +1283,19 @@ export class AiTutorSession {
   totalTokens!: number;
 
   @Prop({ default: 0 })
+  promptTokens!: number;
+
+  @Prop({ default: 0 })
+  completionTokens!: number;
+
+  @Prop({ default: 0 })
   safetyEventsCount!: number;
 
   @Prop()
   sessionSummary?: string;
+
+  @Prop({ type: Object, default: {} })
+  guardrailResult!: Record<string, unknown>;
 }
 
 export const AiTutorSessionSchema =
@@ -1160,6 +1342,15 @@ export class AiTutorMessage {
 
   @Prop()
   safetyStatus?: string;
+
+  @Prop({ type: Object, default: {} })
+  moderation!: Record<string, unknown>;
+
+  @Prop({ default: 0 })
+  tokens!: number;
+
+  @Prop({ trim: true })
+  model?: string;
 }
 
 export const AiTutorMessageSchema =
@@ -1184,6 +1375,12 @@ export class QuestionBank {
 
   @Prop({ type: Types.ObjectId, ref: Topic.name, index: true })
   topicId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Grade.name, index: true })
+  gradeId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: AcademicBoard.name, index: true })
+  boardId?: Types.ObjectId;
 
   @Prop({
     enum: ['school', 'exam_prep', 'skill', 'diagnostic'],
@@ -1240,6 +1437,15 @@ export class Question {
   @Prop({ default: 1 })
   points!: number;
 
+  @Prop({ default: 0 })
+  estimatedTimeSeconds!: number;
+
+  @Prop({ type: [String], default: [] })
+  tags!: string[];
+
+  @Prop({ type: Object, default: {} })
+  explanation!: Record<string, unknown>;
+
   @Prop({ enum: ['active', 'archived'], default: 'active', index: true })
   status!: string;
 }
@@ -1269,6 +1475,12 @@ export class Assessment {
   @Prop({ type: [Types.ObjectId], ref: Question.name, default: [] })
   questionIds!: Types.ObjectId[];
 
+  @Prop({ type: Types.ObjectId, ref: Grade.name, index: true })
+  gradeId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: StudyPlan.name, index: true })
+  studyPlanId?: Types.ObjectId;
+
   @Prop({
     enum: ['diagnostic', 'practice', 'homework', 'quiz', 'exam'],
     default: 'practice',
@@ -1281,6 +1493,15 @@ export class Assessment {
 
   @Prop({ default: 0 })
   passingScorePercentage!: number;
+
+  @Prop({ default: 1, min: 1 })
+  maxAttempts!: number;
+
+  @Prop({ default: false })
+  randomizeQuestions!: boolean;
+
+  @Prop({ default: false })
+  proctoringRequired!: boolean;
 
   @Prop({
     enum: ['draft', 'published', 'archived'],
@@ -1326,6 +1547,21 @@ export class AssessmentAttempt {
 
   @Prop()
   submittedAt?: Date;
+
+  @Prop({ default: 1, min: 1 })
+  attemptNumber!: number;
+
+  @Prop({ default: 0 })
+  timeSpentSeconds!: number;
+
+  @Prop({ trim: true })
+  deviceId?: string;
+
+  @Prop({ trim: true })
+  ipAddress?: string;
+
+  @Prop({ type: Object, default: {} })
+  proctoring!: Record<string, unknown>;
 }
 
 export const AssessmentAttemptSchema =
@@ -1364,6 +1600,15 @@ export class AssessmentAnswer {
 
   @Prop({ default: false })
   isCorrect!: boolean;
+
+  @Prop({ default: false })
+  requiresManualReview!: boolean;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  reviewedBy?: Types.ObjectId;
+
+  @Prop()
+  reviewedAt?: Date;
 }
 
 export const AssessmentAnswerSchema =
@@ -1408,11 +1653,23 @@ export class AssessmentResult {
   @Prop({ default: false })
   passed!: boolean;
 
+  @Prop({ trim: true })
+  grade?: string;
+
+  @Prop({ default: 0 })
+  percentile?: number;
+
+  @Prop({ default: 0 })
+  rank?: number;
+
   @Prop({ type: [String], default: [] })
   strengths!: string[];
 
   @Prop({ type: [String], default: [] })
   improvementAreas!: string[];
+
+  @Prop({ type: Object, default: {} })
+  recommendations!: Record<string, unknown>;
 }
 
 export const AssessmentResultSchema =
@@ -1457,6 +1714,21 @@ export class StudentTopicProgress {
 
   @Prop()
   lastPracticedAt?: Date;
+
+  @Prop({ default: 0 })
+  correctAnswers!: number;
+
+  @Prop({ default: 0 })
+  incorrectAnswers!: number;
+
+  @Prop({ default: 0 })
+  timeSpentSeconds!: number;
+
+  @Prop({
+    enum: ['not_started', 'learning', 'practicing', 'mastered'],
+    default: 'not_started',
+  })
+  status!: string;
 }
 
 export const StudentTopicProgressSchema =
@@ -1497,6 +1769,12 @@ export class LearningRecommendation {
   @Prop()
   reason?: string;
 
+  @Prop({ type: Types.ObjectId, ref: AssessmentResult.name, index: true })
+  assessmentResultId?: Types.ObjectId;
+
+  @Prop({ type: Object, default: {} })
+  actionPayload!: Record<string, unknown>;
+
   @Prop({ enum: ['low', 'medium', 'high'], default: 'medium', index: true })
   priority!: string;
 
@@ -1506,6 +1784,9 @@ export class LearningRecommendation {
     index: true,
   })
   status!: string;
+
+  @Prop()
+  actionDueAt?: Date;
 }
 
 export const LearningRecommendationSchema = SchemaFactory.createForClass(
@@ -1571,6 +1852,21 @@ export class Classroom {
   @Prop()
   closedAt?: Date;
 
+  @Prop({ trim: true })
+  provider?: string;
+
+  @Prop({ trim: true })
+  providerRoomId?: string;
+
+  @Prop({ trim: true })
+  joinUrl?: string;
+
+  @Prop({ default: 0 })
+  participantCount!: number;
+
+  @Prop({ default: 0 })
+  durationSeconds!: number;
+
   @Prop({ default: false })
   recordingEnabled!: boolean;
 
@@ -1579,6 +1875,9 @@ export class Classroom {
 
   @Prop()
   summary?: string;
+
+  @Prop({ type: Object, default: {} })
+  attendance!: Record<string, unknown>;
 }
 
 export const ClassroomSchema = SchemaFactory.createForClass(Classroom);
@@ -1615,6 +1914,15 @@ export class ClassroomMessage {
 
   @Prop({ enum: ['clean', 'review', 'blocked'], default: 'clean', index: true })
   safetyStatus!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'ClassroomMessage' })
+  replyToMessageId?: Types.ObjectId;
+
+  @Prop({ type: [String], default: [] })
+  attachments!: string[];
+
+  @Prop()
+  editedAt?: Date;
 }
 
 export const ClassroomMessageSchema =
@@ -1639,6 +1947,12 @@ export class ClassroomFile {
 
   @Prop({ required: true })
   mimeType!: string;
+
+  @Prop({ default: 0 })
+  size!: number;
+
+  @Prop({ trim: true })
+  checksum?: string;
 
   @Prop({ trim: true })
   originalName?: string;
@@ -1671,6 +1985,24 @@ export class TutorProfile {
   @Prop({ default: false, index: true })
   verified!: boolean;
 
+  @Prop({ trim: true })
+  displayName?: string;
+
+  @Prop({ trim: true })
+  qualification?: string;
+
+  @Prop({ default: 0 })
+  experienceYears!: number;
+
+  @Prop({ default: 0, min: 0, max: 5 })
+  rating!: number;
+
+  @Prop({ default: 0 })
+  sessionsCompleted!: number;
+
+  @Prop({ default: 0 })
+  maxWeeklySessions!: number;
+
   @Prop({
     enum: ['active', 'inactive', 'suspended'],
     default: 'inactive',
@@ -1698,6 +2030,12 @@ export class TutorAvailability {
 
   @Prop({ default: 'Asia/Kolkata' })
   timezone!: string;
+
+  @Prop({ type: [String], default: [] })
+  deliveryModes!: string[];
+
+  @Prop({ trim: true })
+  recurrenceRule?: string;
 
   @Prop({
     enum: ['available', 'held', 'booked', 'blocked'],
@@ -1740,6 +2078,18 @@ export class TutorSessionNote {
 
   @Prop({ type: [String], default: [] })
   homework!: string[];
+
+  @Prop({ type: [String], default: [] })
+  strengths!: string[];
+
+  @Prop({ type: [String], default: [] })
+  improvementAreas!: string[];
+
+  @Prop({ default: false })
+  parentSummaryShared!: boolean;
+
+  @Prop()
+  parentSummarySharedAt?: Date;
 }
 
 export const TutorSessionNoteSchema =
@@ -1782,9 +2132,22 @@ export class SafetyEvent {
 
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
+
+  @Prop({ trim: true })
+  actionTaken?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  reviewedBy?: Types.ObjectId;
+
+  @Prop()
+  reviewedAt?: Date;
+
+  @Prop({ default: false })
+  parentNotified!: boolean;
 }
 
 export const SafetyEventSchema = SchemaFactory.createForClass(SafetyEvent);
 SafetyEventSchema.index({ status: 1, severity: 1, createdAt: -1 });
 SafetyEventSchema.index({ studentProfileId: 1, status: 1, createdAt: -1 });
 SafetyEventSchema.index({ userId: 1, status: 1, createdAt: -1 });
+SafetyEventSchema.index({ reviewedBy: 1, status: 1, createdAt: -1 });

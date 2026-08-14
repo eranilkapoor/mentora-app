@@ -61,6 +61,15 @@ export class StudentAttendance {
   @Prop()
   checkOutTime?: Date;
 
+  @Prop({ default: 0 })
+  minutesAttended!: number;
+
+  @Prop({ trim: true })
+  deviceId?: string;
+
+  @Prop({ type: Object, default: {} })
+  geo!: Record<string, unknown>;
+
   @Prop({ trim: true })
   remarks?: string;
 }
@@ -79,3 +88,9 @@ StudentAttendanceSchema.index({
   date: 1,
 });
 StudentAttendanceSchema.index({ organizationId: 1, branchId: 1, date: 1 });
+StudentAttendanceSchema.index({
+  organizationId: 1,
+  subjectId: 1,
+  date: 1,
+  status: 1,
+});

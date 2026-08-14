@@ -25,6 +25,12 @@ export class ExamResultEntry {
   @Prop({ trim: true })
   remarks?: string;
 
+  @Prop({ default: 0 })
+  percentage!: number;
+
+  @Prop({ default: false })
+  passed!: boolean;
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   enteredBy?: Types.ObjectId;
 
@@ -103,6 +109,15 @@ export class Exam {
 
   @Prop({ trim: true })
   instructions?: string;
+
+  @Prop({ enum: ['offline', 'online', 'hybrid'], default: 'offline' })
+  mode!: string;
+
+  @Prop({ default: false })
+  proctoringRequired!: boolean;
+
+  @Prop()
+  resultPublishedAt?: Date;
 
   @Prop({
     enum: [

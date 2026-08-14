@@ -205,10 +205,17 @@ export class ExamsService {
       exam.results.map((entry) => [entry.studentId.toString(), entry]),
     );
     for (const entry of dto.results) {
+      const marksObtained = entry.isAbsent ? 0 : (entry.marksObtained ?? 0);
+      const percentage =
+        exam.maxMarks > 0
+          ? Number(((marksObtained / exam.maxMarks) * 100).toFixed(2))
+          : 0;
       byStudent.set(entry.studentId, {
         studentId: toRequiredObjectId(entry.studentId),
-        marksObtained: entry.isAbsent ? 0 : (entry.marksObtained ?? 0),
+        marksObtained,
         isAbsent: entry.isAbsent ?? false,
+        percentage,
+        passed: !entry.isAbsent && marksObtained >= exam.passingMarks,
         grade: entry.grade,
         remarks: entry.remarks,
         enteredBy,
@@ -237,7 +244,7 @@ export class ExamsService {
     );
     const record = await this.exams.findOneAndUpdate(
       filter,
-      { $set: { status: 'results_published' } },
+      { $set: { status: 'results_published', resultPublishedAt: new Date() } },
       { new: true },
     );
     if (!record) throw new NotFoundException('Exam not found');

@@ -59,6 +59,15 @@ export class StaffAttendance {
   @Prop()
   checkOutTime?: Date;
 
+  @Prop({ default: 0 })
+  minutesWorked!: number;
+
+  @Prop({ trim: true })
+  deviceId?: string;
+
+  @Prop({ type: Object, default: {} })
+  geo!: Record<string, unknown>;
+
   @Prop({ trim: true })
   remarks?: string;
 }
@@ -68,3 +77,4 @@ export const StaffAttendanceSchema =
 StaffAttendanceSchema.index({ organizationId: 1, userId: 1, date: -1 });
 StaffAttendanceSchema.index({ organizationId: 1, date: 1, status: 1 });
 StaffAttendanceSchema.index({ organizationId: 1, branchId: 1, date: 1 });
+StaffAttendanceSchema.index({ organizationId: 1, departmentId: 1, date: 1 });

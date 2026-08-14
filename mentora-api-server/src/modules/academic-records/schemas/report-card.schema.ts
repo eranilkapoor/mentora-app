@@ -27,6 +27,9 @@ export class ReportCardSubjectEntry {
 
   @Prop({ trim: true })
   remarks?: string;
+
+  @Prop({ default: 0 })
+  attendancePercentage?: number;
 }
 
 export const ReportCardSubjectEntrySchema = SchemaFactory.createForClass(
@@ -105,6 +108,12 @@ export class ReportCard {
 
   @Prop({ type: Types.ObjectId, ref: 'Document' })
   documentId?: Types.ObjectId;
+
+  @Prop({ default: false })
+  parentNotified!: boolean;
+
+  @Prop()
+  parentNotifiedAt?: Date;
 }
 
 export const ReportCardSchema = SchemaFactory.createForClass(ReportCard);

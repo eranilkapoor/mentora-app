@@ -42,6 +42,12 @@ export class Timetable {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   staffUserId!: Types.ObjectId;
 
+  @Prop({ trim: true })
+  batchName?: string;
+
+  @Prop({ default: 0 })
+  capacity!: number;
+
   @Prop({ required: true, min: 0, max: 6, index: true })
   dayOfWeek!: number;
 
@@ -58,6 +64,9 @@ export class Timetable {
 
   @Prop()
   effectiveTo?: Date;
+
+  @Prop({ trim: true })
+  recurrenceRule?: string;
 
   @Prop({ type: Types.ObjectId })
   academicSessionId?: Types.ObjectId;
@@ -89,3 +98,9 @@ TimetableSchema.index({
 TimetableSchema.index({ organizationId: 1, subjectId: 1, dayOfWeek: 1 });
 TimetableSchema.index({ organizationId: 1, gradeId: 1, dayOfWeek: 1 });
 TimetableSchema.index({ organizationId: 1, branchId: 1, dayOfWeek: 1 });
+TimetableSchema.index({
+  organizationId: 1,
+  branchId: 1,
+  batchName: 1,
+  status: 1,
+});
