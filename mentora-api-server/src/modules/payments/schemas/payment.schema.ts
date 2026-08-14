@@ -18,7 +18,7 @@ export class Payment {
   @Prop({ type: Types.ObjectId, ref: 'Organization', index: true })
   organizationId?: Types.ObjectId;
 
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true, unique: true })
   orderId!: string;
 
   @Prop({ index: true, sparse: true })
@@ -27,7 +27,7 @@ export class Payment {
   @Prop({ index: true, sparse: true })
   gatewayPaymentId?: string;
 
-  @Prop({ index: true, unique: true, sparse: true })
+  @Prop({ unique: true, sparse: true })
   idempotencyKey?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Plan', index: true })

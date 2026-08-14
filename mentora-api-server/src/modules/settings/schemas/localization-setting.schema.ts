@@ -5,7 +5,7 @@ import { DateFormat } from '../enums/settings-preferences.enums';
 
 @Schema({ collection: COLLECTION_NAMES.LOCALIZATION_SETTING, timestamps: true })
 export class LocalizationSetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ default: 'en' }) appLanguage!: string;

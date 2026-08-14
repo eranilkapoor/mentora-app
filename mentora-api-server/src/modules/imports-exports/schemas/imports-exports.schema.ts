@@ -64,7 +64,7 @@ export class ImportExportJob {
   })
   errorPolicy!: string;
   @Prop({ type: [Object], default: [] })
-  errors!: Record<string, unknown>[];
+  errorRows!: Record<string, unknown>[];
   @Prop({ trim: true })
   resultUrl?: string;
   @Prop() dueAt?: Date;

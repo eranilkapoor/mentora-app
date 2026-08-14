@@ -4,7 +4,7 @@ import { COLLECTION_NAMES } from '@/common/constants';
 
 @Schema({ collection: COLLECTION_NAMES.ACCOUNT_SETTING, timestamps: true })
 export class AccountSetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ default: false }) isDeactivated!: boolean;

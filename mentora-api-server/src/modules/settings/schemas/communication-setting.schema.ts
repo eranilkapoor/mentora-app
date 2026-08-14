@@ -8,7 +8,7 @@ import { CommunicationAccess } from '../enums/settings-preferences.enums';
   timestamps: true,
 })
 export class CommunicationSetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({

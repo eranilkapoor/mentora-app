@@ -8,7 +8,7 @@ import {
 
 @Schema({ collection: COLLECTION_NAMES.PRIVACY_SETTING, timestamps: true })
 export class PrivacySetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   //  Profile visibility

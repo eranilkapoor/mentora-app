@@ -5,7 +5,7 @@ import { MediaQuality } from '../enums/settings-preferences.enums';
 
 @Schema({ collection: COLLECTION_NAMES.MEDIA_SETTING, timestamps: true })
 export class MediaSetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ default: false }) autoDownloadPhotos!: boolean;

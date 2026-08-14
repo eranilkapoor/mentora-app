@@ -8,7 +8,7 @@ import { AccessibilityFontSize } from '../enums/settings-preferences.enums';
   timestamps: true,
 })
 export class AccessibilitySetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({

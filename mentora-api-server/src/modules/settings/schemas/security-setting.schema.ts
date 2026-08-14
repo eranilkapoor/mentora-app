@@ -15,7 +15,7 @@ class LoginDevice {
 
 @Schema({ collection: COLLECTION_NAMES.SECURITY_SETTING, timestamps: true })
 export class SecuritySetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ default: false }) twoFactorEnabled!: boolean;

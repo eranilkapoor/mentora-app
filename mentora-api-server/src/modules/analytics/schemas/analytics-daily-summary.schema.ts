@@ -7,7 +7,7 @@ import { COLLECTION_NAMES } from '@/common/constants';
   timestamps: true,
 })
 export class AnalyticsDailySummary extends Document {
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true, unique: true })
   day!: string;
 
   @Prop({ index: true })

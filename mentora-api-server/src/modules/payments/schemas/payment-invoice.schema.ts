@@ -4,7 +4,7 @@ import { COLLECTION_NAMES } from '@/common/constants';
 
 @Schema({ collection: COLLECTION_NAMES.PAYMENT_INVOICE, timestamps: true })
 export class PaymentInvoice {
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true, unique: true })
   invoiceNumber!: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Payment', required: true, index: true })

@@ -4,7 +4,7 @@ import { COLLECTION_NAMES } from '@/common/constants';
 
 @Schema({ collection: COLLECTION_NAMES.AI_SETTING, timestamps: true })
 export class AiSetting {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ default: true }) aiRecommendationsEnabled!: boolean;

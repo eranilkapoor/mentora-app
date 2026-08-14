@@ -29,7 +29,7 @@ export class ChatParticipantState {
 
 @Schema({ collection: COLLECTION_NAMES.CHAT_ROOM, timestamps: true })
 export class ChatRoom extends Document {
-  @Prop({ required: true, unique: true, index: true })
+  @Prop({ required: true, unique: true })
   participantHash!: string;
 
   @Prop({ type: String, enum: ChatRoomType, default: ChatRoomType.DIRECT })

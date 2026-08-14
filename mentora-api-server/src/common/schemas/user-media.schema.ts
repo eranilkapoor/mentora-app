@@ -80,7 +80,6 @@ export class Media {
 }
 
 export const MediaSchema = SchemaFactory.createForClass(Media);
-MediaSchema.index({ type: 1 });
 MediaSchema.index({ isPrimary: 1, isActive: 1 });
 MediaSchema.index({ moderationStatus: 1, status: 1, createdAt: -1 });
 MediaSchema.index({ moderationStatus: 1, isActive: 1, createdAt: 1 });
