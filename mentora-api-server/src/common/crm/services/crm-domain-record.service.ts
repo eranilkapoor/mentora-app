@@ -332,8 +332,11 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     const stringFields = [
       'accessLevel',
       'agreementStatus',
+      'academicYear',
+      'batchName',
       'calendarEventId',
       'category',
+      'code',
       'color',
       'commissionType',
       'contactEmail',
@@ -342,22 +345,31 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'country',
       'countryCode',
       'countryName',
+      'courseName',
       'currency',
       'deliveryStatus',
       'direction',
       'disposition',
+      'eligibility',
       'eligibilityStatus',
       'entryType',
+      'errorPolicy',
       'eventType',
       'exportStatus',
+      'fileName',
+      'fileUrl',
       'feeStatus',
+      'format',
       'ledgerType',
       'location',
+      'level',
       'meetingType',
       'meetingUrl',
       'module',
+      'moduleKey',
       'name',
       'onboardingStatus',
+      'operation',
       'optInStatus',
       'outcome',
       'partnerCode',
@@ -367,11 +379,14 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'phoneNumber',
       'providerCallId',
       'providerMessageId',
+      'paymentStatus',
+      'provisioningStatus',
       'publishStatus',
       'queue',
       'recommendation',
       'recordingUrl',
       'result',
+      'resultUrl',
       'schemeName',
       'provider',
       'seoDescription',
@@ -379,6 +394,8 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'settlementStatus',
       'slug',
       'scope',
+      'specializationName',
+      'stream',
       'templateName',
       'territory',
       'url',
@@ -387,6 +404,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'visaRequirement',
       'website',
       'workRights',
+      'correlationId',
     ];
     stringFields.forEach((field) => {
       if (typeof payload[field] === 'string' && payload[field]) {
@@ -413,6 +431,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'publishedAt',
       'scheduledAt',
       'startedAt',
+      'expiresAt',
     ].forEach((field) => {
       const date = this.toOptionalDate(payload[field]);
       if (date) result[field] = date;
@@ -425,6 +444,7 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'invoiceId',
       'leadStageId',
       'ownerId',
+      'parentId',
       'paymentId',
       'programId',
       'relatedApplicationId',
@@ -456,9 +476,18 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'registrationCount',
       'requestedAmount',
       'score',
+      'seats',
       'unreadCount',
       'usageCount',
       'version',
+      'totalRows',
+      'processedRows',
+      'successRows',
+      'failedRows',
+      'executionLimitPerHour',
+      'durationMs',
+      'rowCount',
+      'fileSize',
     ].forEach((field) => {
       const value = payload[field];
       if (typeof value === 'number' && Number.isFinite(value)) {
@@ -474,8 +503,10 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'dataExportRestricted',
       'enabled',
       'isAddon',
+      'isSystem',
       'rawSecretAccessBlocked',
       'requiredForAdmission',
+      'requiresApproval',
     ].forEach((field) => {
       const value = payload[field];
       if (typeof value === 'boolean') result[field] = value;
@@ -505,6 +536,8 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       'languages',
       'subjects',
       'conversionTags',
+      'columns',
+      'recipients',
     ].forEach((field) => {
       const value = payload[field];
       if (Array.isArray(value)) {
@@ -514,7 +547,23 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
           .filter(Boolean);
       }
     });
-    ['availability', 'geo', 'seo', 'usageLimits'].forEach((field) => {
+    [
+      'actions',
+      'availability',
+      'conditions',
+      'filters',
+      'geo',
+      'input',
+      'output',
+      'parameters',
+      'result',
+      'retryPolicy',
+      'schedule',
+      'seo',
+      'slaPolicy',
+      'testMode',
+      'usageLimits',
+    ].forEach((field) => {
       const value = payload[field];
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         result[field] = value;

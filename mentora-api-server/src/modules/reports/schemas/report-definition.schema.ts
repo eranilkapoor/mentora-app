@@ -27,6 +27,9 @@ export class ReportDefinition {
   @Prop({ enum: ['table', 'funnel', 'summary', 'trend'], default: 'table' })
   reportType!: string;
 
+  @Prop({ trim: true })
+  description?: string;
+
   @Prop({ type: [String], default: [] })
   columns!: string[];
 
@@ -35,6 +38,15 @@ export class ReportDefinition {
 
   @Prop({ type: Object, default: {} })
   schedule!: Record<string, unknown>;
+
+  @Prop({ type: [String], default: [] })
+  recipients!: string[];
+
+  @Prop({ enum: ['private', 'team', 'organization'], default: 'organization' })
+  visibility!: string;
+
+  @Prop({ default: false })
+  isSystem!: boolean;
 
   @Prop({ enum: ['draft', 'active', 'archived'], default: 'draft' })
   status!: string;
@@ -46,3 +58,4 @@ export class ReportDefinition {
 export const ReportDefinitionSchema =
   SchemaFactory.createForClass(ReportDefinition);
 ReportDefinitionSchema.index({ organizationId: 1, moduleKey: 1, status: 1 });
+ReportDefinitionSchema.index({ organizationId: 1, visibility: 1, status: 1 });

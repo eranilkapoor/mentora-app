@@ -469,28 +469,43 @@ export function getEditableModuleColumns(module: AdminModule) {
   }
   if (module.id === "imports-exports") {
     return [
-      "Module",
+      "Module Key",
       "Operation",
-      "Rows",
-      "File",
+      "File Name",
+      "File Url",
+      "Total Rows",
+      "Processed Rows",
+      "Success Rows",
+      "Failed Rows",
       "Owner",
       "Error Policy",
-      "Callback Status",
+      "Result Url",
     ];
   }
   if (module.id === "students") {
     return [
-      "Student",
-      "Program",
+      "Student Id",
+      "Parent Id",
+      "Program Id",
       "Grade",
-      "Parent",
-      "Branch",
-      "Access",
+      "Branch Id",
+      "Access Level",
       "Profile Completion",
+      "Payment Status",
+      "Provisioning Status",
     ];
   }
   if (module.id === "academic-sessions") {
-    return ["Session", "Program", "Batch", "Start", "End", "Owner"];
+    return [
+      "Session",
+      "Program",
+      "Batch",
+      "Start",
+      "End",
+      "Owner",
+      "Branch Id",
+      "Status",
+    ];
   }
   if (module.id === "attendance-students") {
     return [
@@ -579,10 +594,27 @@ export function getEditableModuleColumns(module: AdminModule) {
     ];
   }
   if (module.id === "courses") {
-    return ["Course", "Program", "Subjects", "Level", "Fee", "Duration"];
+    return [
+      "Course Name",
+      "Program Id",
+      "Subjects",
+      "Level",
+      "Amount",
+      "Currency",
+      "Delivery Mode",
+      "Eligibility",
+      "Status",
+    ];
   }
   if (module.id === "specializations") {
-    return ["Specialization", "Program", "Stream", "Seats", "Eligibility"];
+    return [
+      "Specialization Name",
+      "Program Id",
+      "Stream",
+      "Seats",
+      "Eligibility",
+      "Status",
+    ];
   }
   if (module.id === "service-catalog") {
     return [
@@ -674,10 +706,31 @@ export function getEditableModuleColumns(module: AdminModule) {
     ];
   }
   if (module.id === "enrollment") {
-    return ["Enrollment", "Student", "Program", "Batch", "Access", "Plan"];
+    return [
+      "Enrollment",
+      "Student Id",
+      "Program Id",
+      "Branch Id",
+      "Batch",
+      "Access Level",
+      "Plan",
+      "Learning Plan Status",
+      "Provisioning Status",
+      "Status",
+    ];
   }
   if (module.id === "fees") {
-    return ["Fee", "Student", "Amount", "Due", "Ledger", "Gateway"];
+    return [
+      "Fee",
+      "Student Id",
+      "Amount",
+      "Currency",
+      "Due Date",
+      "Ledger",
+      "Gateway",
+      "Payment Status",
+      "Status",
+    ];
   }
   if (module.id === "documents") {
     return [
@@ -768,8 +821,9 @@ export function getEditableModuleColumns(module: AdminModule) {
   if (module.id === "learning") {
     return [
       "Student",
-      "Program",
-      "Subject",
+      "Student Id",
+      "Program Id",
+      "Subject Id",
       "Study Plan",
       "Tutor Type",
       "Tutor",
@@ -780,6 +834,8 @@ export function getEditableModuleColumns(module: AdminModule) {
       "Progress Rule",
       "Parent Summary",
       "Safety Status",
+      "Learning Plan Status",
+      "Status",
     ];
   }
   if (module.id === "mobile-app") {
@@ -869,13 +925,21 @@ export function getEditableModuleColumns(module: AdminModule) {
     return [
       "Module Key",
       "Report Type",
+      "Description",
       "Columns",
       "Filters",
       "Schedule",
       "Format",
       "Recipients",
+      "Visibility",
+      "Is System",
       "Owner",
       "Export Status",
+      "File Name",
+      "File Url",
+      "Row Count",
+      "File Size",
+      "Expires At",
     ];
   }
   if (module.id === "integrations") {
@@ -907,11 +971,18 @@ export function getEditableModuleColumns(module: AdminModule) {
     return [
       "Module Key",
       "Trigger",
+      "Description",
       "Conditions",
       "Actions",
       "Priority",
+      "Version",
+      "Requires Approval",
+      "Approved By",
+      "Approved At",
+      "Execution Limit Per Hour",
       "Retry Policy",
       "Sla Policy",
+      "Test Mode",
     ];
   }
   return module.columns.slice(1, 6).filter((column) => {

@@ -36,6 +36,24 @@ export class WorkflowRule {
   @Prop({ enum: ['draft', 'active', 'paused', 'archived'], default: 'draft' })
   status!: string;
 
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
+  @Prop({ default: false })
+  requiresApproval!: boolean;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  approvedBy?: Types.ObjectId;
+
+  @Prop()
+  approvedAt?: Date;
+
+  @Prop({ default: 0, min: 0 })
+  executionLimitPerHour!: number;
+
   @Prop({ default: 0, min: 0 })
   priority!: number;
 

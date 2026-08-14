@@ -1092,6 +1092,40 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
     };
   }
 
+  if (draft.moduleKey === "imports-exports") {
+    const payload = draft.payload ?? {};
+    return {
+      organizationId: draft.organizationId,
+      description: draft.description,
+      dueAt: draft.dueAt || undefined,
+      ownerId: payload.ownerId || payload.owner || undefined,
+      priority: draft.priority,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "completed"
+            ? "completed"
+            : draft.status === "in_progress"
+              ? "in_progress"
+              : "open",
+      title: draft.title,
+      payload: {
+        errorPolicy: payload.errorPolicy || "partial_commit",
+        failedRows: payload.failedRows ? Number(payload.failedRows) : 0,
+        fileName: payload.fileName || undefined,
+        fileUrl: payload.fileUrl || undefined,
+        moduleKey: payload.moduleKey || "leads",
+        operation: payload.operation || "import",
+        processedRows: payload.processedRows
+          ? Number(payload.processedRows)
+          : 0,
+        resultUrl: payload.resultUrl || undefined,
+        successRows: payload.successRows ? Number(payload.successRows) : 0,
+        totalRows: payload.totalRows ? Number(payload.totalRows) : 0,
+      },
+    };
+  }
+
   if (draft.moduleKey === "attendance-students") {
     const payload = draft.payload ?? {};
     return {
@@ -1255,8 +1289,17 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       filters: draft.payload.filters ? { value: draft.payload.filters } : {},
       moduleKey: draft.payload.moduleKey || "leads",
       name: draft.title,
+      description: draft.description || draft.payload.description || undefined,
       reportType: draft.payload.reportType || "table",
+      recipients: draft.payload.recipients
+        ? draft.payload.recipients
+            .split(",")
+            .map((recipient) => recipient.trim())
+            .filter(Boolean)
+        : undefined,
       schedule: draft.payload.schedule ? { value: draft.payload.schedule } : {},
+      visibility: draft.payload.visibility || "organization",
+      isSystem: draft.payload.isSystem === "true",
       status:
         draft.status === "archived"
           ? "archived"
@@ -1277,6 +1320,7 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
         : {},
       moduleKey: draft.payload.moduleKey || "leads",
       name: draft.title,
+      description: draft.description || draft.payload.description || undefined,
       priority: draft.payload.priority
         ? Number(draft.payload.priority)
         : draft.priority === "urgent"
@@ -1287,8 +1331,18 @@ function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
       retryPolicy: draft.payload.retryPolicy
         ? { value: draft.payload.retryPolicy }
         : undefined,
+      version: draft.payload.version ? Number(draft.payload.version) : 1,
+      requiresApproval: draft.payload.requiresApproval === "true",
+      approvedBy: draft.payload.approvedBy || undefined,
+      approvedAt: draft.payload.approvedAt || undefined,
+      executionLimitPerHour: draft.payload.executionLimitPerHour
+        ? Number(draft.payload.executionLimitPerHour)
+        : 0,
       slaPolicy: draft.payload.slaPolicy
         ? { value: draft.payload.slaPolicy }
+        : undefined,
+      testMode: draft.payload.testMode
+        ? { value: draft.payload.testMode }
         : undefined,
       status:
         draft.status === "archived"

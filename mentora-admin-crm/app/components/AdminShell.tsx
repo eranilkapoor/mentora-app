@@ -4975,19 +4975,72 @@ function RecordFormModal({
             )
             .map((column) => {
               const key = toPayloadKey(column);
+              const inputKind = getRecordFieldInputKind(column);
+              const options = getRecordFieldOptions(column);
               return (
                 <label className="formrow" key={column}>
                   <span className="label">{column}</span>
-                  <input
-                    className="input form-control"
-                    onChange={(event) =>
-                      setPayload((current) => ({
-                        ...current,
-                        [key]: event.target.value,
-                      }))
-                    }
-                    value={payload[key] ?? ""}
-                  />
+                  {options.length ? (
+                    <select
+                      className="form-select form-select-sm"
+                      onChange={(event) =>
+                        setPayload((current) => ({
+                          ...current,
+                          [key]: event.target.value,
+                        }))
+                      }
+                      value={payload[key] ?? ""}
+                    >
+                      <option value="">Select {column}</option>
+                      {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : inputKind === "textarea" ? (
+                    <textarea
+                      className="input form-control record-textarea"
+                      onChange={(event) =>
+                        setPayload((current) => ({
+                          ...current,
+                          [key]: event.target.value,
+                        }))
+                      }
+                      value={payload[key] ?? ""}
+                    />
+                  ) : inputKind === "checkbox" ? (
+                    <div className="radio-pill-group">
+                      {["true", "false"].map((option) => (
+                        <label className="radio-pill" key={option}>
+                          <input
+                            checked={(payload[key] || "false") === option}
+                            name={`${module.id}-${key}`}
+                            onChange={() =>
+                              setPayload((current) => ({
+                                ...current,
+                                [key]: option,
+                              }))
+                            }
+                            type="radio"
+                          />
+                          <span>{option === "true" ? "Yes" : "No"}</span>
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      className="input form-control"
+                      onChange={(event) =>
+                        setPayload((current) => ({
+                          ...current,
+                          [key]: event.target.value,
+                        }))
+                      }
+                      type={inputKind}
+                      value={payload[key] ?? ""}
+                    />
+                  )}
                 </label>
               );
             })}
@@ -5009,6 +5062,122 @@ function RecordFormModal({
       </section>
     </div>
   );
+}
+
+function getRecordFieldInputKind(column: string) {
+  const key = toPayloadKey(column).toLowerCase();
+  if (
+    key.includes("description") ||
+    key.includes("note") ||
+    key.includes("remarks") ||
+    key.includes("policy") ||
+    key.includes("settings") ||
+    key.includes("conditions") ||
+    key.includes("actions") ||
+    key.includes("filters") ||
+    key.includes("schedule") ||
+    key.includes("payload") ||
+    key.includes("response") ||
+    key.includes("result") ||
+    key.includes("limits") ||
+    key.includes("rule")
+  ) {
+    return "textarea";
+  }
+  if (
+    key.endsWith("at") ||
+    key.endsWith("date") ||
+    key.includes("start") ||
+    key.includes("end") ||
+    key.includes("expires")
+  ) {
+    return "datetime-local";
+  }
+  if (
+    key.includes("amount") ||
+    key.includes("count") ||
+    key.includes("duration") ||
+    key.includes("limit") ||
+    key.includes("rate") ||
+    key.includes("score") ||
+    key.includes("size") ||
+    key.includes("rows") ||
+    key.includes("version") ||
+    key.includes("capacity") ||
+    key.includes("priority")
+  ) {
+    return "number";
+  }
+  if (
+    key.startsWith("is") ||
+    key.includes("enabled") ||
+    key.includes("required") ||
+    key.includes("locked")
+  ) {
+    return "checkbox";
+  }
+  if (key.includes("email")) return "email";
+  if (
+    key.includes("url") ||
+    key.includes("website") ||
+    key.includes("domain")
+  ) {
+    return "url";
+  }
+  if (key.includes("phone")) return "tel";
+  return "text";
+}
+
+function getRecordFieldOptions(column: string) {
+  const key = toPayloadKey(column);
+  const options: Record<string, { label: string; value: string }[]> = {
+    accessLevel: [
+      { label: "Free", value: "free" },
+      { label: "Paid", value: "paid" },
+      { label: "Plan only", value: "plan_only" },
+      { label: "Internal", value: "internal" },
+    ],
+    agreementStatus: [
+      { label: "Draft", value: "draft" },
+      { label: "Active", value: "active" },
+      { label: "Expired", value: "expired" },
+      { label: "Suspended", value: "suspended" },
+    ],
+    channel: [
+      { label: "Email", value: "email" },
+      { label: "SMS", value: "sms" },
+      { label: "WhatsApp", value: "whatsapp" },
+      { label: "Push", value: "push" },
+      { label: "In-app", value: "in_app" },
+      { label: "Ads", value: "ads" },
+      { label: "Landing page", value: "landing_page" },
+    ],
+    direction: [
+      { label: "Inbound", value: "inbound" },
+      { label: "Outbound", value: "outbound" },
+    ],
+    errorPolicy: [
+      { label: "Partial commit", value: "partial_commit" },
+      { label: "Skip errors", value: "skip" },
+      { label: "Fail fast", value: "fail_fast" },
+    ],
+    format: [
+      { label: "CSV", value: "csv" },
+      { label: "Excel", value: "xlsx" },
+      { label: "PDF", value: "pdf" },
+    ],
+    operation: [
+      { label: "Import", value: "import" },
+      { label: "Export", value: "export" },
+    ],
+    visibility: [
+      { label: "Private", value: "private" },
+      { label: "Team", value: "team" },
+      { label: "Organization", value: "organization" },
+      { label: "Public", value: "public" },
+    ],
+  };
+  return options[key] ?? [];
 }
 
 function OrganizationFormModal({

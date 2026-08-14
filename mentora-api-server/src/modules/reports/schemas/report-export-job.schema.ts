@@ -30,6 +30,12 @@ export class ReportExportJob {
   @Prop({ enum: ['csv', 'xlsx', 'pdf'], default: 'csv' })
   format!: string;
 
+  @Prop({ trim: true })
+  fileName?: string;
+
+  @Prop({ trim: true })
+  fileUrl?: string;
+
   @Prop({
     enum: ['queued', 'running', 'completed', 'failed'],
     default: 'queued',
@@ -44,6 +50,15 @@ export class ReportExportJob {
 
   @Prop({ trim: true })
   error?: string;
+
+  @Prop({ default: 0, min: 0 })
+  rowCount!: number;
+
+  @Prop({ default: 0, min: 0 })
+  fileSize!: number;
+
+  @Prop()
+  expiresAt?: Date;
 
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   requestedBy?: Types.ObjectId;

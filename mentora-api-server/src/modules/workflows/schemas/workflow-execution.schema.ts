@@ -36,6 +36,9 @@ export class WorkflowExecution {
   @Prop({ trim: true, index: true })
   targetId?: string;
 
+  @Prop({ trim: true })
+  correlationId?: string;
+
   @Prop({
     enum: ['queued', 'running', 'succeeded', 'failed', 'skipped'],
     default: 'queued',
@@ -53,6 +56,9 @@ export class WorkflowExecution {
 
   @Prop({ default: 0, min: 0 })
   attempt!: number;
+
+  @Prop({ default: 0, min: 0 })
+  durationMs!: number;
 
   @Prop()
   nextRetryAt?: Date;
@@ -77,3 +83,7 @@ WorkflowExecutionSchema.index({
   workflowRuleId: 1,
   executedAt: -1,
 });
+WorkflowExecutionSchema.index(
+  { organizationId: 1, correlationId: 1 },
+  { sparse: true },
+);
